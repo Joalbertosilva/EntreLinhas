@@ -87,6 +87,9 @@ export function useAtualizarLeitura(conteudoId: string, usuarioId: string | unde
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['app-leitura', conteudoId, usuarioId] })
+      queryClient.invalidateQueries({ queryKey: ['leituras-map', usuarioId] })
+      queryClient.invalidateQueries({ queryKey: ['minhas-leituras', usuarioId] })
+      queryClient.invalidateQueries({ queryKey: ['home-continue-reading', usuarioId] })
     },
   })
 }

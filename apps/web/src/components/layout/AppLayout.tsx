@@ -1,17 +1,17 @@
 import { Link, Outlet, useRouter, useRouterState } from '@tanstack/react-router'
 import { ChevronDown, Menu, Search, User } from 'lucide-react'
 import { useEffect, useRef, useState, type CSSProperties } from 'react'
-import { resolveSectionId } from '@/features/app/appNavigation'
-import { SectionIcon } from '@/features/app/SectionIcon'
 import { useScrollAtmosphere } from '@/features/app/useScrollAtmosphere'
+import { resolveSectionId } from '@/features/app/appNavigation'
 import { useAuth } from '@/features/auth/AuthProvider'
 import { BRAND_NAME } from '@/features/auth/brand'
 import { BrandLogo } from '@/features/auth/BrandLogo'
 import { AppDrawer } from '@/components/layout/AppDrawer'
 import { AppFooter } from '@/components/layout/AppFooter'
-import { AppSidebar } from '@/components/layout/AppSidebar'
+import { AppHeaderNav } from '@/components/layout/AppHeaderNav'
 import { Avatar } from '@/components/ui/Avatar'
 import { Button } from '@/components/ui/Button'
+import { ThemeToggle } from '@/components/ui/ThemeToggle'
 import { SkipLink } from '@/components/ui/SkipLink'
 import { cn } from '@/lib/utils'
 
@@ -25,6 +25,7 @@ export function AppLayout() {
   const menuRef = useRef<HTMLDivElement>(null)
   const activeSection = resolveSectionId(pathname)
   const isBookReading = pathname.startsWith('/app/conteudos/')
+  const isHome = pathname === '/app' || pathname === '/app/'
 
   useEffect(() => {
     setDrawerOpen(false)
@@ -53,76 +54,63 @@ export function AppLayout() {
     '--app-scroll': scrollProgress,
   } as CSSProperties
 
-  const sectionLabel =
-    pathname.startsWith('/app/perfil/senha')
-      ? 'Alterar senha'
-      : activeSection === 'home'
-        ? 'Início'
-        : activeSection === 'livros'
-          ? 'Livros'
-          : activeSection === 'cronicas'
-            ? 'Crônicas'
-            : activeSection === 'musicas'
-              ? 'Músicas'
-              : activeSection === 'poemas'
-                ? 'Poemas'
-                : activeSection === 'perfil'
-                  ? 'Minha conta'
-                  : null
-
   return (
-    <div className="app-shell relative flex min-h-screen" style={atmosphereStyle}>
+    <div className="app-shell relative flex min-h-screen flex-col" style={atmosphereStyle}>
       <div className="app-atmosphere-gradient pointer-events-none fixed inset-0 -z-20" aria-hidden />
       <div className="app-atmosphere-dots pointer-events-none fixed inset-0 -z-10" aria-hidden />
+      <div className="app-side-accent app-side-accent-left pointer-events-none fixed inset-y-0 -z-[5]" aria-hidden />
+      <div className="app-side-accent app-side-accent-right pointer-events-none fixed inset-y-0 -z-[5]" aria-hidden />
 
-      <AppSidebar pathname={pathname} isStaff={isStaff} onSignOut={handleSignOut} />
-
-      <div className="flex min-w-0 flex-1 flex-col">
-        <SkipLink />
-        <header className="sticky top-0 z-40 border-b border-primary/10 bg-white/85 backdrop-blur-md">
-          <div className="flex items-center gap-2 px-3 py-2.5 sm:gap-3 sm:px-4 lg:px-6 xl:px-8">
+      <SkipLink />
+      <header
+        className={cn(
+          'app-header-bar',
+          isHome ? 'app-header-bar-home' : 'app-header-bar-sticky',
+        )}
+      >
+        <div className="app-header-inner mx-auto flex max-w-[100rem] items-end gap-3 px-5 pb-1 pt-2 sm:px-8 lg:gap-4 lg:px-10 lg:pb-1.5 lg:pt-2.5 xl:px-14">
+          <div className="flex shrink-0 items-center gap-2 pb-1 lg:pb-1.5">
             <Button
               variant="outline"
               size="icon"
-              className="shrink-0 rounded-xl border-primary/15 bg-white shadow-[var(--shadow-soft)] lg:hidden"
+              className="h-9 w-9 shrink-0 rounded-xl border-primary/15 bg-elevated shadow-[var(--shadow-soft)] lg:hidden"
               onClick={() => setDrawerOpen(true)}
               aria-label="Abrir menu de navegação"
               aria-expanded={drawerOpen}
             >
-              <Menu className="h-5 w-5 text-brand-navy" />
+              <Menu className="h-4 w-4 text-text" />
             </Button>
 
             <Link
               to="/app"
-              className="flex min-w-0 shrink-0 items-center gap-2.5 rounded-xl py-1 pr-2 transition-colors hover:bg-primary-light/40 lg:hidden"
+              className="flex min-w-0 items-center gap-2 rounded-xl py-1 pr-1 transition-colors hover:bg-primary-light/40"
             >
-              <BrandLogo variant="icon" className="h-9 w-9" />
-              <span className="hidden truncate font-semibold text-brand-navy sm:inline">{BRAND_NAME}</span>
+              <BrandLogo variant="icon" className="h-8 w-8 sm:h-9 sm:w-9" />
+              <span className="hidden truncate text-sm font-semibold text-text sm:inline">{BRAND_NAME}</span>
             </Link>
+          </div>
 
-            <div className="mx-1 hidden min-w-0 items-center gap-2 rounded-full bg-primary-light/35 px-2 py-1 sm:flex lg:hidden">
-              <SectionIcon section={activeSection} size="sm" className="shadow-none" />
-              <span className="truncate text-xs font-semibold text-brand-navy">{sectionLabel}</span>
-            </div>
+          <AppHeaderNav activeSection={activeSection} isStaff={isStaff} className="hidden flex-1 lg:flex" />
 
-            <div className="mx-auto hidden max-w-sm flex-1 px-1 md:block lg:max-w-lg xl:max-w-xl">
-              <label className="relative block">
-                <span className="sr-only">Pesquisar conteúdos</span>
-                <Search
-                  className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-text-muted"
-                  aria-hidden
-                />
-                <input
-                  type="search"
-                  disabled
-                  placeholder="Pesquisar conteúdos..."
-                  className="input-auth h-10 w-full rounded-full pl-9 pr-4 text-sm opacity-75"
-                  aria-disabled
-                />
-              </label>
-            </div>
+          <div className="ml-auto flex shrink-0 items-center gap-2 pb-1 lg:gap-3 lg:pb-1.5">
+            <label className="relative hidden md:block">
+              <span className="sr-only">Pesquisar conteúdos</span>
+              <Search
+                className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-text-muted"
+                aria-hidden
+              />
+              <input
+                type="search"
+                disabled
+                placeholder="Pesquisar conteúdos..."
+                className="input-auth h-9 w-44 rounded-full pl-9 pr-4 text-sm opacity-75 lg:w-52"
+                aria-disabled
+              />
+            </label>
 
-            <div className="relative ml-auto shrink-0" ref={menuRef}>
+            <ThemeToggle compact />
+
+            <div className="relative flex shrink-0 items-center gap-2" ref={menuRef}>
               <button
                 type="button"
                 className={cn(
@@ -144,7 +132,7 @@ export function AppLayout() {
               {menuOpen && (
                 <div
                   role="menu"
-                  className="absolute right-0 top-full z-50 mt-2 w-56 overflow-hidden rounded-xl border border-border bg-white py-1 shadow-[var(--shadow-card)] animate-fade-in"
+                  className="absolute right-0 top-full z-50 mt-2 w-56 overflow-hidden rounded-xl border border-border bg-elevated py-1 shadow-[var(--shadow-card)] animate-fade-in"
                 >
                   <div className="border-b border-border px-3 py-2.5">
                     <p className="truncate text-sm font-medium text-text">{profile?.nome}</p>
@@ -171,30 +159,32 @@ export function AppLayout() {
               )}
             </div>
           </div>
-        </header>
+        </div>
+      </header>
 
-        <AppDrawer
-          open={drawerOpen}
-          pathname={pathname}
-          isStaff={isStaff}
-          onClose={() => setDrawerOpen(false)}
-          onSignOut={handleSignOut}
-        />
+      <AppDrawer
+        open={drawerOpen}
+        pathname={pathname}
+        isStaff={isStaff}
+        onClose={() => setDrawerOpen(false)}
+        onSignOut={handleSignOut}
+      />
 
-        <main id="conteudo-principal" className="relative flex-1" tabIndex={-1}>
-          <div
-            key={pathname}
-            className={cn(
-              'page-enter mx-auto w-full px-4 py-6 lg:px-6 lg:py-8 xl:px-8',
-              isBookReading ? 'max-w-[90rem]' : 'max-w-7xl',
-            )}
-          >
-            <Outlet />
-          </div>
-        </main>
+      <main id="conteudo-principal" className="relative flex-1" tabIndex={-1}>
+        <div
+          key={pathname}
+          className={cn(
+            'w-full',
+            !isHome && 'page-enter px-5 py-6 sm:px-8 sm:py-7 lg:px-10 lg:py-8 xl:px-14',
+            isHome && 'px-0 pb-0 pt-0',
+            isBookReading && 'mx-auto max-w-[90rem]',
+          )}
+        >
+          <Outlet />
+        </div>
+      </main>
 
-        <AppFooter />
-      </div>
+      <AppFooter />
     </div>
   )
 }

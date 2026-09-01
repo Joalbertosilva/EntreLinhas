@@ -14,7 +14,6 @@ export const Route = createFileRoute('/app')({
       .single()
 
     if (!profile?.status) throw redirect({ to: '/login' })
-    if (profile.perfil !== 'aluno') throw redirect({ to: '/admin' })
   },
   component: AppLayout,
 })

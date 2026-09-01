@@ -6,7 +6,7 @@ export const Textarea = forwardRef<HTMLTextAreaElement, TextareaHTMLAttributes<H
     <textarea
       ref={ref}
       className={cn(
-        'flex min-h-[96px] w-full rounded-xl border-2 border-border bg-white px-3.5 py-2.5 text-sm text-text',
+        'flex min-h-[96px] w-full rounded-xl border-2 border-border bg-elevated px-3.5 py-2.5 text-sm text-text',
         'placeholder:text-text-muted/70 resize-y',
         'transition-colors duration-150 hover:border-primary/20',
         'focus-visible:outline-none focus-visible:border-primary focus-visible:shadow-[var(--shadow-glow)]',

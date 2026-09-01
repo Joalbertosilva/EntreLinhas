@@ -1,12 +1,14 @@
 import { useMemo, useState } from 'react'
 import { createFileRoute, redirect } from '@tanstack/react-router'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
-import { Plus, Pencil, Search, UserPlus } from 'lucide-react'
+import { KeyRound, Plus, Pencil, Search, UserPlus } from 'lucide-react'
 import { toast } from 'sonner'
 import type { Perfil, Profile } from '@tcc-sistema/types'
 import { supabase } from '@/lib/supabase'
 import { CreateUserDialog } from '@/features/admin/CreateUserDialog'
 import { EditUserDialog } from '@/features/admin/EditUserDialog'
+import { SetUserPasswordDialog } from '@/features/admin/SetUserPasswordDialog'
+import { Dialog } from '@/components/ui/Dialog'
 import { PageHeader } from '@/components/layout/PageHeader'
 import { Avatar } from '@/components/ui/Avatar'
 import { Badge } from '@/components/ui/Badge'
@@ -52,6 +54,12 @@ function UsuariosPage() {
   const queryClient = useQueryClient()
   const [dialogOpen, setDialogOpen] = useState(false)
   const [editing, setEditing] = useState<Profile | null>(null)
+  const [resettingPassword, setResettingPassword] = useState<Profile | null>(null)
+  const [deliveredPassword, setDeliveredPassword] = useState<{
+    nome: string
+    nome_usuario: string
+    senha_temporaria: string
+  } | null>(null)
   const [search, setSearch] = useState('')
   const [filterPerfil, setFilterPerfil] = useState<Perfil | 'all'>('all')
 
@@ -184,6 +192,14 @@ function UsuariosPage() {
                         <Button
                           variant="outline"
                           size="sm"
+                          onClick={() => setResettingPassword(u)}
+                        >
+                          <KeyRound className="h-4 w-4" />
+                          Senha
+                        </Button>
+                        <Button
+                          variant="outline"
+                          size="sm"
                           onClick={() => setEditing(u)}
                         >
                           <Pencil className="h-4 w-4" />
@@ -235,6 +251,39 @@ function UsuariosPage() {
         onOpenChange={(open) => !open && setEditing(null)}
         usuario={editing}
       />
+      <SetUserPasswordDialog
+        usuario={resettingPassword}
+        open={Boolean(resettingPassword)}
+        onOpenChange={(open) => {
+          if (!open) setResettingPassword(null)
+        }}
+        onSuccess={setDeliveredPassword}
+      />
+      <Dialog
+        open={Boolean(deliveredPassword)}
+        onOpenChange={(open) => {
+          if (!open) setDeliveredPassword(null)
+        }}
+        title="Senha redefinida"
+        description="Anote e entregue pessoalmente. Esta senha não será exibida novamente."
+      >
+        {deliveredPassword && (
+          <div className="space-y-4 text-sm">
+            <div className="rounded-xl border border-border bg-surface px-4 py-3">
+              <p className="text-text-muted">Usuário</p>
+              <p className="font-medium text-text">{deliveredPassword.nome}</p>
+              <p className="mt-2 font-mono text-text">@{deliveredPassword.nome_usuario}</p>
+              <p className="mt-2 text-text-muted">Senha temporária</p>
+              <p className="font-mono text-lg font-semibold text-text">
+                {deliveredPassword.senha_temporaria}
+              </p>
+            </div>
+            <div className="flex justify-end">
+              <Button onClick={() => setDeliveredPassword(null)}>Entendi</Button>
+            </div>
+          </div>
+        )}
+      </Dialog>
     </>
   )
 }

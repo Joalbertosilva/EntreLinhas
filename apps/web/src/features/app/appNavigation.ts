@@ -1,6 +1,13 @@
 import type { TipoConteudo } from '@tcc-sistema/types'
 
-export type AppSectionId = 'home' | 'livros' | 'cronicas' | 'musicas' | 'poemas' | 'perfil'
+export type AppSectionId =
+  | 'home'
+  | 'minhas-leituras'
+  | 'livros'
+  | 'cronicas'
+  | 'musicas'
+  | 'poemas'
+  | 'perfil'
 
 export interface AppNavItem {
   id: AppSectionId
@@ -12,7 +19,8 @@ export interface AppNavItem {
   placeholderCount?: number
 }
 
-export const APP_NAV_MAIN: AppNavItem[] = [
+/** Links do navbar superior — sem duplicar o menu pill de seções */
+export const APP_NAV_HEADER: AppNavItem[] = [
   {
     id: 'home',
     to: '/app',
@@ -20,6 +28,16 @@ export const APP_NAV_MAIN: AppNavItem[] = [
     description: 'Sua página principal e destaques',
     end: true,
   },
+  {
+    id: 'minhas-leituras',
+    to: '/app/minhas-leituras',
+    label: 'Minhas leituras',
+    description: 'Em andamento, lista e concluídas',
+  },
+]
+
+/** Seções de catálogo — menu pill e páginas por tipo */
+export const APP_NAV_SECTIONS: AppNavItem[] = [
   {
     id: 'livros',
     to: '/app/livros',
@@ -54,6 +72,9 @@ export const APP_NAV_MAIN: AppNavItem[] = [
   },
 ]
 
+/** Todas as seções navegáveis (drawer mobile) */
+export const APP_NAV_MAIN: AppNavItem[] = [...APP_NAV_HEADER, ...APP_NAV_SECTIONS]
+
 export const APP_NAV_ACCOUNT: AppNavItem = {
   id: 'perfil',
   to: '/app/perfil',
@@ -74,6 +95,7 @@ export function getAppRouteForTipo(tipo: TipoConteudo): string {
 }
 
 export function resolveSectionId(pathname: string): AppSectionId {
+  if (pathname.startsWith('/app/minhas-leituras')) return 'minhas-leituras'
   if (pathname.startsWith('/app/livros')) return 'livros'
   if (pathname.startsWith('/app/cronicas')) return 'cronicas'
   if (pathname.startsWith('/app/musicas')) return 'musicas'

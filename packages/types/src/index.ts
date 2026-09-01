@@ -22,7 +22,7 @@ export const TIPOS_INTERACAO = ['comentario_livre', 'reflexao_orientada'] as con
 export type TipoInteracao = (typeof TIPOS_INTERACAO)[number];
 
 /** Status de leitura — RF009 */
-export const STATUS_LEITURA = ['em_andamento', 'concluido'] as const;
+export const STATUS_LEITURA = ['em_andamento', 'na_lista', 'concluido'] as const;
 export type StatusLeitura = (typeof STATUS_LEITURA)[number];
 
 /** Tipos de produção — RF011 */
@@ -35,6 +35,10 @@ export const TIPOS_PRODUCAO = [
   'outro',
 ] as const;
 export type TipoProducao = (typeof TIPOS_PRODUCAO)[number];
+
+/** Tipo da obra do aluno — livro, crônica ou poema */
+export const TIPOS_OBRA = ['livro', 'cronica', 'poema'] as const;
+export type TipoObra = (typeof TIPOS_OBRA)[number];
 
 export interface Profile {
   id: string;

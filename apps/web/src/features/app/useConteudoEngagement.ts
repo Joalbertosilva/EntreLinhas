@@ -139,24 +139,6 @@ export function useSalvarInteracao(conteudoId: string, usuarioId: string | undef
         }
       }
 
-      if (input.tipo_interacao === 'comentario_livre') {
-        const { data: existing } = await supabase
-          .from('interacoes')
-          .select('id')
-          .eq('usuario_id', usuarioId)
-          .eq('conteudo_id', conteudoId)
-          .eq('tipo_interacao', 'comentario_livre')
-          .maybeSingle()
-        if (existing) {
-          const { error } = await supabase
-            .from('interacoes')
-            .update({ texto: payload.texto })
-            .eq('id', existing.id)
-          if (error) throw error
-          return
-        }
-      }
-
       const { error } = await supabase.from('interacoes').insert(payload)
       if (error) throw error
     },

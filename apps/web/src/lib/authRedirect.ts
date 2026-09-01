@@ -1,11 +1,11 @@
 import type { Perfil } from '@tcc-sistema/types'
 import { supabase } from '@/lib/supabase'
 
-export function homePathForPerfil(perfil: Perfil): '/app' | '/admin' {
-  return perfil === 'aluno' ? '/app' : '/admin'
+export function homePathForPerfil(_perfil: Perfil): '/app' {
+  return '/app'
 }
 
-export async function resolveAuthenticatedHomePath(): Promise<'/app' | '/admin' | '/login'> {
+export async function resolveAuthenticatedHomePath(): Promise<'/app' | '/login'> {
   const { data: { session } } = await supabase.auth.getSession()
   if (!session) return '/login'
 

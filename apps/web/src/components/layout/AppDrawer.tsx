@@ -3,6 +3,7 @@ import { resolveSectionId } from '@/features/app/appNavigation'
 import { BRAND_NAME } from '@/features/auth/brand'
 import { BrandLogo } from '@/features/auth/BrandLogo'
 import { AppNavLinks } from '@/components/layout/AppNavLinks'
+import { ThemeToggle } from '@/components/ui/ThemeToggle'
 import { Button } from '@/components/ui/Button'
 
 interface AppDrawerProps {
@@ -27,7 +28,7 @@ export function AppDrawer({ open, pathname, isStaff, onClose, onSignOut }: AppDr
         aria-hidden
       />
       <aside
-        className="relative flex h-full w-[min(300px,88vw)] flex-col border-r border-primary/10 bg-white/95 shadow-2xl backdrop-blur-md animate-fade-in"
+        className="relative flex h-full w-[min(300px,88vw)] flex-col border-r border-primary/10 bg-elevated-muted shadow-2xl backdrop-blur-md animate-fade-in"
         aria-label="Menu de navegação"
       >
         <div className="flex items-center justify-between border-b border-border px-4 py-4">
@@ -49,6 +50,13 @@ export function AppDrawer({ open, pathname, isStaff, onClose, onSignOut }: AppDr
           isStaff={isStaff}
           onSignOut={onSignOut}
         />
+
+        <div className="mt-auto border-t border-border px-4 py-4">
+          <p className="mb-2 text-xs font-semibold uppercase tracking-wider text-text-muted">
+            Aparência
+          </p>
+          <ThemeToggle />
+        </div>
       </aside>
     </div>
   )

@@ -6,6 +6,7 @@ import type { HomeSectionConfig } from '@/features/app/homeSections'
 import { ContentCard } from '@/features/app/ContentCard'
 import { ContentCardPlaceholder } from '@/features/app/ContentCardPlaceholder'
 import { SectionIcon } from '@/features/app/SectionIcon'
+import type { ConteudoCardData } from '@/features/app/useConteudos'
 import {
   countPlaceholders,
   useSectionConteudos,
@@ -16,6 +17,9 @@ import { cn } from '@/lib/utils'
 interface ContentCarouselProps {
   section: HomeSectionConfig
   showViewAll?: boolean
+  variant?: 'default' | 'hero'
+  overrideConteudos?: ConteudoCardData[]
+  fadeTone?: 'default' | 'hero' | 'catalog'
 }
 
 const SECTION_ICON: Partial<Record<string, AppSectionId>> = {
@@ -28,14 +32,29 @@ const SECTION_ICON: Partial<Record<string, AppSectionId>> = {
 
 const SCROLL_STEP = 300
 
-export function ContentCarousel({ section, showViewAll = true }: ContentCarouselProps) {
+export function ContentCarousel({
+  section,
+  showViewAll = true,
+  variant = 'default',
+  overrideConteudos,
+  fadeTone = 'default',
+}: ContentCarouselProps) {
+  const isHero = variant === 'hero'
   const isDestaques = section.id === 'destaques'
-  const { data: conteudos = [], isLoading, isError } = useSectionConteudos(section)
+  const { data: fetchedConteudos = [], isLoading, isError } = useSectionConteudos(section, {
+    enabled: !overrideConteudos,
+  })
+  const conteudos = overrideConteudos ?? fetchedConteudos
   const hasRealContent = conteudos.length > 0
 
   const placeholderCount = useMemo(
-    () => (isLoading ? section.placeholderCount : countPlaceholders(conteudos.length, section.placeholderCount)),
-    [conteudos.length, isLoading, section.placeholderCount],
+    () =>
+      overrideConteudos
+        ? 0
+        : isLoading
+          ? section.placeholderCount
+          : countPlaceholders(conteudos.length, section.placeholderCount),
+    [conteudos.length, isLoading, overrideConteudos, section.placeholderCount],
   )
 
   const iconSection = SECTION_ICON[section.id] ?? 'livros'
@@ -75,46 +94,52 @@ export function ContentCarousel({ section, showViewAll = true }: ContentCarousel
   }
 
   return (
-    <section className="space-y-3" aria-labelledby={`section-${section.id}`}>
-      <div className="flex items-end justify-between gap-4">
-        <div className="flex min-w-0 items-start gap-3">
-          <SectionIcon section={iconSection} size="sm" className="mt-0.5 shadow-none" />
-          <div className="min-w-0">
-            <h2
-              id={`section-${section.id}`}
-              className="text-lg font-semibold tracking-tight text-brand-navy sm:text-xl"
-            >
-              {section.title}
-            </h2>
-            {section.subtitle && (
-              <p className="mt-0.5 text-sm text-text-muted">{section.subtitle}</p>
-            )}
+    <section
+      className={cn(isHero ? 'space-y-0' : 'space-y-3')}
+      aria-labelledby={isHero ? undefined : `section-${section.id}`}
+      aria-label={isHero ? 'Conteúdos em destaque' : undefined}
+    >
+      {!isHero && (
+        <div className="flex items-end justify-between gap-4">
+          <div className="flex min-w-0 items-start gap-3">
+            <SectionIcon section={iconSection} size="sm" className="mt-0.5 shadow-none" />
+            <div className="min-w-0">
+              <h2
+                id={`section-${section.id}`}
+                className="text-lg font-semibold tracking-tight text-brand-navy sm:text-xl"
+              >
+                {section.title}
+              </h2>
+              {section.subtitle && (
+                <p className="mt-0.5 text-sm text-text-muted">{section.subtitle}</p>
+              )}
+            </div>
           </div>
+          {showViewAll && section.route && (
+            <Link to={section.route} className="hidden shrink-0 sm:block">
+              <Button variant="ghost" size="sm" className="text-text-muted hover:text-primary">
+                Ver tudo
+                <ChevronRight className="h-4 w-4" aria-hidden />
+              </Button>
+            </Link>
+          )}
         </div>
-        {showViewAll && section.route && (
-          <Link to={section.route} className="hidden shrink-0 sm:block">
-            <Button variant="ghost" size="sm" className="text-text-muted hover:text-primary">
-              Ver tudo
-              <ChevronRight className="h-4 w-4" aria-hidden />
-            </Button>
-          </Link>
-        )}
-      </div>
+      )}
 
-      {isError && (
+      {isError && !overrideConteudos && (
         <p className="text-sm text-error">
           Não foi possível carregar os conteúdos desta seção. Tente recarregar a página.
         </p>
       )}
 
-      {!isLoading && !isError && !hasRealContent && section.id === 'destaques' && (
+      {!isHero && !isLoading && !isError && !hasRealContent && section.id === 'destaques' && (
         <p className="text-sm text-text-muted">
           Os destaques mostram os conteúdos mais curtidos pelos alunos. Cadastre materiais e,
           conforme os alunos curtirem, eles aparecerão aqui.
         </p>
       )}
 
-      {!isLoading && !isError && !hasRealContent && section.id !== 'destaques' && (
+      {!isHero && !isLoading && !isError && !hasRealContent && section.id !== 'destaques' && (
         <p className="text-sm text-text-muted">
           Nenhum conteúdo ativo aqui ainda. Os cards tracejados abaixo são apenas decorativos.
         </p>
@@ -123,8 +148,12 @@ export function ContentCarousel({ section, showViewAll = true }: ContentCarousel
       <div
         className={cn(
           'content-carousel relative',
-          canScrollRight && 'content-carousel-fade-right',
-          canScrollLeft && 'content-carousel-fade-left',
+          fadeTone === 'hero' && 'content-carousel-fade-hero',
+          fadeTone === 'catalog' && 'content-carousel-fade-catalog',
+          canScrollRight && fadeTone === 'default' && 'content-carousel-fade-right',
+          canScrollLeft && fadeTone === 'default' && 'content-carousel-fade-left',
+          canScrollRight && fadeTone !== 'default' && 'content-carousel-fade-right',
+          canScrollLeft && fadeTone !== 'default' && 'content-carousel-fade-left',
         )}
       >
         {canScrollLeft && (

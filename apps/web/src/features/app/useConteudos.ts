@@ -77,6 +77,7 @@ export function useConteudosByTipo(tipo: TipoConteudo) {
 
 export function useSectionConteudos(
   section: Pick<HomeSectionConfig, 'id' | 'tipo' | 'placeholderCount'>,
+  options?: { enabled?: boolean },
 ) {
   const isDestaques = section.id === 'destaques'
 
@@ -88,6 +89,7 @@ export function useSectionConteudos(
       isDestaques
         ? fetchDestaques(section.placeholderCount)
         : fetchActiveConteudos({ tipo: section.tipo }),
+    enabled: options?.enabled ?? true,
   })
 }
 

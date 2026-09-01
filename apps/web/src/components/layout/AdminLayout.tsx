@@ -2,11 +2,13 @@ import { Link, Outlet, useRouter, useRouterState } from '@tanstack/react-router'
 import {
   ClipboardList,
   GraduationCap,
+  Home,
   KeyRound,
   LayoutDashboard,
   Library,
   LogOut,
   Menu,
+  PenLine,
   Users,
   X,
 } from 'lucide-react'
@@ -29,6 +31,7 @@ const NAV: Array<{
   { to: '/admin', label: 'Início', icon: LayoutDashboard, end: true },
   { to: '/admin/conteudos', label: 'Conteúdos', icon: Library },
   { to: '/admin/alunos', label: 'Alunos', icon: GraduationCap },
+  { to: '/admin/obras', label: 'Obras dos alunos', icon: PenLine },
   { to: '/admin/requerimentos-senha', label: 'Recuperação de senha', icon: KeyRound },
   { to: '/admin/usuarios', label: 'Usuários', icon: Users, adminOnly: true },
   { to: '/admin/auditoria', label: 'Auditoria', icon: ClipboardList, adminOnly: true },
@@ -45,6 +48,7 @@ const PAGE_TITLES: Record<string, string> = {
   '/admin/usuarios': 'Usuários',
   '/admin/conteudos': 'Conteúdos',
   '/admin/alunos': 'Alunos',
+  '/admin/obras': 'Obras dos alunos',
   '/admin/requerimentos-senha': 'Recuperação de senha',
   '/admin/auditoria': 'Auditoria',
   '/admin/perfil': 'Minha conta',
@@ -80,6 +84,17 @@ export function AdminLayout() {
             <p className="truncate text-xs text-text-muted">Gerenciador</p>
           </div>
         </div>
+      </div>
+
+      <div className="border-b border-primary/10 px-3 py-3">
+        <Link
+          to="/app"
+          onClick={() => setMobileOpen(false)}
+          className="flex items-center gap-2.5 rounded-xl border border-primary/12 bg-primary-light/45 px-3 py-2.5 text-sm font-semibold text-primary transition-colors hover:bg-primary-light/70"
+        >
+          <Home className="h-[18px] w-[18px]" strokeWidth={1.75} aria-hidden />
+          Plataforma
+        </Link>
       </div>
 
       <nav className="flex-1 space-y-0.5 p-3" aria-label="Navegação principal">
@@ -162,6 +177,13 @@ export function AdminLayout() {
             <Menu className="h-5 w-5" />
           </Button>
           <p className="text-sm font-semibold text-text">{pageTitle}</p>
+          <Link
+            to="/app"
+            className="ml-auto inline-flex items-center gap-2 rounded-xl border border-primary/12 bg-primary-light/40 px-3 py-1.5 text-sm font-semibold text-primary transition-colors hover:bg-primary-light/65"
+          >
+            <Home className="h-4 w-4" strokeWidth={1.75} aria-hidden />
+            <span className="hidden sm:inline">Plataforma</span>
+          </Link>
         </header>
 
         <main id="conteudo-principal" className="flex-1 overflow-auto bg-dot-pattern" tabIndex={-1}>

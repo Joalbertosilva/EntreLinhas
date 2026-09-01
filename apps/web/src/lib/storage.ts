@@ -46,6 +46,27 @@ export async function uploadCover(file: File, contentId: string): Promise<string
   return data.publicUrl
 }
 
+export async function uploadObraCover(
+  file: File,
+  userId: string,
+  obraId: string,
+): Promise<string> {
+  const validation = validateCoverFile(file)
+  if (validation) throw new Error(validation)
+
+  const ext = file.type === 'image/png' ? 'png' : file.type === 'image/webp' ? 'webp' : 'jpg'
+  const path = `obras/${userId}/${obraId}/capa.${ext}`
+
+  const { error } = await supabase.storage.from(COVERS_BUCKET).upload(path, file, {
+    upsert: true,
+    contentType: file.type,
+  })
+  if (error) throw new Error(error.message)
+
+  const { data } = supabase.storage.from(COVERS_BUCKET).getPublicUrl(path)
+  return data.publicUrl
+}
+
 export async function deleteCoverByUrl(url: string | null | undefined): Promise<void> {
   if (!url) return
   const path = extractCoverStoragePath(url)

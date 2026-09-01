@@ -1,10 +1,11 @@
-import { Link } from '@tanstack/react-router'
-import { LayoutDashboard, LogOut } from 'lucide-react'
 import {
   APP_NAV_ACCOUNT,
-  APP_NAV_MAIN,
+  APP_NAV_HEADER,
+  APP_NAV_SECTIONS,
   type AppNavItem,
 } from '@/features/app/appNavigation'
+import { Link } from '@tanstack/react-router'
+import { LayoutDashboard, LogOut } from 'lucide-react'
 import { SectionIcon } from '@/features/app/SectionIcon'
 import { cn } from '@/lib/utils'
 
@@ -27,10 +28,25 @@ export function AppNavLinks({
     <>
       <nav className="flex-1 overflow-y-auto p-3 scrollbar-thin" aria-label="Seções">
         <p className="mb-2 px-3 text-[11px] font-semibold uppercase tracking-wider text-text-muted">
+          Principal
+        </p>
+        <ul className="space-y-0.5">
+          {APP_NAV_HEADER.map((item) => (
+            <NavLinkItem
+              key={item.id}
+              item={item}
+              active={activeId === item.id}
+              onNavigate={onNavigate}
+              compact={compact}
+            />
+          ))}
+        </ul>
+
+        <p className="mb-2 mt-5 px-3 text-[11px] font-semibold uppercase tracking-wider text-text-muted">
           Conteúdos
         </p>
         <ul className="space-y-0.5">
-          {APP_NAV_MAIN.map((item) => (
+          {APP_NAV_SECTIONS.map((item) => (
             <NavLinkItem
               key={item.id}
               item={item}

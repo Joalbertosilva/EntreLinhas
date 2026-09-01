@@ -8,9 +8,11 @@ import {
   useMinhasInteracoes,
   useSalvarInteracao,
 } from '@/features/app/useConteudoEngagement'
+import { Avatar } from '@/components/ui/Avatar'
 import { Button } from '@/components/ui/Button'
 import { Card, CardContent } from '@/components/ui/Card'
 import { Textarea } from '@/components/ui/Textarea'
+import { formatRelativeTime } from '@/lib/formatRelativeTime'
 import { cn } from '@/lib/utils'
 
 interface ConteudoReflexoesSectionProps {
@@ -30,7 +32,7 @@ export function ConteudoReflexoesSection({
 
   if (temasComFrase.length === 0) {
     return (
-      <Card className="border-dashed border-primary/15 bg-white/75">
+      <Card className="border-dashed border-primary/15 bg-elevated-muted">
         <CardContent className="p-5 sm:p-6">
           <p className="text-sm text-text-muted">
             Ainda não há frases ou perguntas de reflexão cadastradas para este conteúdo. A equipe
@@ -121,7 +123,7 @@ function ReflexaoCard({
   const { frase, reflexao, pergunta, rotulo } = getReflexaoDisplay(tema)
 
   return (
-    <div className={cn(variant === 'book' ? 'book-interaction-panel' : 'overflow-hidden rounded-2xl border border-primary/10 bg-white/90 shadow-[var(--shadow-soft)]')}>
+    <div className={cn(variant === 'book' ? 'book-interaction-panel' : 'surface-card overflow-hidden rounded-2xl')}>
       {variant === 'default' && (
         <div className="h-1 bg-gradient-to-r from-primary/80 via-accent to-primary/60" aria-hidden />
       )}
@@ -168,7 +170,7 @@ function ReflexaoCard({
             value={texto}
             onChange={(e) => setTexto(e.target.value)}
             placeholder="Escreva aqui o que você pensa e sente..."
-            className="min-h-[100px] resize-y bg-white"
+            className="min-h-[100px] resize-y bg-elevated"
           />
           <p className="text-xs text-text-muted">
             Não existe resposta certa ou errada — o importante é o que a leitura significa para você.
@@ -204,38 +206,71 @@ export function ConteudoComentariosSection({
   variant = 'default',
 }: ConteudoComentariosSectionProps) {
   const { data: comentarios = [], isLoading } = useComentariosPublicos(conteudoId)
-  const { data: minhas = [] } = useMinhasInteracoes(conteudoId, usuarioId)
   const salvar = useSalvarInteracao(conteudoId, usuarioId)
 
-  const meuComentario = minhas.find((i) => i.tipo_interacao === 'comentario_livre')
-  const [texto, setTexto] = useState('')
+  const [novoTexto, setNovoTexto] = useState('')
+  const [editandoId, setEditandoId] = useState<string | null>(null)
+  const [editTexto, setEditTexto] = useState('')
 
-  useEffect(() => {
-    setTexto(meuComentario?.texto ?? '')
-  }, [meuComentario?.texto, meuComentario?.id])
+  const comentariosOrdenados = [...comentarios].sort(
+    (a, b) => new Date(a.created_at).getTime() - new Date(b.created_at).getTime(),
+  )
 
-  const outrosComentarios = comentarios.filter((c) => c.usuario_id !== usuarioId)
-
-  const handleSave = async () => {
-    if (!texto.trim()) {
-      toast.error('Escreva um comentário antes de publicar')
+  const handlePublicar = async () => {
+    if (!novoTexto.trim()) {
+      toast.error('Escreva algo antes de publicar')
       return
     }
     try {
       await salvar.mutateAsync({
-        id: meuComentario?.id,
         tipo_interacao: 'comentario_livre',
-        texto,
+        texto: novoTexto.trim(),
       })
-      toast.success(meuComentario ? 'Comentário atualizado' : 'Comentário publicado')
+      setNovoTexto('')
+      toast.success('Comentário publicado')
     } catch {
-      toast.error('Não foi possível publicar seu comentário')
+      toast.error('Não foi possível publicar')
     }
   }
 
+  const iniciarEdicao = (comentario: InteracaoComAutor) => {
+    setEditandoId(comentario.id)
+    setEditTexto(comentario.texto)
+  }
+
+  const cancelarEdicao = () => {
+    setEditandoId(null)
+    setEditTexto('')
+  }
+
+  const handleSalvarEdicao = async () => {
+    if (!editandoId || !editTexto.trim()) {
+      toast.error('O comentário não pode ficar vazio')
+      return
+    }
+    try {
+      await salvar.mutateAsync({
+        id: editandoId,
+        tipo_interacao: 'comentario_livre',
+        texto: editTexto.trim(),
+      })
+      cancelarEdicao()
+      toast.success('Comentário atualizado')
+    } catch {
+      toast.error('Não foi possível atualizar')
+    }
+  }
+
+  const totalLabel =
+    comentarios.length === 0
+      ? 'Nenhum comentário ainda'
+      : comentarios.length === 1
+        ? '1 comentário'
+        : `${comentarios.length} comentários`
+
   return (
     <section id="secao-comentarios" className="scroll-mt-24 space-y-4">
-      <div className={cn('flex items-start gap-3', variant === 'book' && 'book-interaction-header')}>
+      <div className={cn('flex items-center gap-3', variant === 'book' && 'book-interaction-header')}>
         <div
           className={cn(
             'flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-primary-light text-primary',
@@ -245,51 +280,79 @@ export function ConteudoComentariosSection({
           <MessageCircle className="h-5 w-5" strokeWidth={1.75} aria-hidden />
         </div>
         <div>
-          <h2 className={cn('text-lg font-semibold text-brand-navy', variant === 'book' && 'book-interaction-title')}>
+          <h2 className={cn('text-lg font-semibold text-text', variant === 'book' && 'book-interaction-title')}>
             Comentários
           </h2>
-          <p className="text-sm text-text-muted">
-            Visíveis para todos os alunos — compartilhe o que achou da leitura.
+          <p className="text-sm text-text-muted">{totalLabel}</p>
+          <p className="mt-1 text-xs leading-relaxed text-text-muted">
+            Espaço <strong className="font-medium text-text">público</strong> — todos os alunos veem. Diferente
+            da sua reflexão, que é privada.
           </p>
         </div>
       </div>
 
-      <div className={cn(variant === 'book' ? 'book-interaction-panel space-y-3' : 'rounded-2xl border border-primary/10 bg-white/85 p-5 backdrop-blur-sm sm:p-6')}>
-          <label htmlFor="comentario-publico" className="text-sm font-medium text-text">
-            Seu comentário
-          </label>
-          <Textarea
-            id="comentario-publico"
-            rows={3}
-            value={texto}
-            onChange={(e) => setTexto(e.target.value)}
-            placeholder="O que você achou deste conteúdo?"
-          />
-          <Button size="sm" onClick={handleSave} disabled={salvar.isPending}>
-            {salvar.isPending ? (
-              <>
-                <Loader2 className="h-4 w-4 animate-spin" aria-hidden />
-                Publicando...
-              </>
-            ) : meuComentario ? (
-              'Atualizar comentário'
-            ) : (
-              'Publicar comentário'
-            )}
-          </Button>
-      </div>
-
       {isLoading ? (
         <p className="text-sm text-text-muted">Carregando comentários...</p>
-      ) : outrosComentarios.length > 0 ? (
-        <div className="space-y-3">
-          {outrosComentarios.map((c) => (
-            <ComentarioPublicoCard key={c.id} comentario={c} variant={variant} />
+      ) : comentariosOrdenados.length > 0 ? (
+        <ul className="divide-y divide-border rounded-2xl border border-border bg-elevated-muted">
+          {comentariosOrdenados.map((c) => (
+            <li key={c.id}>
+              <ComentarioPublicoCard
+                comentario={c}
+                variant={variant}
+                isMine={c.usuario_id === usuarioId}
+                editando={editandoId === c.id}
+                editTexto={editTexto}
+                onEditTexto={setEditTexto}
+                onIniciarEdicao={() => iniciarEdicao(c)}
+                onCancelarEdicao={cancelarEdicao}
+                onSalvarEdicao={handleSalvarEdicao}
+                salvando={salvar.isPending}
+              />
+            </li>
           ))}
-        </div>
+        </ul>
       ) : (
-        <p className="text-sm text-text-muted">Seja o primeiro a comentar.</p>
+        <p className="py-4 text-center text-sm text-text-muted">
+          Ninguém comentou ainda. Seja o primeiro!
+        </p>
       )}
+
+      <div
+        className={cn(
+          'flex flex-col gap-3 border-t border-border pt-4 sm:flex-row sm:items-end',
+          variant === 'book' && 'book-interaction-panel border-t-primary/10 pt-5',
+        )}
+      >
+        <div className="min-w-0 flex-1">
+          <label htmlFor="comentario-novo" className="sr-only">
+            Escrever comentário público
+          </label>
+          <Textarea
+            id="comentario-novo"
+            rows={2}
+            value={novoTexto}
+            onChange={(e) => setNovoTexto(e.target.value)}
+            placeholder="Escreva um comentário..."
+            className="min-h-[72px] resize-none"
+          />
+        </div>
+        <Button
+          size="sm"
+          className="shrink-0 sm:mb-0.5"
+          onClick={handlePublicar}
+          disabled={salvar.isPending || !usuarioId || !novoTexto.trim()}
+        >
+          {salvar.isPending ? (
+            <>
+              <Loader2 className="h-4 w-4 animate-spin" aria-hidden />
+              Publicando...
+            </>
+          ) : (
+            'Publicar'
+          )}
+        </Button>
+      </div>
     </section>
   )
 }
@@ -297,27 +360,83 @@ export function ConteudoComentariosSection({
 function ComentarioPublicoCard({
   comentario,
   variant = 'default',
+  isMine = false,
+  editando = false,
+  editTexto = '',
+  onEditTexto,
+  onIniciarEdicao,
+  onCancelarEdicao,
+  onSalvarEdicao,
+  salvando = false,
 }: {
   comentario: InteracaoComAutor
   variant?: 'default' | 'book'
+  isMine?: boolean
+  editando?: boolean
+  editTexto?: string
+  onEditTexto?: (v: string) => void
+  onIniciarEdicao?: () => void
+  onCancelarEdicao?: () => void
+  onSalvarEdicao?: () => void
+  salvando?: boolean
 }) {
-  const nome = comentario.profiles?.nome?.split(' ')[0] ?? 'Aluno'
-  const data = new Date(comentario.created_at).toLocaleDateString('pt-BR', {
-    day: '2-digit',
-    month: 'short',
-  })
+  const nomeCompleto = comentario.profiles?.nome ?? 'Aluno'
+  const nome = nomeCompleto.split(' ')[0]
+  const relativo = formatRelativeTime(comentario.created_at)
 
   return (
-    <div className={cn(variant === 'book' ? 'book-comment-bubble' : 'rounded-2xl border border-primary/8 bg-white/80 p-4 sm:p-5')}>
-        <div className="flex items-center justify-between gap-2">
-          <p className="text-sm font-semibold text-text">{nome}</p>
-          <time className="text-xs text-text-muted" dateTime={comentario.created_at}>
-            {data}
-          </time>
+    <article
+      className={cn(
+        'px-4 py-4 sm:px-5',
+        variant === 'book' && 'book-comment-bubble mx-0 border-0 bg-transparent',
+      )}
+    >
+      <div className="flex gap-3">
+        <Avatar name={nomeCompleto} className="h-8 w-8 shrink-0 text-[10px]" />
+        <div className="min-w-0 flex-1">
+          <div className="flex flex-wrap items-baseline gap-x-2 gap-y-0.5">
+            <p className="text-sm font-semibold text-text">{nome}</p>
+            <time className="text-xs text-text-muted" dateTime={comentario.created_at}>
+              {relativo}
+            </time>
+          </div>
+
+          {editando ? (
+            <div className="mt-2 space-y-2">
+              <Textarea
+                rows={2}
+                value={editTexto}
+                onChange={(e) => onEditTexto?.(e.target.value)}
+                className="min-h-[72px] resize-none"
+                aria-label="Editar comentário"
+              />
+              <div className="flex gap-2">
+                <Button size="sm" onClick={onSalvarEdicao} disabled={salvando}>
+                  {salvando ? 'Salvando...' : 'Salvar'}
+                </Button>
+                <Button size="sm" variant="outline" onClick={onCancelarEdicao} disabled={salvando}>
+                  Cancelar
+                </Button>
+              </div>
+            </div>
+          ) : (
+            <>
+              <p className="mt-1 whitespace-pre-wrap text-sm leading-relaxed text-text">
+                {comentario.texto}
+              </p>
+              {isMine && (
+                <button
+                  type="button"
+                  onClick={onIniciarEdicao}
+                  className="mt-2 text-xs font-semibold text-text-muted transition-colors hover:text-primary"
+                >
+                  Editar
+                </button>
+              )}
+            </>
+          )}
         </div>
-        <p className="mt-2 whitespace-pre-wrap text-sm leading-relaxed text-text-muted">
-          {comentario.texto}
-        </p>
-    </div>
+      </div>
+    </article>
   )
 }

@@ -35,12 +35,8 @@ import { Button } from '@/components/ui/Button'
 import { Card, CardContent } from '@/components/ui/Card'
 import { Skeleton } from '@/components/ui/Skeleton'
 import { TIPO_CONTEUDO_LABEL, TIPO_MATERIAL_LABEL } from '@/lib/labels'
+import { STATUS_LEITURA_LABEL } from '@/lib/leituraLabels'
 import { cn } from '@/lib/utils'
-
-const STATUS_LEITURA_LABEL: Record<StatusLeitura, string> = {
-  em_andamento: 'Em andamento',
-  concluido: 'Concluída',
-}
 
 const TIPO_META: Record<TipoConteudo, { icon: typeof BookMarked; tint: string }> = {
   livro: { icon: BookMarked, tint: 'from-primary-light/90 to-white' },
@@ -68,9 +64,12 @@ export function AppConteudoDetailPage({ conteudoId }: AppConteudoDetailPageProps
   const handleLeitura = async (status: StatusLeitura, irParaTexto = false) => {
     try {
       await atualizarLeitura.mutateAsync(status)
-      toast.success(
-        status === 'concluido' ? 'Leitura marcada como concluída' : 'Leitura iniciada',
-      )
+      const messages: Record<StatusLeitura, string> = {
+        em_andamento: 'Leitura iniciada',
+        na_lista: 'Adicionado à sua lista de leitura',
+        concluido: 'Leitura marcada como concluída',
+      }
+      toast.success(messages[status])
       if (irParaTexto || status === 'em_andamento') {
         setTimeout(scrollToConteudoTexto, 150)
       }
@@ -332,6 +331,9 @@ function LeituraPanel({
           )}
           {!isPending && !isLoading && status === 'em_andamento' && (
             <>
+              <Badge variant="accent" className="self-center px-3 py-1 text-primary">
+                Em andamento
+              </Badge>
               {temTexto && (
                 <Button variant="outline" size="sm" onClick={onIrParaTexto}>
                   Ir para o texto
@@ -342,10 +344,23 @@ function LeituraPanel({
               </Button>
             </>
           )}
+          {!isPending && !isLoading && status === 'na_lista' && (
+            <>
+              <Badge variant="outline" className="self-center px-3 py-1">
+                Na lista
+              </Badge>
+              <Button size="sm" onClick={() => onUpdate('em_andamento', true)}>
+                Iniciar leitura
+              </Button>
+            </>
+          )}
           {!isPending && !isLoading && !status && (
             <>
               <Button size="sm" onClick={() => onUpdate('em_andamento', true)}>
                 Iniciar leitura
+              </Button>
+              <Button variant="outline" size="sm" onClick={() => onUpdate('na_lista')}>
+                Salvar para depois
               </Button>
               <Button variant="secondary" size="sm" onClick={() => onUpdate('concluido')}>
                 Já li

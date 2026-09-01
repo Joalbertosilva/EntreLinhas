@@ -26,12 +26,10 @@ import { scrollToConteudoTexto, useMinhaCurtida, useToggleCurtida } from '@/feat
 import { Badge } from '@/components/ui/Badge'
 import { Button } from '@/components/ui/Button'
 import { TIPO_MATERIAL_LABEL } from '@/lib/labels'
+import { STATUS_LEITURA_LABEL } from '@/lib/leituraLabels'
 import { cn } from '@/lib/utils'
 
-const STATUS_LABEL: Record<StatusLeitura, string> = {
-  em_andamento: 'Em andamento',
-  concluido: 'Concluída',
-}
+const STATUS_LABEL = STATUS_LEITURA_LABEL
 
 interface LivroDetailPageProps {
   conteudo: Conteudo
@@ -90,7 +88,7 @@ export function LivroDetailPage({
           className="book-back-link inline-flex items-center gap-2 text-sm font-medium text-primary/90 transition-colors hover:text-primary"
         >
           <ArrowLeft className="h-4 w-4" aria-hidden />
-          Voltar aos livros
+          Voltar
         </Link>
 
         <BookHero
@@ -306,7 +304,7 @@ function BookLeituraActions({
   if (status === 'em_andamento') {
     return (
       <div className="flex flex-wrap items-center justify-center gap-2 lg:justify-start">
-        <span className="text-xs font-medium uppercase tracking-wide text-primary/80">
+        <span className="text-xs font-semibold uppercase tracking-wide text-primary">
           {STATUS_LABEL.em_andamento}
         </span>
         {temTexto && (
@@ -322,11 +320,28 @@ function BookLeituraActions({
     )
   }
 
+  if (status === 'na_lista') {
+    return (
+      <div className="flex flex-wrap items-center justify-center gap-2 lg:justify-start">
+        <Badge variant="accent" className="rounded-full px-3 py-1">
+          {STATUS_LABEL.na_lista}
+        </Badge>
+        <Button size="lg" className="book-cta-primary rounded-full px-8" onClick={() => onLeitura('em_andamento', true)}>
+          <BookOpen className="h-4 w-4" aria-hidden />
+          Iniciar leitura
+        </Button>
+      </div>
+    )
+  }
+
   return (
     <div className="flex flex-wrap items-center justify-center gap-2 lg:justify-start">
       <Button size="lg" className="book-cta-primary rounded-full px-8" onClick={() => onLeitura('em_andamento', true)}>
         <BookOpen className="h-4 w-4" aria-hidden />
         Iniciar leitura
+      </Button>
+      <Button variant="outline" size="sm" className="rounded-full" onClick={() => onLeitura('na_lista')}>
+        Salvar para depois
       </Button>
       <Button variant="ghost" size="sm" className="rounded-full text-text-muted" onClick={() => onLeitura('concluido')}>
         Já li

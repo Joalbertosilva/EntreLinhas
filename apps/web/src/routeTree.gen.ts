@@ -19,17 +19,21 @@ import { Route as AdminIndexRouteImport } from './routes/admin/index'
 import { Route as AdminAlunosRouteImport } from './routes/admin/alunos'
 import { Route as AdminAuditoriaRouteImport } from './routes/admin/auditoria'
 import { Route as AdminConteudosRouteImport } from './routes/admin/conteudos'
+import { Route as AdminObrasRouteImport } from './routes/admin/obras'
 import { Route as AdminPerfilRouteImport } from './routes/admin/perfil'
 import { Route as AdminRequerimentosSenhaRouteImport } from './routes/admin/requerimentos-senha'
 import { Route as AdminUsuariosRouteImport } from './routes/admin/usuarios'
 import { Route as AppIndexRouteImport } from './routes/app/index'
 import { Route as AppCronicasRouteImport } from './routes/app/cronicas'
 import { Route as AppLivrosRouteImport } from './routes/app/livros'
+import { Route as AppMinhaObraRouteImport } from './routes/app/minha-obra'
+import { Route as AppMinhasLeiturasRouteImport } from './routes/app/minhas-leituras'
 import { Route as AppMusicasRouteImport } from './routes/app/musicas'
 import { Route as AppPerfilRouteImport } from './routes/app/perfil'
 import { Route as AppPoemasRouteImport } from './routes/app/poemas'
 import { Route as AdminConteudosConteudoIdRouteImport } from './routes/admin/conteudos.$conteudoId'
 import { Route as AppConteudosConteudoIdRouteImport } from './routes/app/conteudos.$conteudoId'
+import { Route as AppObrasObraIdRouteImport } from './routes/app/obras.$obraId'
 import { Route as AppPerfilSenhaRouteImport } from './routes/app/perfil.senha'
 
 const IndexRoute = IndexRouteImport.update({
@@ -82,6 +86,11 @@ const AdminConteudosRoute = AdminConteudosRouteImport.update({
   path: '/conteudos',
   getParentRoute: () => AdminRouteRoute,
 } as any)
+const AdminObrasRoute = AdminObrasRouteImport.update({
+  id: '/obras',
+  path: '/obras',
+  getParentRoute: () => AdminRouteRoute,
+} as any)
 const AdminPerfilRoute = AdminPerfilRouteImport.update({
   id: '/perfil',
   path: '/perfil',
@@ -112,6 +121,16 @@ const AppLivrosRoute = AppLivrosRouteImport.update({
   path: '/livros',
   getParentRoute: () => AppRouteRoute,
 } as any)
+const AppMinhaObraRoute = AppMinhaObraRouteImport.update({
+  id: '/minha-obra',
+  path: '/minha-obra',
+  getParentRoute: () => AppRouteRoute,
+} as any)
+const AppMinhasLeiturasRoute = AppMinhasLeiturasRouteImport.update({
+  id: '/minhas-leituras',
+  path: '/minhas-leituras',
+  getParentRoute: () => AppRouteRoute,
+} as any)
 const AppMusicasRoute = AppMusicasRouteImport.update({
   id: '/musicas',
   path: '/musicas',
@@ -138,6 +157,11 @@ const AppConteudosConteudoIdRoute = AppConteudosConteudoIdRouteImport.update({
   path: '/conteudos/$conteudoId',
   getParentRoute: () => AppRouteRoute,
 } as any)
+const AppObrasObraIdRoute = AppObrasObraIdRouteImport.update({
+  id: '/obras/$obraId',
+  path: '/obras/$obraId',
+  getParentRoute: () => AppRouteRoute,
+} as any)
 const AppPerfilSenhaRoute = AppPerfilSenhaRouteImport.update({
   id: '/senha',
   path: '/senha',
@@ -154,11 +178,14 @@ export interface FileRoutesByFullPath {
   '/admin/alunos': typeof AdminAlunosRoute
   '/admin/auditoria': typeof AdminAuditoriaRoute
   '/admin/conteudos': typeof AdminConteudosRouteWithChildren
+  '/admin/obras': typeof AdminObrasRoute
   '/admin/perfil': typeof AdminPerfilRoute
   '/admin/requerimentos-senha': typeof AdminRequerimentosSenhaRoute
   '/admin/usuarios': typeof AdminUsuariosRoute
   '/app/cronicas': typeof AppCronicasRoute
   '/app/livros': typeof AppLivrosRoute
+  '/app/minha-obra': typeof AppMinhaObraRoute
+  '/app/minhas-leituras': typeof AppMinhasLeiturasRoute
   '/app/musicas': typeof AppMusicasRoute
   '/app/perfil': typeof AppPerfilRouteWithChildren
   '/app/poemas': typeof AppPoemasRoute
@@ -166,6 +193,7 @@ export interface FileRoutesByFullPath {
   '/app/': typeof AppIndexRoute
   '/admin/conteudos/$conteudoId': typeof AdminConteudosConteudoIdRoute
   '/app/conteudos/$conteudoId': typeof AppConteudosConteudoIdRoute
+  '/app/obras/$obraId': typeof AppObrasObraIdRoute
   '/app/perfil/senha': typeof AppPerfilSenhaRoute
 }
 export interface FileRoutesByTo {
@@ -176,11 +204,14 @@ export interface FileRoutesByTo {
   '/admin/alunos': typeof AdminAlunosRoute
   '/admin/auditoria': typeof AdminAuditoriaRoute
   '/admin/conteudos': typeof AdminConteudosRouteWithChildren
+  '/admin/obras': typeof AdminObrasRoute
   '/admin/perfil': typeof AdminPerfilRoute
   '/admin/requerimentos-senha': typeof AdminRequerimentosSenhaRoute
   '/admin/usuarios': typeof AdminUsuariosRoute
   '/app/cronicas': typeof AppCronicasRoute
   '/app/livros': typeof AppLivrosRoute
+  '/app/minha-obra': typeof AppMinhaObraRoute
+  '/app/minhas-leituras': typeof AppMinhasLeiturasRoute
   '/app/musicas': typeof AppMusicasRoute
   '/app/perfil': typeof AppPerfilRouteWithChildren
   '/app/poemas': typeof AppPoemasRoute
@@ -188,6 +219,7 @@ export interface FileRoutesByTo {
   '/app': typeof AppIndexRoute
   '/admin/conteudos/$conteudoId': typeof AdminConteudosConteudoIdRoute
   '/app/conteudos/$conteudoId': typeof AppConteudosConteudoIdRoute
+  '/app/obras/$obraId': typeof AppObrasObraIdRoute
   '/app/perfil/senha': typeof AppPerfilSenhaRoute
 }
 export interface FileRoutesById {
@@ -201,11 +233,14 @@ export interface FileRoutesById {
   '/admin/alunos': typeof AdminAlunosRoute
   '/admin/auditoria': typeof AdminAuditoriaRoute
   '/admin/conteudos': typeof AdminConteudosRouteWithChildren
+  '/admin/obras': typeof AdminObrasRoute
   '/admin/perfil': typeof AdminPerfilRoute
   '/admin/requerimentos-senha': typeof AdminRequerimentosSenhaRoute
   '/admin/usuarios': typeof AdminUsuariosRoute
   '/app/cronicas': typeof AppCronicasRoute
   '/app/livros': typeof AppLivrosRoute
+  '/app/minha-obra': typeof AppMinhaObraRoute
+  '/app/minhas-leituras': typeof AppMinhasLeiturasRoute
   '/app/musicas': typeof AppMusicasRoute
   '/app/perfil': typeof AppPerfilRouteWithChildren
   '/app/poemas': typeof AppPoemasRoute
@@ -213,6 +248,7 @@ export interface FileRoutesById {
   '/app/': typeof AppIndexRoute
   '/admin/conteudos/$conteudoId': typeof AdminConteudosConteudoIdRoute
   '/app/conteudos/$conteudoId': typeof AppConteudosConteudoIdRoute
+  '/app/obras/$obraId': typeof AppObrasObraIdRoute
   '/app/perfil/senha': typeof AppPerfilSenhaRoute
 }
 export interface FileRouteTypes {
@@ -227,11 +263,14 @@ export interface FileRouteTypes {
     | '/admin/alunos'
     | '/admin/auditoria'
     | '/admin/conteudos'
+    | '/admin/obras'
     | '/admin/perfil'
     | '/admin/requerimentos-senha'
     | '/admin/usuarios'
     | '/app/cronicas'
     | '/app/livros'
+    | '/app/minha-obra'
+    | '/app/minhas-leituras'
     | '/app/musicas'
     | '/app/perfil'
     | '/app/poemas'
@@ -239,6 +278,7 @@ export interface FileRouteTypes {
     | '/app/'
     | '/admin/conteudos/$conteudoId'
     | '/app/conteudos/$conteudoId'
+    | '/app/obras/$obraId'
     | '/app/perfil/senha'
   fileRoutesByTo: FileRoutesByTo
   to:
@@ -249,11 +289,14 @@ export interface FileRouteTypes {
     | '/admin/alunos'
     | '/admin/auditoria'
     | '/admin/conteudos'
+    | '/admin/obras'
     | '/admin/perfil'
     | '/admin/requerimentos-senha'
     | '/admin/usuarios'
     | '/app/cronicas'
     | '/app/livros'
+    | '/app/minha-obra'
+    | '/app/minhas-leituras'
     | '/app/musicas'
     | '/app/perfil'
     | '/app/poemas'
@@ -261,6 +304,7 @@ export interface FileRouteTypes {
     | '/app'
     | '/admin/conteudos/$conteudoId'
     | '/app/conteudos/$conteudoId'
+    | '/app/obras/$obraId'
     | '/app/perfil/senha'
   id:
     | '__root__'
@@ -273,11 +317,14 @@ export interface FileRouteTypes {
     | '/admin/alunos'
     | '/admin/auditoria'
     | '/admin/conteudos'
+    | '/admin/obras'
     | '/admin/perfil'
     | '/admin/requerimentos-senha'
     | '/admin/usuarios'
     | '/app/cronicas'
     | '/app/livros'
+    | '/app/minha-obra'
+    | '/app/minhas-leituras'
     | '/app/musicas'
     | '/app/perfil'
     | '/app/poemas'
@@ -285,6 +332,7 @@ export interface FileRouteTypes {
     | '/app/'
     | '/admin/conteudos/$conteudoId'
     | '/app/conteudos/$conteudoId'
+    | '/app/obras/$obraId'
     | '/app/perfil/senha'
   fileRoutesById: FileRoutesById
 }
@@ -369,6 +417,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AdminConteudosRouteImport
       parentRoute: typeof AdminRouteRoute
     }
+    '/admin/obras': {
+      id: '/admin/obras'
+      path: '/obras'
+      fullPath: '/admin/obras'
+      preLoaderRoute: typeof AdminObrasRouteImport
+      parentRoute: typeof AdminRouteRoute
+    }
     '/admin/perfil': {
       id: '/admin/perfil'
       path: '/perfil'
@@ -411,6 +466,20 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AppLivrosRouteImport
       parentRoute: typeof AppRouteRoute
     }
+    '/app/minha-obra': {
+      id: '/app/minha-obra'
+      path: '/minha-obra'
+      fullPath: '/app/minha-obra'
+      preLoaderRoute: typeof AppMinhaObraRouteImport
+      parentRoute: typeof AppRouteRoute
+    }
+    '/app/minhas-leituras': {
+      id: '/app/minhas-leituras'
+      path: '/minhas-leituras'
+      fullPath: '/app/minhas-leituras'
+      preLoaderRoute: typeof AppMinhasLeiturasRouteImport
+      parentRoute: typeof AppRouteRoute
+    }
     '/app/musicas': {
       id: '/app/musicas'
       path: '/musicas'
@@ -446,6 +515,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AppConteudosConteudoIdRouteImport
       parentRoute: typeof AppRouteRoute
     }
+    '/app/obras/$obraId': {
+      id: '/app/obras/$obraId'
+      path: '/obras/$obraId'
+      fullPath: '/app/obras/$obraId'
+      preLoaderRoute: typeof AppObrasObraIdRouteImport
+      parentRoute: typeof AppRouteRoute
+    }
     '/app/perfil/senha': {
       id: '/app/perfil/senha'
       path: '/senha'
@@ -472,6 +548,7 @@ interface AdminRouteRouteChildren {
   AdminAlunosRoute: typeof AdminAlunosRoute
   AdminAuditoriaRoute: typeof AdminAuditoriaRoute
   AdminConteudosRoute: typeof AdminConteudosRouteWithChildren
+  AdminObrasRoute: typeof AdminObrasRoute
   AdminPerfilRoute: typeof AdminPerfilRoute
   AdminRequerimentosSenhaRoute: typeof AdminRequerimentosSenhaRoute
   AdminUsuariosRoute: typeof AdminUsuariosRoute
@@ -482,6 +559,7 @@ const AdminRouteRouteChildren: AdminRouteRouteChildren = {
   AdminAlunosRoute: AdminAlunosRoute,
   AdminAuditoriaRoute: AdminAuditoriaRoute,
   AdminConteudosRoute: AdminConteudosRouteWithChildren,
+  AdminObrasRoute: AdminObrasRoute,
   AdminPerfilRoute: AdminPerfilRoute,
   AdminRequerimentosSenhaRoute: AdminRequerimentosSenhaRoute,
   AdminUsuariosRoute: AdminUsuariosRoute,
@@ -507,21 +585,27 @@ const AppPerfilRouteWithChildren = AppPerfilRoute._addFileChildren(
 interface AppRouteRouteChildren {
   AppCronicasRoute: typeof AppCronicasRoute
   AppLivrosRoute: typeof AppLivrosRoute
+  AppMinhaObraRoute: typeof AppMinhaObraRoute
+  AppMinhasLeiturasRoute: typeof AppMinhasLeiturasRoute
   AppMusicasRoute: typeof AppMusicasRoute
   AppPerfilRoute: typeof AppPerfilRouteWithChildren
   AppPoemasRoute: typeof AppPoemasRoute
   AppIndexRoute: typeof AppIndexRoute
   AppConteudosConteudoIdRoute: typeof AppConteudosConteudoIdRoute
+  AppObrasObraIdRoute: typeof AppObrasObraIdRoute
 }
 
 const AppRouteRouteChildren: AppRouteRouteChildren = {
   AppCronicasRoute: AppCronicasRoute,
   AppLivrosRoute: AppLivrosRoute,
+  AppMinhaObraRoute: AppMinhaObraRoute,
+  AppMinhasLeiturasRoute: AppMinhasLeiturasRoute,
   AppMusicasRoute: AppMusicasRoute,
   AppPerfilRoute: AppPerfilRouteWithChildren,
   AppPoemasRoute: AppPoemasRoute,
   AppIndexRoute: AppIndexRoute,
   AppConteudosConteudoIdRoute: AppConteudosConteudoIdRoute,
+  AppObrasObraIdRoute: AppObrasObraIdRoute,
 }
 
 const AppRouteRouteWithChildren = AppRouteRoute._addFileChildren(

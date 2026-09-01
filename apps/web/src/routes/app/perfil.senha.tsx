@@ -29,7 +29,10 @@ function AlterarSenhaPage() {
   })
 
   const onSubmit = async (data: ChangePasswordInput) => {
-    if (!profile) return
+    if (!profile) {
+      toast.error('Perfil não carregado. Atualize a página e tente novamente.')
+      return
+    }
 
     const email = nomeUsuarioToAuthEmail(profile.nome_usuario)
     const { error: authError } = await supabase.auth.signInWithPassword({
@@ -79,7 +82,14 @@ function AlterarSenhaPage() {
       <ScrollReveal delayMs={80}>
         <Card className="border-primary/10 bg-white/85 backdrop-blur-sm">
           <CardContent className="p-6">
-            <form onSubmit={handleSubmit(onSubmit)} className="space-y-4" noValidate>
+            <form
+              onSubmit={handleSubmit(
+                onSubmit,
+                () => toast.error('Verifique os campos — a senha nova precisa ter no mínimo 8 caracteres'),
+              )}
+              className="space-y-4"
+              noValidate
+            >
               <FormField
                 label="Senha atual"
                 htmlFor="senha_atual"

@@ -23,6 +23,8 @@ export {
 } from './useConteudos'
 export {
   APP_NAV_MAIN,
+  APP_NAV_HEADER,
+  APP_NAV_SECTIONS,
   APP_NAV_ACCOUNT,
   getAppRouteForTipo,
   getNavItem,

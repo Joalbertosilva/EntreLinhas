@@ -16,7 +16,7 @@ export function AppSidebar({ pathname, isStaff, onSignOut }: AppSidebarProps) {
 
   return (
     <aside
-      className="hidden lg:sticky lg:top-0 lg:flex lg:h-screen lg:w-[17.5rem] lg:shrink-0 lg:flex-col lg:border-r lg:border-primary/10 lg:bg-white/90 lg:backdrop-blur-md"
+      className="hidden lg:sticky lg:top-0 lg:flex lg:h-screen lg:w-[17.5rem] lg:shrink-0 lg:flex-col lg:border-r lg:border-primary/10 lg:bg-elevated-muted lg:backdrop-blur-md"
       aria-label="Navegação principal"
     >
       <div className="flex items-center gap-3 border-b border-border px-5 py-5">

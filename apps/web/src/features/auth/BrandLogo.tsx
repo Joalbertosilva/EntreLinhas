@@ -19,7 +19,7 @@ export function BrandLogo({ className, variant = 'full' }: BrandLogoProps) {
       <div
         className={cn(
           'flex h-10 w-10 shrink-0 items-center justify-center rounded-xl',
-          'bg-white p-2 shadow-[var(--shadow-soft)] ring-1 ring-primary/10',
+          'bg-elevated p-2 shadow-[var(--shadow-soft)] ring-1 ring-primary/10',
           className,
         )}
         aria-hidden

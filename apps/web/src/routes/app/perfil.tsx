@@ -1,4 +1,4 @@
-import { createFileRoute, Link, useRouter } from '@tanstack/react-router'
+import { createFileRoute, Link, Outlet, useRouter, useRouterState } from '@tanstack/react-router'
 import { ChevronRight, LayoutDashboard, Lock, LogOut } from 'lucide-react'
 import { ScrollReveal, SectionIcon } from '@/features/app'
 import { useAuth } from '@/features/auth/AuthProvider'
@@ -6,8 +6,14 @@ import { Card, CardContent } from '@/components/ui/Card'
 import { cn } from '@/lib/utils'
 
 export const Route = createFileRoute('/app/perfil')({
-  component: AppPerfilPage,
+  component: PerfilRoute,
 })
+
+function PerfilRoute() {
+  const pathname = useRouterState({ select: (s) => s.location.pathname })
+  if (pathname.startsWith('/app/perfil/')) return <Outlet />
+  return <AppPerfilPage />
+}
 
 const PERFIL_LABEL = {
   administrador: 'Administrador',
@@ -76,6 +82,7 @@ function AppPerfilPage() {
               icon={<Lock className="h-4 w-4 text-primary" aria-hidden />}
               label="Alterar senha"
               description="Atualize sua senha de acesso"
+              activeOptions={{ exact: false }}
             />
           </ul>
         </Card>
@@ -120,16 +127,19 @@ function ProfileMenuLink({
   icon,
   label,
   description,
+  activeOptions,
 }: {
   to: string
   icon: React.ReactNode
   label: string
   description: string
+  activeOptions?: { exact?: boolean }
 }) {
   return (
     <li>
       <Link
         to={to}
+        activeOptions={activeOptions}
         className={cn(
           'group flex items-center gap-3 px-5 py-4 transition-colors',
           'hover:bg-primary-light/40',

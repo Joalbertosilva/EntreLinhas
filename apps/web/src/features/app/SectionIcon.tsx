@@ -1,4 +1,4 @@
-import { BookMarked, Home, Music, User } from 'lucide-react'
+import { BookMarked, BookOpen, Home, Music, User } from 'lucide-react'
 import type { AppSectionId } from '@/features/app/appNavigation'
 import { cn } from '@/lib/utils'
 
@@ -26,6 +26,12 @@ export function SectionIcon({ section, size = 'md', className }: SectionIconProp
       return (
         <div className={cn(shell, 'bg-white ring-brand-navy/15')} aria-hidden>
           <img src="/favicon.png" alt="" className="object-contain" decoding="async" />
+        </div>
+      )
+    case 'minhas-leituras':
+      return (
+        <div className={cn(shell, 'bg-primary-light text-primary ring-primary/15')} aria-hidden>
+          <BookOpen strokeWidth={1.75} />
         </div>
       )
     case 'livros':

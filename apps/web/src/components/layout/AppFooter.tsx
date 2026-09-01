@@ -12,8 +12,8 @@ export function AppFooter() {
   const year = new Date().getFullYear()
 
   return (
-    <footer className="relative mt-auto border-t border-primary/10 bg-white/75 backdrop-blur-sm">
-      <div className="mx-auto w-full px-4 py-8 lg:px-6 lg:py-10 xl:px-8">
+    <footer className="relative mt-auto border-t border-primary/10 bg-elevated-muted backdrop-blur-sm">
+      <div className="mx-auto w-full px-5 py-8 sm:px-8 lg:px-10 lg:py-10 xl:px-14">
         <div className="flex flex-col gap-8 sm:flex-row sm:items-start sm:justify-between">
           <div className="flex max-w-sm gap-3">
             <BrandLogo variant="icon" className="h-10 w-10 shrink-0" />
