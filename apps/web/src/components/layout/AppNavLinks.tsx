@@ -129,7 +129,8 @@ function NavLinkItem({
         <SectionIcon
           section={item.id}
           size="sm"
-          className={cn(!active && 'opacity-90 group-hover:opacity-100')}
+          active={active}
+          className={cn(!active && 'opacity-92 group-hover:opacity-100')}
         />
         <span className="min-w-0">
           <span className={cn('block text-sm', active ? 'font-semibold' : 'font-medium')}>

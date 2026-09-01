@@ -1,21 +1,24 @@
+import { Link } from '@tanstack/react-router'
 import { X } from 'lucide-react'
 import { resolveSectionId } from '@/features/app/appNavigation'
+import type { Profile } from '@tcc-sistema/types'
 import { BRAND_NAME } from '@/features/auth/brand'
 import { BrandLogo } from '@/features/auth/BrandLogo'
 import { AppNavLinks } from '@/components/layout/AppNavLinks'
-import { ThemeToggle } from '@/components/ui/ThemeToggle'
+import { Avatar } from '@/components/ui/Avatar'
 import { Button } from '@/components/ui/Button'
 
 interface AppDrawerProps {
   open: boolean
   pathname: string
   isStaff: boolean
+  profile: Profile | null
   onClose: () => void
   onSignOut: () => void
 }
 
-/** Menu lateral deslizante — apenas mobile/tablet (< lg). */
-export function AppDrawer({ open, pathname, isStaff, onClose, onSignOut }: AppDrawerProps) {
+/** Menu lateral deslizante — mobile/tablet (< lg). Único menu de navegação no celular. */
+export function AppDrawer({ open, pathname, isStaff, profile, onClose, onSignOut }: AppDrawerProps) {
   const activeId = resolveSectionId(pathname)
 
   if (!open) return null
@@ -44,19 +47,31 @@ export function AppDrawer({ open, pathname, isStaff, onClose, onSignOut }: AppDr
           </Button>
         </div>
 
+        {profile && (
+          <div className="border-b border-border px-4 py-4">
+            <div className="flex items-center gap-3">
+              <Avatar name={profile.nome} className="h-10 w-10 text-xs" />
+              <div className="min-w-0">
+                <p className="truncate text-sm font-semibold text-text">{profile.nome}</p>
+                <p className="truncate text-xs text-text-muted">@{profile.nome_usuario}</p>
+              </div>
+            </div>
+            <Link
+              to="/app/perfil"
+              onClick={onClose}
+              className="mt-3 inline-flex text-sm font-medium text-primary hover:underline"
+            >
+              Minha conta
+            </Link>
+          </div>
+        )}
+
         <AppNavLinks
           activeId={activeId}
           onNavigate={onClose}
           isStaff={isStaff}
           onSignOut={onSignOut}
         />
-
-        <div className="mt-auto border-t border-border px-4 py-4">
-          <p className="mb-2 text-xs font-semibold uppercase tracking-wider text-text-muted">
-            Aparência
-          </p>
-          <ThemeToggle />
-        </div>
       </aside>
     </div>
   )

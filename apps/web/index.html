@@ -8,8 +8,8 @@
     <script>
       (function () {
         try {
-          var t = localStorage.getItem('entrelinhas-theme');
-          if (t === 'dark') document.documentElement.setAttribute('data-theme', 'dark');
+          document.documentElement.setAttribute('data-theme', 'light');
+          localStorage.setItem('entrelinhas-theme', 'light');
         } catch (e) {}
       })();
     </script>

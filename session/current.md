@@ -1,72 +1,96 @@
 # Sessão atual — tcc-sistema / EntreLinhas
 
-> Última atualização: **2026-08-31** (B5 — detalhe do conteúdo + marcar leitura)
+> Última atualização: **2026-09-01** (nuvem, Minha obra, LGPD, mobile)
 
 ## Fase atual
 
-**Fase 2c — Plataforma aluno (`/app/*`)** 🔄 **B5 concluído — próximo: interações (RF008) ou busca**
+**Fase 2d — Polimento web + qualidade** 🔄 **Próximo: busca, testes, deploy**
 
 ---
 
-## Onde paramos (resumo rápido)
+## Infraestrutura (atual)
 
-| Bloco | Situação |
-|-------|----------|
-| **A** Recuperação de senha | ✅ Funcionando ponta a ponta |
-| **B1–B3** Login aluno, layout, home, páginas por tipo, perfil, footer, setas no carrossel | ✅ |
-| **B5** Detalhe `/app/conteudos/$id` + marcar leitura | ✅ |
-| **B6+** Interações, evolução, produções… | ⏳ **Próximo passo** |
-
----
-
-## Bloco A — Recuperação de senha ✅
-
-Fluxo completo: `/esqueci-senha` → gerenciador **Recuperação de senha** → aluno loga → troca senha em **Perfil → Alterar senha**.
+| Item | Situação |
+|------|----------|
+| Supabase **nuvem** (`xiplrnkeghrsmkfmrnhh`) | ✅ Linkado, migrations + functions |
+| Comando do dia a dia | `pnpm web:dev` |
+| Admin nuvem | `admin` / `Admin@123456` |
 
 ---
 
-## Bloco B — Plataforma aluno 🔄
+## O que já está pronto ✅
 
-### Entregue
+### Plataforma aluno (`/app`)
+- Home, vitrines (livros, crônicas, músicas, poemas)
+- Detalhe de conteúdo + marcar leitura
+- Minhas leituras (andamento, lista, concluídas)
+- Minha obra (livro/crônica/poema, capítulos, capa, publicar)
+- Obras da comunidade (obras publicadas)
+- Perfil + alterar senha
+- Mobile: só menu hambúrguer
+- Tema claro fixo
 
-- Redirect: aluno → `/app`, staff → `/admin`
-- Layout: hamburger (drawer), top bar, gradiente no scroll, footer
-- Home + `/app/livros`, `/app/cronicas`, `/app/musicas`, `/app/poemas` — **conteúdos reais + placeholders**
-- `/app/conteudos/$id` — capa, texto, temas, materiais, marcar leitura (em andamento / concluída)
-- Cards clicáveis nas vitrines
-- Perfil + `/app/perfil/senha` (troca de senha separada)
-- Carrosséis: **setas** (sem barra de rolagem visível)
+### Gerenciador (`/admin`)
+- Usuários (criar, editar, redefinir senha)
+- Conteúdos, temas, materiais
+- Alunos, obras, recuperação de senha
+- Auditoria (parcial)
 
-### Próximo passo técnico — **B6**
-
-Interações (comentário / reflexão) ou busca na barra do header.
-
----
-
-## Bloco C — Depois
-
-- `deve_trocar_senha` + 1º login obrigatório
-- Página detalhe `/app/conteudos/$id`
-- Busca, evolução, produções, obras (RF008–RF012)
+### LGPD / institucional
+- `/privacidade` — política de privacidade
+- Link no rodapé e telas de login
 
 ---
 
-## Comandos dev
+## Plano de montagem — próximas entregas
+
+### Sprint 1 — Polimento visual (1–2 dias)
+- [ ] Busca funcional no header
+- [ ] Alinhar esqueci-senha / redefinir-senha ao novo login
+- [ ] Revisar responsivo em todas as telas admin
+- [ ] Deploy do site (Vercel/Netlify) apontando para nuvem
+
+### Sprint 2 — Qualidade (2–3 dias)
+- [ ] Testes Vitest nos schemas (`packages/schemas`)
+- [ ] Testes RTL em LoginForm e ContentCard
+- [ ] Atualizar `docs/validacao-requisitos.md`
+- [ ] Checklist manual `docs/gerenciador-checklist.md`
+
+### Sprint 3 — Funcionalidades pendentes
+- [ ] `deve_trocar_senha` no 1º login
+- [ ] Auditoria completa (todas ações admin)
+- [ ] Exportação de dados do aluno (LGPD)
+
+### Sprint 4 — Mobile (Fase 3)
+- [ ] Scaffold Expo `apps/mobile`
+- [ ] Login + home + leituras (paridade mínima)
+
+### Sprint 5 — TCC / entrega
+- [ ] Documentação final
+- [ ] Roteiro de demonstração
+- [ ] Revisão acessibilidade (RNF11)
+
+---
+
+## Comandos dev (nuvem)
 
 ```bash
-pnpm db:start
-pnpm db:migrate
-pnpm functions:serve   # só se testar recuperação de senha
+cd ~/Documentos/Projeto-tcc/tcc-sistema
 pnpm web:dev
 ```
 
-- Admin: `admin` / `Admin@123456`
-- Aluno: `joao.exemplo` + senha definida pelo staff
+**Raros:**
+```bash
+pnpm supabase db push          # nova migration
+pnpm supabase functions deploy # nova edge function
+pnpm web:build                 # validar build
+```
 
 ---
 
 ## Referências
 
+- `docs/mvp-scope.md` — escopo
+- `docs/security.md` — segurança e LGPD
+- `docs/validacao-requisitos.md` — matriz RF/RS (atualizar)
 - `docs/plano-plataforma-aluno.md`
-- `docs/design-system.md`
-- `docs/recuperacao-senha.md`

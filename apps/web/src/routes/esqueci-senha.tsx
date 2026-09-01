@@ -11,7 +11,6 @@ import {
   BRAND_NAME,
   ForgotPasswordForm,
   ForgotPasswordSuccess,
-  LoginBrand,
   LoginHeroPanel,
   useForgotPassword,
 } from '@/features/auth'
@@ -38,9 +37,7 @@ function ForgotPasswordPage() {
           </footer>
         }
       >
-        <div className="page-enter mx-auto w-full max-w-[400px]">
-          <LoginBrand className="mb-6 sm:max-w-[320px]" />
-
+        <div className="page-enter w-full">
           <AuthFormPanel>
             {enviado ? (
               <ForgotPasswordSuccess />

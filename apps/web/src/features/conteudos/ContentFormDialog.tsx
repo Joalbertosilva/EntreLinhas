@@ -9,6 +9,7 @@ import { TIPOS_CONTEUDO } from '@tcc-sistema/types'
 import { supabase } from '@/lib/supabase'
 import { deleteCoverByUrl, uploadCover } from '@/lib/storage'
 import { logAudit } from '@/lib/audit'
+import { invalidateConteudoCaches } from '@/lib/conteudoQueries'
 import { loadReflexaoFields, syncReflexaoTema } from '@/features/conteudos/conteudoReflexao'
 import { ReflexaoFormFields } from '@/features/conteudos/ReflexaoFormFields'
 import { emptyToNull, TIPO_CONTEUDO_LABEL } from '@/lib/labels'
@@ -196,12 +197,7 @@ export function ContentFormDialog({ open, onOpenChange, conteudo }: ContentFormD
       reset()
       setCoverFile(null)
       onOpenChange(false)
-      queryClient.invalidateQueries({ queryKey: ['conteudos'] })
-      queryClient.invalidateQueries({ queryKey: ['visao-administrativa'] })
-      if (conteudo) {
-        queryClient.invalidateQueries({ queryKey: ['conteudo', conteudo.id] })
-        queryClient.invalidateQueries({ queryKey: ['temas', conteudo.id] })
-      }
+      invalidateConteudoCaches(queryClient, result?.id ?? conteudo?.id)
     },
     onError: (err: Error) => {
       toast.error(err.message || 'Não foi possível salvar o conteúdo')

@@ -14,6 +14,7 @@ import { Route as AdminRouteRouteImport } from './routes/admin/route'
 import { Route as AppRouteRouteImport } from './routes/app/route'
 import { Route as EsqueciSenhaRouteImport } from './routes/esqueci-senha'
 import { Route as LoginRouteImport } from './routes/login'
+import { Route as PrivacidadeRouteImport } from './routes/privacidade'
 import { Route as RedefinirSenhaRouteImport } from './routes/redefinir-senha'
 import { Route as AdminIndexRouteImport } from './routes/admin/index'
 import { Route as AdminAlunosRouteImport } from './routes/admin/alunos'
@@ -59,6 +60,11 @@ const EsqueciSenhaRoute = EsqueciSenhaRouteImport.update({
 const LoginRoute = LoginRouteImport.update({
   id: '/login',
   path: '/login',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const PrivacidadeRoute = PrivacidadeRouteImport.update({
+  id: '/privacidade',
+  path: '/privacidade',
   getParentRoute: () => rootRouteImport,
 } as any)
 const RedefinirSenhaRoute = RedefinirSenhaRouteImport.update({
@@ -174,6 +180,7 @@ export interface FileRoutesByFullPath {
   '/app': typeof AppRouteRouteWithChildren
   '/esqueci-senha': typeof EsqueciSenhaRoute
   '/login': typeof LoginRoute
+  '/privacidade': typeof PrivacidadeRoute
   '/redefinir-senha': typeof RedefinirSenhaRoute
   '/admin/alunos': typeof AdminAlunosRoute
   '/admin/auditoria': typeof AdminAuditoriaRoute
@@ -200,6 +207,7 @@ export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/esqueci-senha': typeof EsqueciSenhaRoute
   '/login': typeof LoginRoute
+  '/privacidade': typeof PrivacidadeRoute
   '/redefinir-senha': typeof RedefinirSenhaRoute
   '/admin/alunos': typeof AdminAlunosRoute
   '/admin/auditoria': typeof AdminAuditoriaRoute
@@ -229,6 +237,7 @@ export interface FileRoutesById {
   '/app': typeof AppRouteRouteWithChildren
   '/esqueci-senha': typeof EsqueciSenhaRoute
   '/login': typeof LoginRoute
+  '/privacidade': typeof PrivacidadeRoute
   '/redefinir-senha': typeof RedefinirSenhaRoute
   '/admin/alunos': typeof AdminAlunosRoute
   '/admin/auditoria': typeof AdminAuditoriaRoute
@@ -259,6 +268,7 @@ export interface FileRouteTypes {
     | '/app'
     | '/esqueci-senha'
     | '/login'
+    | '/privacidade'
     | '/redefinir-senha'
     | '/admin/alunos'
     | '/admin/auditoria'
@@ -285,6 +295,7 @@ export interface FileRouteTypes {
     | '/'
     | '/esqueci-senha'
     | '/login'
+    | '/privacidade'
     | '/redefinir-senha'
     | '/admin/alunos'
     | '/admin/auditoria'
@@ -313,6 +324,7 @@ export interface FileRouteTypes {
     | '/app'
     | '/esqueci-senha'
     | '/login'
+    | '/privacidade'
     | '/redefinir-senha'
     | '/admin/alunos'
     | '/admin/auditoria'
@@ -342,6 +354,7 @@ export interface RootRouteChildren {
   AppRouteRoute: typeof AppRouteRouteWithChildren
   EsqueciSenhaRoute: typeof EsqueciSenhaRoute
   LoginRoute: typeof LoginRoute
+  PrivacidadeRoute: typeof PrivacidadeRoute
   RedefinirSenhaRoute: typeof RedefinirSenhaRoute
 }
 
@@ -380,6 +393,13 @@ declare module '@tanstack/react-router' {
       path: '/login'
       fullPath: '/login'
       preLoaderRoute: typeof LoginRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/privacidade': {
+      id: '/privacidade'
+      path: '/privacidade'
+      fullPath: '/privacidade'
+      preLoaderRoute: typeof PrivacidadeRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/redefinir-senha': {
@@ -618,6 +638,7 @@ const rootRouteChildren: RootRouteChildren = {
   AppRouteRoute: AppRouteRouteWithChildren,
   EsqueciSenhaRoute: EsqueciSenhaRoute,
   LoginRoute: LoginRoute,
+  PrivacidadeRoute: PrivacidadeRoute,
   RedefinirSenhaRoute: RedefinirSenhaRoute,
 }
 export const routeTree = rootRouteImport

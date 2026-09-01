@@ -1,18 +1,12 @@
-export type ThemeMode = 'light' | 'dark'
+export type ThemeMode = 'light'
 
 const STORAGE_KEY = 'entrelinhas-theme'
 
 export function getStoredTheme(): ThemeMode {
-  if (typeof window === 'undefined') return 'light'
-  const stored = localStorage.getItem(STORAGE_KEY)
-  return stored === 'dark' ? 'dark' : 'light'
+  return 'light'
 }
 
-export function applyTheme(mode: ThemeMode) {
-  document.documentElement.setAttribute('data-theme', mode)
-  localStorage.setItem(STORAGE_KEY, mode)
-}
-
-export function initTheme() {
-  applyTheme(getStoredTheme())
+export function applyTheme(_mode: ThemeMode = 'light') {
+  document.documentElement.setAttribute('data-theme', 'light')
+  localStorage.setItem(STORAGE_KEY, 'light')
 }

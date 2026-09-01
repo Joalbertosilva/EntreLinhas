@@ -170,7 +170,11 @@ export function ContentCarousel({
           aria-label={`Pré-visualização de ${section.title}`}
         >
           {conteudos.map((conteudo) => (
-            <ContentCard key={conteudo.id} conteudo={conteudo} showTipo={isDestaques} />
+            <ContentCard
+              key={conteudo.id}
+              conteudo={conteudo}
+              showTipo={isDestaques}
+            />
           ))}
           {Array.from({ length: placeholderCount }).map((_, i) => (
             <ContentCardPlaceholder key={`ph-${i}`} tipo={section.tipo} index={i} />

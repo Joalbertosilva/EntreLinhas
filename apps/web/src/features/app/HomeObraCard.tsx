@@ -2,18 +2,19 @@ import { Link } from '@tanstack/react-router'
 import type { TipoProducao } from '@tcc-sistema/types'
 import { BookMarked, Feather, FileText, PenLine, Quote, Sparkles } from 'lucide-react'
 import type { MinhaObraResumo } from '@/features/app/useMinhaObra'
+import { DEFAULT_OBRA_COVER } from '@/lib/obraCover'
 import { cn } from '@/lib/utils'
 
 const TIPO_META: Record<
   TipoProducao,
-  { label: string; icon: typeof BookMarked; tint: string }
+  { label: string; icon: typeof BookMarked }
 > = {
-  capitulo: { label: 'Capítulo', icon: BookMarked, tint: 'from-primary-light/90 to-white' },
-  cronica: { label: 'Crônica', icon: FileText, tint: 'from-accent-light/80 to-white' },
-  conto: { label: 'Conto', icon: Feather, tint: 'from-primary-light/75 to-accent-light/35' },
-  poema: { label: 'Poema', icon: Quote, tint: 'from-violet-100/80 to-white' },
-  reflexao: { label: 'Reflexão', icon: PenLine, tint: 'from-teal-50/90 to-white' },
-  outro: { label: 'Obra', icon: Sparkles, tint: 'from-surface to-white' },
+  capitulo: { label: 'Capítulo', icon: BookMarked },
+  cronica: { label: 'Crônica', icon: FileText },
+  conto: { label: 'Conto', icon: Feather },
+  poema: { label: 'Poema', icon: Quote },
+  reflexao: { label: 'Reflexão', icon: PenLine },
+  outro: { label: 'Obra', icon: Sparkles },
 }
 
 interface HomeObraCardProps {
@@ -21,11 +22,54 @@ interface HomeObraCardProps {
   isLoading?: boolean
 }
 
+function ObraCoverImage({
+  src,
+  alt,
+  badge,
+  tipoLabel,
+}: {
+  src: string
+  alt: string
+  badge?: string
+  tipoLabel?: string
+}) {
+  return (
+    <div
+      className={cn(
+        'home-obra-cover relative aspect-[2/3] w-full max-w-[11.5rem] overflow-hidden rounded-xl',
+        'border border-primary/12 shadow-[var(--shadow-card)]',
+        'transition-transform duration-300 group-hover:-translate-y-1 group-hover:shadow-[var(--shadow-card),0_12px_28px_rgb(0_51_102_/_0.12)]',
+      )}
+    >
+      <img src={src} alt={alt} className="h-full w-full object-cover" loading="lazy" />
+      <div
+        className="pointer-events-none absolute inset-0 bg-gradient-to-t from-brand-navy/75 via-brand-navy/15 to-transparent"
+        aria-hidden
+      />
+      {badge && (
+        <span className="absolute left-2.5 top-2.5 rounded-full bg-white/92 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-primary shadow-sm">
+          {badge}
+        </span>
+      )}
+      {tipoLabel && (
+        <span className="absolute right-2.5 top-2.5 rounded-full bg-white/92 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-text-muted shadow-sm">
+          {tipoLabel}
+        </span>
+      )}
+      <div className="absolute inset-x-0 bottom-0 p-3">
+        <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-white/90 text-primary shadow-sm">
+          <PenLine className="h-4 w-4" strokeWidth={1.75} aria-hidden />
+        </div>
+      </div>
+    </div>
+  )
+}
+
 export function HomeObraCard({ obra, isLoading }: HomeObraCardProps) {
   if (isLoading) {
     return (
-      <div className="home-obra-card home-obra-card-skeleton animate-pulse">
-        <div className="aspect-[4/3] rounded-2xl bg-primary-light/40 sm:aspect-[16/10]" />
+      <div className="home-obra-card animate-pulse">
+        <div className="aspect-[2/3] w-full max-w-[11.5rem] rounded-xl bg-primary-light/40" />
         <div className="mt-4 h-5 w-2/3 rounded-lg bg-primary-light/50" />
         <div className="mt-2 h-4 w-1/2 rounded-lg bg-primary-light/30" />
       </div>
@@ -34,20 +78,17 @@ export function HomeObraCard({ obra, isLoading }: HomeObraCardProps) {
 
   if (!obra) {
     return (
-      <Link to="/app/minha-obra" className="home-obra-card group block no-underline">
-        <div
-          className={cn(
-            'home-obra-cover relative flex aspect-[4/3] items-center justify-center overflow-hidden rounded-2xl sm:aspect-[16/10]',
-            'border border-dashed border-primary/25 bg-gradient-to-br from-primary-light/70 to-accent-light/40',
-          )}
-        >
-          <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-elevated/90 text-primary shadow-[var(--shadow-soft)]">
-            <PenLine className="h-7 w-7" strokeWidth={1.75} aria-hidden />
-          </div>
-        </div>
+      <Link to="/app/minha-obra" className="home-obra-card group block max-w-[16rem] no-underline">
+        <ObraCoverImage
+          src={DEFAULT_OBRA_COVER}
+          alt="Ilustração de mãos escrevendo em um caderno — capa padrão da sua obra"
+          badge="Sua obra"
+        />
         <div className="mt-4">
-          <p className="text-sm font-semibold text-text group-hover:text-primary">Comece sua obra</p>
-          <p className="mt-1 text-sm text-text-muted">Livro, crônica, poema — o formato é seu.</p>
+          <p className="text-base font-semibold text-text group-hover:text-primary">Comece sua obra</p>
+          <p className="mt-1 text-sm leading-relaxed text-text-muted">
+            Livro, crônica ou poema. Depois você troca a capa por uma foto sua.
+          </p>
         </div>
       </Link>
     )
@@ -55,33 +96,19 @@ export function HomeObraCard({ obra, isLoading }: HomeObraCardProps) {
 
   const tipo = obra.ultimaProducao?.tipo ?? 'outro'
   const meta = TIPO_META[tipo]
-  const Icon = meta.icon
+  const coverSrc = obra.capa_url ?? DEFAULT_OBRA_COVER
+  const coverAlt = obra.capa_url
+    ? `Capa de ${obra.titulo}`
+    : `Capa padrão de ${obra.titulo}`
 
   return (
-    <Link to="/app/minha-obra" className="home-obra-card group block no-underline">
-      <div
-        className={cn(
-          'home-obra-cover relative aspect-[4/3] overflow-hidden rounded-2xl border border-primary/10 sm:aspect-[16/10]',
-          'bg-gradient-to-br shadow-[var(--shadow-soft)] transition-transform duration-300 group-hover:-translate-y-0.5',
-          !obra.capa_url && meta.tint,
-        )}
-      >
-        {obra.capa_url ? (
-          <img src={obra.capa_url} alt="" className="h-full w-full object-cover" loading="lazy" />
-        ) : (
-          <>
-            <div className="absolute inset-0 bg-[radial-gradient(circle_at_25%_20%,rgb(255_255_255/0.55),transparent_55%)]" />
-            <div className="absolute left-4 top-4 rounded-full bg-elevated/90 px-2.5 py-1 text-[10px] font-semibold uppercase tracking-wide text-text-muted shadow-sm">
-              {meta.label}
-            </div>
-            <div className="absolute inset-x-0 bottom-0 p-4 sm:p-5">
-              <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-elevated/90 text-primary shadow-sm">
-                <Icon className="h-5 w-5" strokeWidth={1.75} aria-hidden />
-              </div>
-            </div>
-          </>
-        )}
-      </div>
+    <Link to="/app/minha-obra" className="home-obra-card group block max-w-[16rem] no-underline">
+      <ObraCoverImage
+        src={coverSrc}
+        alt={coverAlt}
+        badge={!obra.capa_url ? 'Capa padrão' : undefined}
+        tipoLabel={meta.label}
+      />
       <div className="mt-4">
         <h3 className="line-clamp-2 text-base font-semibold leading-snug text-text group-hover:text-primary">
           {obra.titulo}
@@ -92,6 +119,9 @@ export function HomeObraCard({ obra, isLoading }: HomeObraCardProps) {
               ? `Última produção: ${obra.ultimaProducao.titulo}`
               : 'Toque para continuar escrevendo')}
         </p>
+        {!obra.capa_url && (
+          <p className="mt-2 text-xs font-medium text-primary/80">Personalize a capa em Minha obra</p>
+        )}
       </div>
     </Link>
   )

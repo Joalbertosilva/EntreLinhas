@@ -1,10 +1,11 @@
 import { createFileRoute, redirect } from '@tanstack/react-router'
 import { AdminLayout } from '@/components/layout/AdminLayout'
+import { getValidSession } from '@/lib/authSession'
 import { supabase } from '@/lib/supabase'
 
 export const Route = createFileRoute('/admin')({
   beforeLoad: async () => {
-    const { data: { session } } = await supabase.auth.getSession()
+    const session = await getValidSession()
     if (!session) throw redirect({ to: '/login' })
 
     const { data: profile } = await supabase

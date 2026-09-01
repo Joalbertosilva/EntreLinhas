@@ -11,7 +11,6 @@ import { AppFooter } from '@/components/layout/AppFooter'
 import { AppHeaderNav } from '@/components/layout/AppHeaderNav'
 import { Avatar } from '@/components/ui/Avatar'
 import { Button } from '@/components/ui/Button'
-import { ThemeToggle } from '@/components/ui/ThemeToggle'
 import { SkipLink } from '@/components/ui/SkipLink'
 import { cn } from '@/lib/utils'
 
@@ -68,8 +67,8 @@ export function AppLayout() {
           isHome ? 'app-header-bar-home' : 'app-header-bar-sticky',
         )}
       >
-        <div className="app-header-inner mx-auto flex max-w-[100rem] items-end gap-3 px-5 pb-1 pt-2 sm:px-8 lg:gap-4 lg:px-10 lg:pb-1.5 lg:pt-2.5 xl:px-14">
-          <div className="flex shrink-0 items-center gap-2 pb-1 lg:pb-1.5">
+        <div className="app-header-inner mx-auto flex max-w-[100rem] items-center gap-3 px-5 py-2 sm:px-8 lg:items-end lg:gap-4 lg:px-10 lg:pb-1.5 lg:pt-2.5 xl:px-14">
+          <div className="flex min-w-0 flex-1 items-center gap-2 lg:flex-none lg:pb-1.5">
             <Button
               variant="outline"
               size="icon"
@@ -86,13 +85,13 @@ export function AppLayout() {
               className="flex min-w-0 items-center gap-2 rounded-xl py-1 pr-1 transition-colors hover:bg-primary-light/40"
             >
               <BrandLogo variant="icon" className="h-8 w-8 sm:h-9 sm:w-9" />
-              <span className="hidden truncate text-sm font-semibold text-text sm:inline">{BRAND_NAME}</span>
+              <span className="truncate text-sm font-semibold text-text">{BRAND_NAME}</span>
             </Link>
           </div>
 
           <AppHeaderNav activeSection={activeSection} isStaff={isStaff} className="hidden flex-1 lg:flex" />
 
-          <div className="ml-auto flex shrink-0 items-center gap-2 pb-1 lg:gap-3 lg:pb-1.5">
+          <div className="hidden shrink-0 items-center gap-2 pb-1 lg:flex lg:gap-3 lg:pb-1.5">
             <label className="relative hidden md:block">
               <span className="sr-only">Pesquisar conteúdos</span>
               <Search
@@ -107,8 +106,6 @@ export function AppLayout() {
                 aria-disabled
               />
             </label>
-
-            <ThemeToggle compact />
 
             <div className="relative flex shrink-0 items-center gap-2" ref={menuRef}>
               <button
@@ -166,6 +163,7 @@ export function AppLayout() {
         open={drawerOpen}
         pathname={pathname}
         isStaff={isStaff}
+        profile={profile}
         onClose={() => setDrawerOpen(false)}
         onSignOut={handleSignOut}
       />

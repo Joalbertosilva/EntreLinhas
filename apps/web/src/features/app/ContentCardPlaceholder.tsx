@@ -1,14 +1,22 @@
 import type { TipoConteudo } from '@tcc-sistema/types'
-import { BookMarked, FileText, Music, Quote, Sparkles } from 'lucide-react'
+import type { AppSectionId } from '@/features/app/appNavigation'
+import { SectionIcon } from '@/features/app/SectionIcon'
 import { cn } from '@/lib/utils'
 
-const TIPO_META: Record<TipoConteudo, { label: string; icon: typeof BookMarked }> = {
-  livro: { label: 'Livro', icon: BookMarked },
-  cronica: { label: 'Crônica', icon: FileText },
-  poema: { label: 'Poema', icon: Quote },
-  musica: { label: 'Música', icon: Music },
-  frase: { label: 'Frase', icon: Quote },
-  outro: { label: 'Conteúdo', icon: Sparkles },
+const TIPO_SECTION: Partial<Record<TipoConteudo, AppSectionId>> = {
+  livro: 'livros',
+  cronica: 'cronicas',
+  musica: 'musicas',
+  poema: 'poemas',
+}
+
+const TIPO_LABEL: Record<TipoConteudo, string> = {
+  livro: 'Livro',
+  cronica: 'Crônica',
+  poema: 'Poema',
+  musica: 'Música',
+  frase: 'Frase',
+  outro: 'Conteúdo',
 }
 
 interface ContentCardPlaceholderProps {
@@ -17,8 +25,8 @@ interface ContentCardPlaceholderProps {
 }
 
 export function ContentCardPlaceholder({ tipo, index }: ContentCardPlaceholderProps) {
-  const meta = TIPO_META[tipo]
-  const Icon = meta.icon
+  const section = TIPO_SECTION[tipo]
+  const label = TIPO_LABEL[tipo]
 
   return (
     <article
@@ -30,30 +38,36 @@ export function ContentCardPlaceholder({ tipo, index }: ContentCardPlaceholderPr
     >
       <div
         className={cn(
-          'relative aspect-[3/4] overflow-hidden rounded-xl border border-dashed border-border',
-          'bg-gradient-to-br from-primary-light/50 to-elevated shadow-[var(--shadow-soft)]',
+          'relative aspect-[3/4] overflow-hidden rounded-xl',
+          'border-2 border-dashed border-primary/25',
+          'bg-gradient-to-br from-primary-light/35 via-white to-accent-light/20',
+          'shadow-[var(--shadow-soft)]',
         )}
       >
-        <div className="absolute left-2 top-2 z-10 rounded-md border border-border bg-elevated px-1.5 py-0.5 text-[9px] font-bold uppercase tracking-wide text-text shadow-sm">
+        <div className="absolute left-2 top-2 z-10 rounded-md border border-primary/12 bg-white/95 px-1.5 py-0.5 text-[9px] font-bold uppercase tracking-wide text-text-muted shadow-sm">
           Em breve
         </div>
-        <div className="absolute inset-x-0 bottom-0 p-3">
-          <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-elevated text-primary shadow-sm">
-            <Icon className="h-4 w-4" strokeWidth={1.75} aria-hidden />
-          </div>
+        <div className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-white/90 to-transparent p-3 pt-6">
+          {section ? (
+            <SectionIcon section={section} size="sm" className="shadow-sm opacity-90" />
+          ) : (
+            <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-white/95 text-primary/70 shadow-sm">
+              <span className="text-xs font-bold">?</span>
+            </div>
+          )}
         </div>
       </div>
       <div className="mt-2.5 space-y-1 px-0.5">
         <div
-          className="h-2.5 rounded-full bg-primary/15"
+          className="h-2.5 rounded-full bg-primary/12"
           style={{ width: `${68 + (index % 3) * 10}%` }}
         />
         <div
-          className="h-2 rounded-full bg-border/80"
+          className="h-2 rounded-full bg-primary/6"
           style={{ width: `${42 + (index % 4) * 8}%` }}
         />
         <p className="pt-0.5 text-[10px] font-medium uppercase tracking-wide text-text-muted">
-          {meta.label}
+          {label}
         </p>
       </div>
     </article>

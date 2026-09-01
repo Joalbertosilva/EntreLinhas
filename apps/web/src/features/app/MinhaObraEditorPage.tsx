@@ -33,6 +33,7 @@ import {
   TIPO_OBRA_HINT,
   TIPO_OBRA_LABEL,
 } from '@/lib/obraLabels'
+import { DEFAULT_OBRA_COVER } from '@/lib/obraCover'
 import { uploadObraCover, validateCoverFile } from '@/lib/storage'
 import { Badge } from '@/components/ui/Badge'
 import { Button } from '@/components/ui/Button'
@@ -315,10 +316,19 @@ export function MinhaObraEditorPage() {
                     {capaUrl ? (
                       <img src={capaUrl} alt="" className="h-full w-full object-cover" />
                     ) : (
-                      <div className="flex h-full flex-col items-center justify-center gap-2 p-4 text-center">
-                        <ImagePlus className="h-8 w-8 text-primary/70" strokeWidth={1.5} aria-hidden />
-                        <span className="text-xs font-semibold text-primary">Adicionar capa</span>
-                      </div>
+                      <>
+                        <img
+                          src={DEFAULT_OBRA_COVER}
+                          alt=""
+                          className="h-full w-full object-cover opacity-95"
+                        />
+                        <div className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-brand-navy/70 to-transparent p-3 pt-8">
+                          <span className="flex items-center justify-center gap-1.5 text-xs font-semibold text-white">
+                            <ImagePlus className="h-4 w-4" aria-hidden />
+                            Trocar capa
+                          </span>
+                        </div>
+                      </>
                     )}
                     <span className="minha-obra-cover-overlay">
                       {uploadingCapa ? 'Enviando…' : 'Alterar capa'}

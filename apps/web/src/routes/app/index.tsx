@@ -1,4 +1,6 @@
 import { createFileRoute } from '@tanstack/react-router'
+import { useEffect } from 'react'
+import { useQueryClient } from '@tanstack/react-query'
 import { useAuth } from '@/features/auth/AuthProvider'
 import { ContentCarousel, HOME_SECTIONS, ScrollReveal } from '@/features/app'
 import { HomeHero } from '@/features/app/HomeHero'
@@ -14,8 +16,13 @@ const CATALOG_SECTIONS = HOME_SECTIONS.filter((section) => section.id !== 'desta
 
 function AppHomePage() {
   const { profile } = useAuth()
+  const queryClient = useQueryClient()
   const firstName = profile?.nome.split(' ')[0] ?? 'Leitor'
   useHomeViewportGlow(true)
+
+  useEffect(() => {
+    void queryClient.invalidateQueries({ queryKey: ['app-conteudos'] })
+  }, [queryClient])
 
   return (
     <div className="home-page">

@@ -1,3 +1,4 @@
+export { AnimatedBrandWordmark } from './AnimatedBrandWordmark'
 export { AuthBackLink } from './AuthBackLink'
 export { AuthField } from './AuthField'
 export { AuthFormPanel } from './AuthFormPanel'

@@ -19,6 +19,7 @@ import { TIPOS_CONTEUDO } from '@tcc-sistema/types'
 import { supabase } from '@/lib/supabase'
 import { deleteCoverByUrl } from '@/lib/storage'
 import { logAudit } from '@/lib/audit'
+import { invalidateConteudoCaches } from '@/lib/conteudoQueries'
 import { ContentFormDialog } from '@/features/conteudos/ContentFormDialog'
 import { PageHeader } from '@/components/layout/PageHeader'
 import { Badge } from '@/components/ui/Badge'
@@ -92,8 +93,7 @@ function ConteudosPage() {
       })
       toast.success('Conteúdo excluído')
       setDeleting(null)
-      queryClient.invalidateQueries({ queryKey: ['conteudos'] })
-      queryClient.invalidateQueries({ queryKey: ['visao-administrativa'] })
+      invalidateConteudoCaches(queryClient, item.id)
     },
     onError: () => toast.error('Não foi possível excluir o conteúdo'),
   })
@@ -106,10 +106,9 @@ function ConteudosPage() {
         .eq('id', id)
       if (error) throw error
     },
-    onSuccess: (_, { status }) => {
+    onSuccess: (_, { id, status }) => {
       toast.success(status ? 'Conteúdo desativado' : 'Conteúdo reativado')
-      queryClient.invalidateQueries({ queryKey: ['conteudos'] })
-      queryClient.invalidateQueries({ queryKey: ['visao-administrativa'] })
+      invalidateConteudoCaches(queryClient, id)
     },
     onError: () => toast.error('Não foi possível atualizar o status'),
   })

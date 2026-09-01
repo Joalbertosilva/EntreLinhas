@@ -7,7 +7,6 @@ import {
   AuthPageHeader,
   BRAND_INSTITUTION,
   BRAND_NAME,
-  LoginBrand,
   LoginForm,
   LoginHeroPanel,
   useLogin,
@@ -35,9 +34,7 @@ function LoginPage() {
           </footer>
         }
       >
-        <div className="page-enter mx-auto w-full max-w-[400px]">
-          <LoginBrand className="mb-6 sm:max-w-[320px]" />
-
+        <div className="page-enter w-full">
           <AuthFormPanel className="space-y-5">
             <AuthPageHeader
               title="Entrar"

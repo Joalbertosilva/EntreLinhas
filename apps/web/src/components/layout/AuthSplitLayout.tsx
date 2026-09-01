@@ -22,7 +22,7 @@ export function AuthSplitLayout({ hero, children, footer, className }: AuthSplit
         className="flex flex-1 flex-col bg-login-form lg:min-w-0 lg:w-1/2"
       >
         <div className="flex flex-1 flex-col justify-center px-5 py-8 sm:px-10 lg:px-12 xl:px-16">
-          {children}
+          <div className="login-form-wrap mx-auto w-full max-w-[420px]">{children}</div>
         </div>
         {footer}
       </main>

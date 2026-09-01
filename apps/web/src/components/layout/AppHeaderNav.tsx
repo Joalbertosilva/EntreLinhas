@@ -1,7 +1,8 @@
 import { Link } from '@tanstack/react-router'
-import { LayoutDashboard } from 'lucide-react'
+import { useState } from 'react'
 import { APP_NAV_HEADER, type AppSectionId } from '@/features/app/appNavigation'
 import { SectionIcon } from '@/features/app/SectionIcon'
+import { useSlidingIndicator } from '@/hooks/useSlidingIndicator'
 import { cn } from '@/lib/utils'
 
 interface AppHeaderNavProps {
@@ -22,27 +23,51 @@ export function AppHeaderNav({
     : []
 
   const items = [...APP_NAV_HEADER, ...staffNav]
+  const indicatorActiveId = items.some((item) => item.id === activeSection) ? activeSection : null
+  const [hoveredId, setHoveredId] = useState<string | null>(null)
+  const indicatorTargetId = hoveredId ?? indicatorActiveId
+  const isHovering = hoveredId != null
+
+  const { containerRef, register, rect } = useSlidingIndicator(indicatorTargetId)
 
   return (
-    <nav className={cn('app-header-nav', className)} aria-label="Navegação principal">
+    <nav
+      ref={containerRef}
+      className={cn('app-header-nav relative', className)}
+      aria-label="Navegação principal"
+      onMouseLeave={() => setHoveredId(null)}
+    >
+      {rect && (
+        <span
+          className={cn('app-header-nav-indicator', isHovering && 'is-hovering')}
+          style={{
+            width: rect.width,
+            transform: `translateX(${rect.left}px)`,
+          }}
+          aria-hidden
+        />
+      )}
+
       {items.map((item) => {
         const active = item.id === 'admin' ? false : activeSection === item.id
+        const preview = hoveredId === item.id
 
         return (
           <Link
             key={item.id}
             to={item.to}
+            ref={(el) => register(item.id, el)}
+            onMouseEnter={() => setHoveredId(item.id)}
             onClick={onNavigate}
-            className={cn('app-header-nav-item', active && 'is-active')}
+            className={cn('app-header-nav-item', active && 'is-active', preview && 'is-preview')}
             activeOptions={'end' in item ? { exact: item.end } : undefined}
           >
-            {item.id === 'admin' ? (
-              <span className="app-header-nav-icon app-header-nav-icon-admin" aria-hidden>
-                <LayoutDashboard className="h-4 w-4" strokeWidth={1.75} />
-              </span>
-            ) : (
-              <SectionIcon section={item.id as AppSectionId} size="sm" className="shadow-none" />
-            )}
+            <SectionIcon
+              section={item.id === 'admin' ? 'admin' : (item.id as AppSectionId)}
+              size="sm"
+              active={active || preview}
+              className="shadow-none"
+            />
             <span className="app-header-nav-label">{item.label}</span>
           </Link>
         )

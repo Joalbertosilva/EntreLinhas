@@ -15,6 +15,7 @@ import { toast } from 'sonner'
 import type { Conteudo, MaterialComplementar, Tema } from '@tcc-sistema/types'
 import { supabase } from '@/lib/supabase'
 import { deleteCoverByUrl } from '@/lib/storage'
+import { invalidateConteudoCaches } from '@/lib/conteudoQueries'
 import { ContentFormDialog } from '@/features/conteudos/ContentFormDialog'
 import { MaterialFormDialog } from '@/features/conteudos/MaterialFormDialog'
 import { TemaFormDialog } from '@/features/conteudos/TemaFormDialog'
@@ -109,7 +110,7 @@ function ConteudoDetailPage() {
     onSuccess: () => {
       if (deleteTarget?.type === 'conteudo') {
         toast.success('Conteúdo excluído')
-        queryClient.invalidateQueries({ queryKey: ['conteudos'] })
+        invalidateConteudoCaches(queryClient, conteudoId)
         navigate({ to: '/admin/conteudos' })
       } else if (deleteTarget?.type === 'tema') {
         toast.success('Tema excluído')

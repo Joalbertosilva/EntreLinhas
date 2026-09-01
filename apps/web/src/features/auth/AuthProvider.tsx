@@ -1,6 +1,7 @@
 import type { Profile } from '@tcc-sistema/types'
 import { createContext, useContext, useEffect, useState, type ReactNode } from 'react'
 import { supabase } from '@/lib/supabase'
+import { queryClient } from '@/lib/query-client'
 
 interface AuthState {
   profile: Profile | null
@@ -39,15 +40,28 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   }
 
   useEffect(() => {
-    supabase.auth.getSession().then(({ data: { session } }) => {
-      if (session?.user) fetchProfile(session.user.id)
-      else setProfile(null)
+    const init = async () => {
+      const { data: { user }, error } = await supabase.auth.getUser()
+      if (error || !user) {
+        if (error) await supabase.auth.signOut()
+        setProfile(null)
+        setIsLoading(false)
+        return
+      }
+      await fetchProfile(user.id)
       setIsLoading(false)
-    })
+    }
+
+    void init()
 
     const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
-      if (session?.user) fetchProfile(session.user.id)
-      else setProfile(null)
+      if (session?.user) {
+        void fetchProfile(session.user.id)
+        void queryClient.invalidateQueries({ queryKey: ['app-conteudos'] })
+      } else {
+        setProfile(null)
+        queryClient.clear()
+      }
     })
 
     return () => subscription.unsubscribe()

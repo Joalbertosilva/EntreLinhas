@@ -72,6 +72,8 @@ export function useConteudosByTipo(tipo: TipoConteudo) {
   return useQuery({
     queryKey: ['app-conteudos', { tipo }],
     queryFn: () => fetchActiveConteudos({ tipo }),
+    staleTime: 0,
+    refetchOnMount: 'always',
   })
 }
 
@@ -90,6 +92,8 @@ export function useSectionConteudos(
         ? fetchDestaques(section.placeholderCount)
         : fetchActiveConteudos({ tipo: section.tipo }),
     enabled: options?.enabled ?? true,
+    staleTime: 0,
+    refetchOnMount: 'always',
   })
 }
 
