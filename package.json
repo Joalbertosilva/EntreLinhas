@@ -1,0 +1,31 @@
+{
+  "name": "tcc-sistema",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Plataforma de leitura, reflexão e produção textual — MVP TCC",
+  "scripts": {
+    "db:start": "supabase start",
+    "db:stop": "supabase stop",
+    "db:reset": "supabase db reset",
+    "db:status": "supabase status",
+    "db:migrate": "supabase migration up",
+    "db:seed-admin": "bash scripts/seed-admin.sh",
+    "functions:serve": "supabase functions serve",
+    "supabase": "supabase",
+    "deps:verify": "node scripts/verify-deps.mjs",
+    "deps:fix": "rm -rf node_modules apps/*/node_modules packages/*/node_modules && pnpm install",
+    "preweb:dev": "node scripts/verify-deps.mjs",
+    "preweb:build": "node scripts/verify-deps.mjs",
+    "web:dev": "pnpm --filter web dev",
+    "web:build": "pnpm --filter web build",
+    "test": "pnpm --filter @tcc-sistema/schemas test",
+    "test:schemas": "pnpm --filter @tcc-sistema/schemas test"
+  },
+  "devDependencies": {
+    "supabase": "^2.20.12"
+  },
+  "packageManager": "pnpm@11.1.2",
+  "engines": {
+    "node": ">=20"
+  }
+}

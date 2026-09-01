@@ -1,0 +1,52 @@
+# Dependencies
+node_modules/
+.pnpm-store/
+
+# Build
+dist/
+build/
+.expo/
+web-build/
+
+# Environment
+.env
+.env.local
+.env.*.local
+
+# Supabase
+supabase/.branches/
+supabase/.temp/
+
+# IDE
+.idea/
+.vscode/
+*.swp
+*.swo
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Logs
+*.log
+npm-debug.log*
+pnpm-debug.log*
+
+# Test
+coverage/
+
+# TypeScript
+*.tsbuildinfo
+
+# Expo
+.expo-shared/
+
+# Python (scripts auxiliares — ex.: geração de DOCX)
+.venv-docx/
+.venv/
+__pycache__/
+*.pyc
+
+# Documentos gerados localmente
+EntreLinhas-Stack-e-Ferramentas.docx
+.~lock.*

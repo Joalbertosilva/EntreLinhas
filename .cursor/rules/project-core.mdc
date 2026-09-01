@@ -1,0 +1,32 @@
+---
+description: Regras centrais do monorepo tcc-sistema — sempre aplicar
+alwaysApply: true
+---
+
+# tcc-sistema — Regras centrais
+
+## Projeto
+Plataforma de leitura/reflexão/produção textual para adolescentes privados de liberdade. Nome provisório: **tcc-sistema**.
+
+## Obrigatório
+- TypeScript em todo o código (sem JS como stack separada)
+- Consultar `docs/` antes de implementar (requirements, architecture, database, permissions, security, mvp-scope)
+- Monorepo pnpm workspaces: `apps/mobile`, `apps/web`, `packages/*`, `supabase/`
+- Formulários: React Hook Form + Zod (`packages/schemas`) — nunca Formik/Yup
+- Dados servidor: TanStack Query — nunca fetch solto sem cache
+- Auth: Nome de Usuário + Senha; UUID interno
+- Sem cadastro público — usuários criados por Admin via Edge Function
+- Soft delete via `status`/`is_active` — não DELETE em registros com histórico
+- RLS em toda tabela com dados de usuário
+- Service role key nunca no client
+- **Docker obrigatório** — backend via `supabase start` (containers). Ver `docs/docker.md`
+
+## Escopo MVP
+Não implementar: ranking, medalhas, desafios diários, diagnóstico psicológico automático, cadastro público.
+
+## Estrutura
+- `apps/mobile` — app Expo (aluno)
+- `apps/web` — website + gerenciador (uma app React, rotas por perfil)
+- `apps/web` NÃO separado em duas pastas — website e gerenciador coexistem
+- Ordem de entrega: **Backend → Web → Mobile** (`session/current.md`)
+- Ler `session/current.md` no início de cada sessão

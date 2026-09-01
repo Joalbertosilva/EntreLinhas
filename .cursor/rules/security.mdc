@@ -1,0 +1,38 @@
+---
+description: Segurança, LGPD, RLS e requisitos RS001-RS010
+globs: "{supabase/**/*,packages/schemas/**/*,apps/**/*}"
+alwaysApply: false
+---
+
+# Segurança
+
+## Princípios (RS001–RS010)
+- Senhas: hash (Supabase Auth), nunca plain text
+- Rate limit em login
+- RLS impede aluno ver dados de outro aluno
+- Permissões verificadas no servidor, não só na UI
+- HTTPS; erros genéricos (sem vazamento de dados)
+- LGPD: minimização, finalidade, melhor interesse do adolescente
+- Soft delete; backups via Supabase
+- Audit log para operações admin (sem senhas)
+- Links externos validados e aprovados por profissionais
+- Interações/produções privadas por padrão
+
+## Proibido
+- Service role key no client (mobile/web)
+- Diagnóstico psicológico automático a partir de interações
+- Expor UUID/email/dados pessoais em mensagens de erro
+- DELETE definitivo em registros com histórico
+- Cadastro público
+
+## Implementação
+```sql
+-- Toda tabela sensível
+ALTER TABLE tabela ENABLE ROW LEVEL SECURITY;
+CREATE POLICY "..." ON tabela FOR ... USING (...);
+```
+
+## Dados de adolescentes
+Coletar mínimo necessário. Tratamento conforme LGPD e interesse do menor.
+
+Consultar `docs/security.md` e `docs/permissions.md` antes de alterar auth ou RLS.

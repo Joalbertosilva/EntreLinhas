@@ -1,0 +1,49 @@
+---
+description: Backend Supabase — PostgreSQL, migrations, RLS, Edge Functions, Storage
+globs: supabase/**/*
+alwaysApply: false
+---
+
+# Backend Supabase
+
+## Stack
+PostgreSQL + Supabase Auth + Storage + RLS + Edge Functions + Supabase CLI
+
+## Docker (obrigatório)
+Backend local roda em containers via `supabase start`. Não instalar PostgreSQL no host. Ver `docs/docker.md`.
+
+## Migrations
+- Arquivos em `supabase/migrations/`
+- snake_case no banco, enums tipados
+- Toda tabela com dados de usuário: `ENABLE ROW LEVEL SECURITY` + policies na mesma migration
+- UUID como PK (`gen_random_uuid()`)
+- `created_at`/`updated_at` com triggers
+- Soft delete: `status boolean DEFAULT true`
+
+## RLS (obrigatório)
+- Aluno: CRUD apenas registros próprios (`auth.uid() = usuario_id`)
+- Professor: leitura conforme `docs/permissions.md`
+- Admin: operações administrativas
+- Testar policies por perfil
+
+## Edge Functions
+- `create-user` — criação admin de usuários (RF001)
+- Validar JWT + perfil administrador
+- Registrar em `audit_logs`
+- Service role key apenas aqui
+
+## Auth
+- Login: Nome de Usuário + Senha
+- UUID interno em todas as FKs
+- Sem signup público
+
+## Storage
+- Buckets: `covers`, `media`
+- Policies alinhadas ao RLS
+- Escrita: professor/admin; leitura: autenticados
+
+## Schemas
+Validação Zod em `packages/schemas` espelha constraints do banco.
+
+## Referência
+Entidades completas em `docs/database.md`. Policies em `docs/security.md`.

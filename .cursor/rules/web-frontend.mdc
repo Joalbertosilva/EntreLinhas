@@ -1,0 +1,48 @@
+---
+description: Frontend web — React, Vite, TanStack Router, Tailwind
+globs: apps/web/**/*
+alwaysApply: false
+---
+
+# Web Frontend (apps/web)
+
+## Stack obrigatória
+React + Vite + TypeScript + TanStack Router + Tailwind CSS
+
+## Bibliotecas
+- TanStack Query — dados do servidor
+- TanStack Table — tabelas
+- React Hook Form + Zod — formulários (`packages/schemas`)
+- Lucide React — ícones
+- Sonner — toasts
+- date-fns — datas
+
+## Rotas por perfil
+- `/login` — autenticação
+- `/admin/*` — gerenciador (professor + administrador)
+- `/app/*` — plataforma oficial (futuro; aluno + staff)
+Guards de auth + perfil em toda rota protegida.
+
+## Design — OBRIGATÓRIO (`docs/design-system.md`)
+
+**Leia antes de criar ou alterar qualquer tela.**
+
+- Paleta **CESMAC:** azul `#0066CC`, amarelo `#FFD100` — usar com moderação
+- Tom **humano** em português; evitar jargão de dashboard/SaaS
+- **Proibido:** hero gradiente em toda página, faixas coloridas em todo card, grids de stat cards genéricos, copy robótica, excesso de sombras/blur
+- Botões `rounded-full`, cards `rounded-2xl`, fundo `#F7F9FC`
+- Banner colorido de boas-vindas **somente na home**
+- `cursor: pointer` em elementos clicáveis
+- Mesma identidade na plataforma `/app` quando existir — **nunca** “cara de IA”
+
+## UI técnica
+- Responsivo (RNF03)
+- Linguagem simples (RNF10, RNF11)
+- Mensagens de erro claras (RNF02)
+- Consistência com mobile (RNF09)
+
+## Não fazer
+- Formik, Yup, axios sem TanStack Query
+- Permissão só no client (RLS é fonte de verdade)
+- Expor service role key
+- Ignorar `docs/design-system.md`

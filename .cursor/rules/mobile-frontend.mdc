@@ -1,0 +1,50 @@
+---
+description: Frontend mobile — React Native, Expo, Expo Router, NativeWind
+globs: apps/mobile/**/*
+alwaysApply: false
+---
+
+# Mobile Frontend (apps/mobile)
+
+## Stack obrigatória
+React Native + Expo + Expo Router + TypeScript + NativeWind
+
+## Bibliotecas
+- Supabase JS — auth, banco, storage
+- TanStack Query — cache e mutations
+- React Hook Form + Zod — formulários (`packages/schemas`)
+- Lucide React Native — ícones
+- date-fns — datas
+- expo-secure-store — tokens/sessão
+- expo-image — imagens otimizadas
+- Zustand — somente quando necessário (estado UI local)
+
+## Navegação (Expo Router)
+```
+app/
+├── (auth)/login.tsx
+└── (aluno)/
+    ├── conteudos/
+    ├── leitura/
+    ├── producoes/
+    └── perfil.tsx
+```
+
+## UI
+- NativeWind (estilo Tailwind-like)
+- Identidade visual consistente com web (RNF09)
+- Linguagem simples, ícones de apoio (RNF11)
+- Legibilidade prioritária (RNF10)
+
+## Público
+App focado no **Aluno**. Professor/Admin usam web.
+
+## Padrões
+- Reutilizar schemas e types de `packages/`
+- Mesmas queries/mutations que web (via hooks compartilháveis quando possível)
+- Sessão em expo-secure-store, nunca AsyncStorage para tokens
+
+## Não fazer
+- React Navigation manual (usar Expo Router)
+- StyleSheet inline extenso (preferir NativeWind)
+- expo-image-picker sem necessidade concreta

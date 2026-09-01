@@ -1,0 +1,6 @@
+{
+  "name": "@tcc-sistema/config",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Configurações compartilhadas (ESLint, Prettier, TS) — expandir na Fase 2"
+}
