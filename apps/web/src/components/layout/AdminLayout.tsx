@@ -13,9 +13,12 @@ import {
   X,
 } from 'lucide-react'
 import { useState } from 'react'
+import { AccessibilityTrigger } from '@/features/accessibility'
+import { AppSearchLink } from '@/features/app/AppSearchBar'
 import { useAuth } from '@/features/auth/AuthProvider'
 import { BRAND_NAME } from '@/features/auth/brand'
 import { BrandLogo } from '@/features/auth/BrandLogo'
+import { UserAccountMenu } from '@/components/layout/UserAccountMenu'
 import { Avatar } from '@/components/ui/Avatar'
 import { Button } from '@/components/ui/Button'
 import { SkipLink } from '@/components/ui/SkipLink'
@@ -166,24 +169,34 @@ export function AdminLayout() {
       )}
 
       <div className="flex min-w-0 flex-1 flex-col">
-        <header className="sticky top-0 z-30 flex h-14 items-center gap-3 border-b border-primary/10 bg-white/90 px-4 backdrop-blur-sm lg:px-8">
+        <header className="sticky top-0 z-30 flex min-h-14 flex-wrap items-center gap-2 border-b border-primary/10 bg-white/90 px-3 py-2 backdrop-blur-sm sm:gap-3 sm:px-4 lg:px-8">
           <Button
             variant="ghost"
             size="icon"
-            className="lg:hidden"
+            className="shrink-0 lg:hidden"
             onClick={() => setMobileOpen(true)}
             aria-label="Abrir menu"
           >
             <Menu className="h-5 w-5" />
           </Button>
-          <p className="text-sm font-semibold text-text">{pageTitle}</p>
-          <Link
-            to="/app"
-            className="ml-auto inline-flex items-center gap-2 rounded-xl border border-primary/12 bg-primary-light/40 px-3 py-1.5 text-sm font-semibold text-primary transition-colors hover:bg-primary-light/65"
-          >
-            <Home className="h-4 w-4" strokeWidth={1.75} aria-hidden />
-            <span className="hidden sm:inline">Plataforma</span>
-          </Link>
+          <p className="min-w-0 flex-1 truncate text-sm font-semibold text-text">{pageTitle}</p>
+          <div className="flex shrink-0 items-center gap-1.5 sm:gap-2">
+            <AppSearchLink />
+            <AccessibilityTrigger />
+            <UserAccountMenu
+              profile={profile}
+              onSignOut={handleSignOut}
+              accountPath="/admin/perfil"
+              compact
+            />
+            <Link
+              to="/app"
+              className="inline-flex items-center gap-1.5 rounded-xl border border-primary/12 bg-primary-light/40 px-2.5 py-1.5 text-xs font-semibold text-primary transition-colors hover:bg-primary-light/65 sm:gap-2 sm:px-3 sm:text-sm"
+            >
+              <Home className="h-4 w-4" strokeWidth={1.75} aria-hidden />
+              <span className="hidden sm:inline">Plataforma</span>
+            </Link>
+          </div>
         </header>
 
         <main id="conteudo-principal" className="flex-1 overflow-auto" tabIndex={-1}>

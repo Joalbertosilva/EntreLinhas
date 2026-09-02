@@ -123,6 +123,11 @@ Deno.serve(async (req) => {
       });
     }
 
+    await adminClient
+      .from("profiles")
+      .update({ deve_trocar_senha: true })
+      .eq("id", targetProfile.id);
+
     const now = new Date().toISOString();
 
     await adminClient

@@ -1,6 +1,6 @@
 # Sessão atual — tcc-sistema / EntreLinhas
 
-> Última atualização: **2026-09-01**  
+> Última atualização: **2026-09-02**  
 > **Fase:** 2e — Validar web local → fechar lacunas → depois mobile  
 > **Deploy:** fora do escopo por enquanto (site roda em `localhost` + Supabase nuvem)
 
@@ -99,14 +99,29 @@ Navbar animado, ícones Lucide, cache conteúdos (admin ↔ aluno), fix sessão 
 
 ### Passo 0 — Retomar ambiente (5 min)
 
-- [ ] `cd ~/Documentos/Projeto-tcc/tcc-sistema`
-- [ ] Confirmar `apps/web/.env.local` aponta para nuvem (`xiplrnkeghrsmkfmrnhh.supabase.co`)
-- [ ] `pnpm web:dev`
-- [ ] Login admin → `/admin` ok
-- [ ] Login aluno (se existir) → `/app` ok
-- [ ] Conteúdo cadastrado (ex.: *O Pequeno Príncipe*) aparece na home
+- [x] `cd ~/Documentos/Projeto-tcc/tcc-sistema`
+- [x] Confirmar `apps/web/.env.local` aponta para nuvem (`xiplrnkeghrsmkfmrnhh.supabase.co`)
+- [x] `pnpm web:dev`
+- [x] Login admin → `/admin` ok
+- [x] Login aluno (se existir) → `/app` ok
+- [x] Conteúdo cadastrado (ex.: *O Pequeno Príncipe*) aparece na home
 
-**Não rodar:** `db:reset`, `db:start`, migrations.
+**Não rodar:** `db:reset`, `db:start`, migrations destrutivas.
+
+**Aplicar migration nova (aditiva):** `supabase db push` — coluna `deve_trocar_senha` + RPC `clear_deve_trocar_senha`. Depois: `supabase functions deploy` (create-user, admin-reset-password, admin-set-user-password).
+
+---
+
+### Passo 1 — Validar gerenciador (1–2 h) 🔄
+
+- [ ] Seguir [`docs/gerenciador-roteiro-teste.md`](../docs/gerenciador-roteiro-teste.md) completo
+- [ ] Anotar bugs em lista (issue ou bloco abaixo em “Pendências da validação”)
+- [ ] Testar como **admin** e, se possível, como **professor**
+
+**Correções já aplicadas nesta sessão:**
+- Redirect staff → `/admin` (estava indo para `/app`)
+- Auditoria ampliada (usuários, temas, materiais, status conteúdo)
+- Troca obrigatória de senha (`deve_trocar_senha`) — requer migration na nuvem
 
 ---
 
@@ -143,9 +158,9 @@ Navbar animado, ícones Lucide, cache conteúdos (admin ↔ aluno), fix sessão 
 
 ### Passo 4 — Busca funcional (1 sessão)
 
-- [ ] Implementar busca no header (hoje desabilitada)
-- [ ] Buscar conteúdos ativos por título/autor
-- [ ] Testar na home e nas páginas por tipo
+- [x] Implementar busca no header
+- [x] Buscar conteúdos ativos por título/autor
+- [x] Página `/app/busca` para resultados completos
 - [ ] Validar com aluno logado
 
 ---
@@ -156,8 +171,8 @@ Fazer só o que a validação exigir ou o TCC pedir:
 
 | Item | Prioridade | Notas |
 |------|------------|-------|
-| Auditoria completa (todas ações admin) | Média | RS007 |
-| `deve_trocar_senha` no 1º login | Média | RF002 |
+| Auditoria completa (todas ações admin) | Média | RS007 — ampliada nesta sessão |
+| `deve_trocar_senha` no 1º login | Média | RF002 — implementado; falta `db push` na nuvem |
 | Exportação dados aluno (LGPD) | Baixa | RS005 |
 | Revisão responsivo admin + aluno | Média | RNF03 |
 | Revisão acessibilidade (Tab, leitor) | Média | RNF11 |

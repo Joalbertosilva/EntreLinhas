@@ -5,6 +5,7 @@ import { KeyRound, Plus, Pencil, Search, UserPlus } from 'lucide-react'
 import { toast } from 'sonner'
 import type { Perfil, Profile } from '@tcc-sistema/types'
 import { supabase } from '@/lib/supabase'
+import { logAudit } from '@/lib/audit'
 import { CreateUserDialog } from '@/features/admin/CreateUserDialog'
 import { EditUserDialog } from '@/features/admin/EditUserDialog'
 import { SetUserPasswordDialog } from '@/features/admin/SetUserPasswordDialog'
@@ -89,15 +90,22 @@ function UsuariosPage() {
   }, [usuarios, search, filterPerfil])
 
   const toggleStatus = useMutation({
-    mutationFn: async ({ id, status }: { id: string; status: boolean }) => {
+    mutationFn: async ({ id, status, nome_usuario }: { id: string; status: boolean; nome_usuario: string }) => {
       const { error } = await supabase
         .from('profiles')
         .update({ status: !status })
         .eq('id', id)
       if (error) throw error
+      return { id, nome_usuario, status }
     },
-    onSuccess: (_, { status }) => {
-      toast.success(status ? 'Usuário desativado' : 'Usuário reativado')
+    onSuccess: (result) => {
+      void logAudit({
+        acao: result.status ? 'usuario.desativar' : 'usuario.reativar',
+        entidade: 'profiles',
+        entidade_id: result.id,
+        detalhes: { nome_usuario: result.nome_usuario },
+      })
+      toast.success(result.status ? 'Usuário desativado' : 'Usuário reativado')
       queryClient.invalidateQueries({ queryKey: ['profiles'] })
       queryClient.invalidateQueries({ queryKey: ['visao-administrativa'] })
     },
@@ -208,7 +216,13 @@ function UsuariosPage() {
                         <Button
                           variant={u.status ? 'outline' : 'secondary'}
                           size="sm"
-                          onClick={() => toggleStatus.mutate({ id: u.id, status: u.status })}
+                          onClick={() =>
+                            toggleStatus.mutate({
+                              id: u.id,
+                              status: u.status,
+                              nome_usuario: u.nome_usuario,
+                            })
+                          }
                           disabled={toggleStatus.isPending}
                         >
                           {u.status ? 'Desativar' : 'Reativar'}

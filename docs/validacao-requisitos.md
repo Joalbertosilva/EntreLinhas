@@ -13,12 +13,12 @@ Legenda: ✅ implementado · 🔄 parcial · ⏳ pendente · ❌ fora do MVP
 | RF | Descrição | Gerenciador | Plataforma aluno | Notas |
 |----|-----------|-------------|------------------|-------|
 | RF001 | Cadastro de usuários (admin) | ✅ | — | Edge Function `create-user` |
-| RF002 | Login | ✅ | ✅ | `/login` → `/app` ou `/admin` |
+| RF002 | Login | ✅ | ✅ | Redirect por perfil + troca obrigatória (`/trocar-senha`) |
 | RF003 | Gerenciar usuários | ✅ | — | Criar, editar, ativar/desativar, redefinir senha |
 | RF004 | CRUD conteúdos | ✅ | ✅ | Aluno consulta via RF007 |
 | RF005 | Temas | ✅ | ✅ | Detalhe do conteúdo |
 | RF006 | Materiais | ✅ | ✅ | Links no detalhe |
-| RF007 | Consulta/pesquisa conteúdos | — | 🔄 | Home + rotas por tipo; **busca header pendente** |
+| RF007 | Consulta/pesquisa conteúdos | — | ✅ | Home + rotas por tipo + busca header + `/app/busca` |
 | RF008 | Interações | — | ✅ | Comentários + reflexão orientada |
 | RF009 | Leitura | — | ✅ | Minhas leituras, status em cards |
 | RF010 | Evolução | 🔄 | 🔄 | View `evolucao_aluno`; admin vê; aluno parcial no perfil |
@@ -29,7 +29,7 @@ Legenda: ✅ implementado · 🔄 parcial · ⏳ pendente · ❌ fora do MVP
 | RF015 | Perfil / senha | ✅ | ✅ | `/admin/perfil`, `/app/perfil` |
 
 **Gerenciador:** RF001–RF006, RF013–RF015 ✅  
-**Aluno web:** RF002, RF004–RF009, RF011–RF012, RF015 ✅ · RF007 🔄 · RF010 🔄  
+**Aluno web:** RF002, RF004–RF009, RF011–RF012, RF015 ✅ · RF010 🔄  
 **Próximo:** validar manualmente → [`docs/roteiro-validacao-aluno.md`](./roteiro-validacao-aluno.md)
 
 ---
@@ -62,7 +62,7 @@ Legenda: ✅ implementado · 🔄 parcial · ⏳ pendente · ❌ fora do MVP
 | RS004 Sem vazamento | 🔄 | Erros genéricos no login |
 | RS005 LGPD | 🔄 | `/privacidade` ok; falta export formal, DPO |
 | RS006 Integridade/soft delete | 🔄 | Soft delete usuários/conteúdos |
-| RS007 Auditoria | 🔄 | UI + logs parciais |
+| RS007 Auditoria | 🔄 | UI + logs ampliados (conteúdos, usuários, temas, materiais) |
 | RS008 Links externos | 🔄 | Zod URL; whitelist futura |
 | RS009 Privacidade interações | ✅ | RLS reflexões privadas |
 | RS010 Incidentes | ⏳ | Procedimento institucional |

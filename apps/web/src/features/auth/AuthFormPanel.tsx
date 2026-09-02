@@ -6,7 +6,7 @@ interface AuthFormPanelProps {
   className?: string
 }
 
-/** Painel do formulário auth — contenção visual sobre fundo pontilhado */
+/** Painel do formulário auth — card branco sobre o fundo do login */
 export function AuthFormPanel({ children, className }: AuthFormPanelProps) {
   return (
     <div className={cn('auth-form-panel', className)}>

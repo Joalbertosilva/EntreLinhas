@@ -10,11 +10,12 @@ export const Route = createFileRoute('/app')({
 
     const { data: profile } = await supabase
       .from('profiles')
-      .select('perfil, status')
+      .select('perfil, status, deve_trocar_senha')
       .eq('id', session.user.id)
       .single()
 
     if (!profile?.status) throw redirect({ to: '/login' })
+    if (profile.deve_trocar_senha) throw redirect({ to: '/trocar-senha' })
   },
   component: AppLayout,
 })

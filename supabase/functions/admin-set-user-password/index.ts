@@ -110,6 +110,11 @@ Deno.serve(async (req) => {
       });
     }
 
+    await adminClient
+      .from("profiles")
+      .update({ deve_trocar_senha: true })
+      .eq("id", targetProfile.id);
+
     await adminClient.from("audit_logs").insert({
       usuario_id: user.id,
       acao: "redefinir_senha_usuario",

@@ -14,6 +14,7 @@ import {
 import { toast } from 'sonner'
 import type { Conteudo, MaterialComplementar, Tema } from '@tcc-sistema/types'
 import { supabase } from '@/lib/supabase'
+import { logAudit } from '@/lib/audit'
 import { deleteCoverByUrl } from '@/lib/storage'
 import { invalidateConteudoCaches } from '@/lib/conteudoQueries'
 import { ContentFormDialog } from '@/features/conteudos/ContentFormDialog'
@@ -86,19 +87,31 @@ function ConteudoDetailPage() {
 
   const deleteItem = useMutation({
     mutationFn: async () => {
-      if (!deleteTarget || !conteudo) return
+      if (!deleteTarget || !conteudo) return null
 
       if (deleteTarget.type === 'conteudo') {
         await deleteCoverByUrl(conteudo.capa_url)
         const { error } = await supabase.from('conteudos').delete().eq('id', conteudo.id)
         if (error) throw error
-        return
+        return {
+          acao: 'conteudo.excluir',
+          entidade: 'conteudos',
+          entidade_id: conteudo.id,
+          detalhes: { titulo: conteudo.titulo },
+          type: 'conteudo' as const,
+        }
       }
 
       if (deleteTarget.type === 'tema') {
         const { error } = await supabase.from('temas').delete().eq('id', deleteTarget.item.id)
         if (error) throw error
-        return
+        return {
+          acao: 'tema.excluir',
+          entidade: 'temas',
+          entidade_id: deleteTarget.item.id,
+          detalhes: { conteudo_id: conteudoId, tema: deleteTarget.item.tema },
+          type: 'tema' as const,
+        }
       }
 
       const { error } = await supabase
@@ -106,16 +119,31 @@ function ConteudoDetailPage() {
         .delete()
         .eq('id', deleteTarget.item.id)
       if (error) throw error
+      return {
+        acao: 'material.excluir',
+        entidade: 'materiais_complementares',
+        entidade_id: deleteTarget.item.id,
+        detalhes: { conteudo_id: conteudoId, titulo: deleteTarget.item.titulo },
+        type: 'material' as const,
+      }
     },
-    onSuccess: () => {
-      if (deleteTarget?.type === 'conteudo') {
+    onSuccess: (result) => {
+      if (result) {
+        void logAudit({
+          acao: result.acao,
+          entidade: result.entidade,
+          entidade_id: result.entidade_id,
+          detalhes: result.detalhes,
+        })
+      }
+      if (result?.type === 'conteudo') {
         toast.success('Conteúdo excluído')
         invalidateConteudoCaches(queryClient, conteudoId)
         navigate({ to: '/admin/conteudos' })
-      } else if (deleteTarget?.type === 'tema') {
+      } else if (result?.type === 'tema') {
         toast.success('Tema excluído')
         queryClient.invalidateQueries({ queryKey: ['temas', conteudoId] })
-      } else {
+      } else if (result) {
         toast.success('Material excluído')
         queryClient.invalidateQueries({ queryKey: ['materiais', conteudoId] })
       }
@@ -125,25 +153,47 @@ function ConteudoDetailPage() {
   })
 
   const toggleTema = useMutation({
-    mutationFn: async ({ id, status }: { id: string; status: boolean }) => {
+    mutationFn: async ({ id, status, tema }: { id: string; status: boolean; tema: string }) => {
       const { error } = await supabase.from('temas').update({ status: !status }).eq('id', id)
       if (error) throw error
+      return { id, status, tema }
     },
-    onSuccess: () => {
+    onSuccess: (result) => {
+      void logAudit({
+        acao: result.status ? 'tema.desativar' : 'tema.reativar',
+        entidade: 'temas',
+        entidade_id: result.id,
+        detalhes: { conteudo_id: conteudoId, tema: result.tema },
+      })
       queryClient.invalidateQueries({ queryKey: ['temas', conteudoId] })
       toast.success('Status do tema atualizado')
     },
   })
 
   const toggleMaterial = useMutation({
-    mutationFn: async ({ id, status }: { id: string; status: boolean }) => {
+    mutationFn: async ({
+      id,
+      status,
+      titulo,
+    }: {
+      id: string
+      status: boolean
+      titulo: string
+    }) => {
       const { error } = await supabase
         .from('materiais_complementares')
         .update({ status: !status })
         .eq('id', id)
       if (error) throw error
+      return { id, status, titulo }
     },
-    onSuccess: () => {
+    onSuccess: (result) => {
+      void logAudit({
+        acao: result.status ? 'material.desativar' : 'material.reativar',
+        entidade: 'materiais_complementares',
+        entidade_id: result.id,
+        detalhes: { conteudo_id: conteudoId, titulo: result.titulo },
+      })
       queryClient.invalidateQueries({ queryKey: ['materiais', conteudoId] })
       toast.success('Status do material atualizado')
     },
@@ -307,7 +357,7 @@ function ConteudoDetailPage() {
                     <Button
                       variant="ghost"
                       size="sm"
-                      onClick={() => toggleTema.mutate({ id: t.id, status: t.status })}
+                      onClick={() => toggleTema.mutate({ id: t.id, status: t.status, tema: t.tema })}
                     >
                       {t.status ? 'Desativar' : 'Ativar'}
                     </Button>
@@ -405,7 +455,9 @@ function ConteudoDetailPage() {
                     <Button
                       variant="ghost"
                       size="sm"
-                      onClick={() => toggleMaterial.mutate({ id: m.id, status: m.status })}
+                      onClick={() =>
+                        toggleMaterial.mutate({ id: m.id, status: m.status, titulo: m.titulo })
+                      }
                     >
                       {m.status ? 'Desativar' : 'Ativar'}
                     </Button>

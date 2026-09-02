@@ -1646,11 +1646,9 @@
     background-size: 26px 26px;
   }
 
-  /* Login — entrelaçado + pontilhado no formulário */
+  /* Login — fundo limpo no painel do formulário */
   .bg-login-form {
-    background-color: rgb(255 255 255 / 0.78);
-    background-image: radial-gradient(circle, rgb(180 195 215 / 0.62) 0.75px, transparent 0.75px);
-    background-size: 22px 22px;
+    background-color: rgb(255 255 255 / 0.94);
   }
 
   .bg-login-hero {
@@ -1684,7 +1682,7 @@
   }
 
   .animated-brand-logo {
-    animation: brand-logo-float 7s ease-in-out infinite;
+    animation: brand-logo-float 12s ease-in-out infinite;
     transform-origin: center center;
   }
 
@@ -1694,9 +1692,6 @@
 
   .animated-brand-letter {
     display: inline-block;
-    animation: brand-letter-float 4.2s ease-in-out infinite;
-    animation-delay: calc(var(--letter-i) * 0.065s);
-    will-change: transform;
   }
 
   .animated-brand-letter-accent {
@@ -1721,8 +1716,7 @@
       color-mix(in srgb, var(--color-brand-gold) 55%, var(--color-primary)),
       transparent
     );
-    opacity: 0.55;
-    animation: brand-line-pulse 3.2s ease-in-out infinite;
+    opacity: 0.45;
   }
 
   .animated-brand-line-delay {
@@ -1742,11 +1736,17 @@
   }
 
   .animated-brand-compact .animated-brand-logo {
-    animation: brand-logo-float 6s ease-in-out infinite;
+    animation: none;
   }
 
-  .animated-brand-compact .animated-brand-letter {
-    animation: brand-letter-float 4.2s ease-in-out infinite;
+  .a11y-toolbar {
+    animation: fade-in 0.25s ease both;
+  }
+
+  html[data-a11y-font='large'],
+  html[data-a11y-font='xlarge'],
+  html[data-a11y-font='xxlarge'] {
+    scroll-behavior: smooth;
   }
 
   .auth-form-panel {
@@ -2554,21 +2554,21 @@
 @keyframes brand-mark-enter {
   from {
     opacity: 0;
-    transform: scale(0.88) translateY(8px);
+    transform: translateY(6px);
   }
   to {
     opacity: 1;
-    transform: scale(1) translateY(0);
+    transform: translateY(0);
   }
 }
 
 @keyframes brand-logo-float {
   0%,
   100% {
-    transform: translateY(0) scale(1);
+    transform: translateY(0);
   }
   50% {
-    transform: translateY(-10px) scale(1.015);
+    transform: translateY(-2px);
   }
 }
 

@@ -16,6 +16,7 @@ import { Route as EsqueciSenhaRouteImport } from './routes/esqueci-senha'
 import { Route as LoginRouteImport } from './routes/login'
 import { Route as PrivacidadeRouteImport } from './routes/privacidade'
 import { Route as RedefinirSenhaRouteImport } from './routes/redefinir-senha'
+import { Route as TrocarSenhaRouteImport } from './routes/trocar-senha'
 import { Route as AdminIndexRouteImport } from './routes/admin/index'
 import { Route as AdminAlunosRouteImport } from './routes/admin/alunos'
 import { Route as AdminAuditoriaRouteImport } from './routes/admin/auditoria'
@@ -25,6 +26,7 @@ import { Route as AdminPerfilRouteImport } from './routes/admin/perfil'
 import { Route as AdminRequerimentosSenhaRouteImport } from './routes/admin/requerimentos-senha'
 import { Route as AdminUsuariosRouteImport } from './routes/admin/usuarios'
 import { Route as AppIndexRouteImport } from './routes/app/index'
+import { Route as AppBuscaRouteImport } from './routes/app/busca'
 import { Route as AppCronicasRouteImport } from './routes/app/cronicas'
 import { Route as AppLivrosRouteImport } from './routes/app/livros'
 import { Route as AppMinhaObraRouteImport } from './routes/app/minha-obra'
@@ -73,6 +75,11 @@ const RedefinirSenhaRoute = RedefinirSenhaRouteImport.update({
   path: '/redefinir-senha',
   getParentRoute: () => rootRouteImport,
 } as any)
+const TrocarSenhaRoute = TrocarSenhaRouteImport.update({
+  id: '/trocar-senha',
+  path: '/trocar-senha',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const AdminIndexRoute = AdminIndexRouteImport.update({
   id: '/',
   path: '/',
@@ -116,6 +123,11 @@ const AdminUsuariosRoute = AdminUsuariosRouteImport.update({
 const AppIndexRoute = AppIndexRouteImport.update({
   id: '/',
   path: '/',
+  getParentRoute: () => AppRouteRoute,
+} as any)
+const AppBuscaRoute = AppBuscaRouteImport.update({
+  id: '/busca',
+  path: '/busca',
   getParentRoute: () => AppRouteRoute,
 } as any)
 const AppCronicasRoute = AppCronicasRouteImport.update({
@@ -188,6 +200,7 @@ export interface FileRoutesByFullPath {
   '/login': typeof LoginRoute
   '/privacidade': typeof PrivacidadeRoute
   '/redefinir-senha': typeof RedefinirSenhaRoute
+  '/trocar-senha': typeof TrocarSenhaRoute
   '/admin/alunos': typeof AdminAlunosRoute
   '/admin/auditoria': typeof AdminAuditoriaRoute
   '/admin/conteudos': typeof AdminConteudosRouteWithChildren
@@ -195,6 +208,7 @@ export interface FileRoutesByFullPath {
   '/admin/perfil': typeof AdminPerfilRoute
   '/admin/requerimentos-senha': typeof AdminRequerimentosSenhaRoute
   '/admin/usuarios': typeof AdminUsuariosRoute
+  '/app/busca': typeof AppBuscaRoute
   '/app/cronicas': typeof AppCronicasRoute
   '/app/livros': typeof AppLivrosRoute
   '/app/minha-obra': typeof AppMinhaObraRoute
@@ -216,6 +230,7 @@ export interface FileRoutesByTo {
   '/login': typeof LoginRoute
   '/privacidade': typeof PrivacidadeRoute
   '/redefinir-senha': typeof RedefinirSenhaRoute
+  '/trocar-senha': typeof TrocarSenhaRoute
   '/admin/alunos': typeof AdminAlunosRoute
   '/admin/auditoria': typeof AdminAuditoriaRoute
   '/admin/conteudos': typeof AdminConteudosRouteWithChildren
@@ -223,6 +238,7 @@ export interface FileRoutesByTo {
   '/admin/perfil': typeof AdminPerfilRoute
   '/admin/requerimentos-senha': typeof AdminRequerimentosSenhaRoute
   '/admin/usuarios': typeof AdminUsuariosRoute
+  '/app/busca': typeof AppBuscaRoute
   '/app/cronicas': typeof AppCronicasRoute
   '/app/livros': typeof AppLivrosRoute
   '/app/minha-obra': typeof AppMinhaObraRoute
@@ -247,6 +263,7 @@ export interface FileRoutesById {
   '/login': typeof LoginRoute
   '/privacidade': typeof PrivacidadeRoute
   '/redefinir-senha': typeof RedefinirSenhaRoute
+  '/trocar-senha': typeof TrocarSenhaRoute
   '/admin/alunos': typeof AdminAlunosRoute
   '/admin/auditoria': typeof AdminAuditoriaRoute
   '/admin/conteudos': typeof AdminConteudosRouteWithChildren
@@ -254,6 +271,7 @@ export interface FileRoutesById {
   '/admin/perfil': typeof AdminPerfilRoute
   '/admin/requerimentos-senha': typeof AdminRequerimentosSenhaRoute
   '/admin/usuarios': typeof AdminUsuariosRoute
+  '/app/busca': typeof AppBuscaRoute
   '/app/cronicas': typeof AppCronicasRoute
   '/app/livros': typeof AppLivrosRoute
   '/app/minha-obra': typeof AppMinhaObraRoute
@@ -279,6 +297,7 @@ export interface FileRouteTypes {
     | '/login'
     | '/privacidade'
     | '/redefinir-senha'
+    | '/trocar-senha'
     | '/admin/alunos'
     | '/admin/auditoria'
     | '/admin/conteudos'
@@ -286,6 +305,7 @@ export interface FileRouteTypes {
     | '/admin/perfil'
     | '/admin/requerimentos-senha'
     | '/admin/usuarios'
+    | '/app/busca'
     | '/app/cronicas'
     | '/app/livros'
     | '/app/minha-obra'
@@ -307,6 +327,7 @@ export interface FileRouteTypes {
     | '/login'
     | '/privacidade'
     | '/redefinir-senha'
+    | '/trocar-senha'
     | '/admin/alunos'
     | '/admin/auditoria'
     | '/admin/conteudos'
@@ -314,6 +335,7 @@ export interface FileRouteTypes {
     | '/admin/perfil'
     | '/admin/requerimentos-senha'
     | '/admin/usuarios'
+    | '/app/busca'
     | '/app/cronicas'
     | '/app/livros'
     | '/app/minha-obra'
@@ -337,6 +359,7 @@ export interface FileRouteTypes {
     | '/login'
     | '/privacidade'
     | '/redefinir-senha'
+    | '/trocar-senha'
     | '/admin/alunos'
     | '/admin/auditoria'
     | '/admin/conteudos'
@@ -344,6 +367,7 @@ export interface FileRouteTypes {
     | '/admin/perfil'
     | '/admin/requerimentos-senha'
     | '/admin/usuarios'
+    | '/app/busca'
     | '/app/cronicas'
     | '/app/livros'
     | '/app/minha-obra'
@@ -368,6 +392,7 @@ export interface RootRouteChildren {
   LoginRoute: typeof LoginRoute
   PrivacidadeRoute: typeof PrivacidadeRoute
   RedefinirSenhaRoute: typeof RedefinirSenhaRoute
+  TrocarSenhaRoute: typeof TrocarSenhaRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -419,6 +444,13 @@ declare module '@tanstack/react-router' {
       path: '/redefinir-senha'
       fullPath: '/redefinir-senha'
       preLoaderRoute: typeof RedefinirSenhaRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/trocar-senha': {
+      id: '/trocar-senha'
+      path: '/trocar-senha'
+      fullPath: '/trocar-senha'
+      preLoaderRoute: typeof TrocarSenhaRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/admin/': {
@@ -482,6 +514,13 @@ declare module '@tanstack/react-router' {
       path: '/'
       fullPath: '/app/'
       preLoaderRoute: typeof AppIndexRouteImport
+      parentRoute: typeof AppRouteRoute
+    }
+    '/app/busca': {
+      id: '/app/busca'
+      path: '/busca'
+      fullPath: '/app/busca'
+      preLoaderRoute: typeof AppBuscaRouteImport
       parentRoute: typeof AppRouteRoute
     }
     '/app/cronicas': {
@@ -622,6 +661,7 @@ const AppPerfilRouteWithChildren = AppPerfilRoute._addFileChildren(
 )
 
 interface AppRouteRouteChildren {
+  AppBuscaRoute: typeof AppBuscaRoute
   AppCronicasRoute: typeof AppCronicasRoute
   AppLivrosRoute: typeof AppLivrosRoute
   AppMinhaObraRoute: typeof AppMinhaObraRoute
@@ -636,6 +676,7 @@ interface AppRouteRouteChildren {
 }
 
 const AppRouteRouteChildren: AppRouteRouteChildren = {
+  AppBuscaRoute: AppBuscaRoute,
   AppCronicasRoute: AppCronicasRoute,
   AppLivrosRoute: AppLivrosRoute,
   AppMinhaObraRoute: AppMinhaObraRoute,
@@ -661,6 +702,7 @@ const rootRouteChildren: RootRouteChildren = {
   LoginRoute: LoginRoute,
   PrivacidadeRoute: PrivacidadeRoute,
   RedefinirSenhaRoute: RedefinirSenhaRoute,
+  TrocarSenhaRoute: TrocarSenhaRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)

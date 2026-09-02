@@ -6,6 +6,7 @@ import { toast } from 'sonner'
 import { temaFormSchema, type TemaFormInput } from '@tcc-sistema/schemas'
 import type { Tema } from '@tcc-sistema/types'
 import { supabase } from '@/lib/supabase'
+import { logAudit } from '@/lib/audit'
 import { emptyToNull } from '@/lib/labels'
 import { normalizeReflexaoParts } from '@/features/conteudos/conteudoReflexao'
 import { ReflexaoFormFields } from '@/features/conteudos/ReflexaoFormFields'
@@ -74,12 +75,21 @@ export function TemaFormDialog({ open, onOpenChange, conteudoId, tema }: TemaFor
       if (isEditing && tema) {
         const { error } = await supabase.from('temas').update(payload).eq('id', tema.id)
         if (error) throw error
-        return
+        return { id: tema.id, titulo: input.tema.trim(), acao: 'tema.atualizar' as const }
       }
-      const { error } = await supabase.from('temas').insert(payload)
+      const { data, error } = await supabase.from('temas').insert(payload).select('id').single()
       if (error) throw error
+      return { id: data.id, titulo: input.tema.trim(), acao: 'tema.criar' as const }
     },
-    onSuccess: () => {
+    onSuccess: (result) => {
+      if (result) {
+        void logAudit({
+          acao: result.acao,
+          entidade: 'temas',
+          entidade_id: result.id,
+          detalhes: { conteudo_id: conteudoId, tema: result.titulo },
+        })
+      }
       toast.success(isEditing ? 'Reflexão atualizada' : 'Reflexão cadastrada')
       reset()
       onOpenChange(false)

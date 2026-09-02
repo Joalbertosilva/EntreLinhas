@@ -6,8 +6,8 @@ import { SkipLink } from '@/components/ui/SkipLink'
 import {
   AuthFormPanel,
   AuthPageHeader,
-  LoginForm,
   LoginBrand,
+  LoginForm,
   LoginHeroPanel,
   useLogin,
 } from '@/features/auth'
@@ -28,8 +28,8 @@ function LoginPage() {
       <SkipLink href="#login-form" />
       <AuthSplitLayout hero={<LoginHeroPanel />} footer={<AuthLegalFooter />}>
         <div className="page-enter mx-auto w-full max-w-[400px] lg:mx-0">
-          <div className="mb-6 lg:hidden">
-            <LoginBrand className="mx-auto max-w-[260px]" />
+          <div className="mb-5 lg:hidden">
+            <LoginBrand className="mx-auto max-w-[200px]" />
           </div>
 
           <AuthFormPanel className="space-y-5">

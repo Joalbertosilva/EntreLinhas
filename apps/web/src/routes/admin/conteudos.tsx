@@ -107,6 +107,11 @@ function ConteudosPage() {
       if (error) throw error
     },
     onSuccess: (_, { id, status }) => {
+      void logAudit({
+        acao: status ? 'conteudo.desativar' : 'conteudo.reativar',
+        entidade: 'conteudos',
+        entidade_id: id,
+      })
       toast.success(status ? 'Conteúdo desativado' : 'Conteúdo reativado')
       invalidateConteudoCaches(queryClient, id)
     },

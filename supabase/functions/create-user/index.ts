@@ -108,6 +108,7 @@ Deno.serve(async (req) => {
       nome_usuario: nome_usuario.toLowerCase(),
       perfil,
       status: true,
+      deve_trocar_senha: true,
     });
 
     if (insertError) {

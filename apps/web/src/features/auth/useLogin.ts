@@ -29,13 +29,18 @@ export function useLogin() {
 
     const { data: profile } = await supabase
       .from('profiles')
-      .select('perfil, status')
+      .select('perfil, status, deve_trocar_senha')
       .eq('id', user.id)
       .single()
 
     if (!profile?.status) {
       await supabase.auth.signOut()
       toast.error('Conta inativa. Entre em contato com o administrador.')
+      return
+    }
+
+    if (profile.deve_trocar_senha) {
+      await router.navigate({ to: '/trocar-senha' })
       return
     }
 

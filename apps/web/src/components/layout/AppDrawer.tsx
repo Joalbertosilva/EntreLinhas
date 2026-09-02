@@ -1,5 +1,6 @@
 import { Link } from '@tanstack/react-router'
 import { X } from 'lucide-react'
+import { AppSearchBar } from '@/features/app/AppSearchBar'
 import { resolveSectionId } from '@/features/app/appNavigation'
 import type { Profile } from '@tcc-sistema/types'
 import { BRAND_NAME } from '@/features/auth/brand'
@@ -48,7 +49,7 @@ export function AppDrawer({ open, pathname, isStaff, profile, onClose, onSignOut
         </div>
 
         {profile && (
-          <div className="border-b border-border px-4 py-4">
+          <div className="border-b border-border px-4 py-4 space-y-3">
             <div className="flex items-center gap-3">
               <Avatar name={profile.nome} className="h-10 w-10 text-xs" />
               <div className="min-w-0">
@@ -56,6 +57,7 @@ export function AppDrawer({ open, pathname, isStaff, profile, onClose, onSignOut
                 <p className="truncate text-xs text-text-muted">@{profile.nome_usuario}</p>
               </div>
             </div>
+            <AppSearchBar onNavigate={onClose} className="sm:hidden" />
             <Link
               to="/app/perfil"
               onClick={onClose}

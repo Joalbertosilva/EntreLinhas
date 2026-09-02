@@ -7,6 +7,7 @@ import { materialFormSchema, type MaterialFormInput } from '@tcc-sistema/schemas
 import type { MaterialComplementar, TipoMaterial } from '@tcc-sistema/types'
 import { TIPOS_MATERIAL } from '@tcc-sistema/types'
 import { supabase } from '@/lib/supabase'
+import { logAudit } from '@/lib/audit'
 import { emptyToNull, TIPO_MATERIAL_LABEL } from '@/lib/labels'
 import { Button } from '@/components/ui/Button'
 import { Dialog } from '@/components/ui/Dialog'
@@ -83,12 +84,25 @@ export function MaterialFormDialog({
           .update(payload)
           .eq('id', material.id)
         if (error) throw error
-        return
+        return { id: material.id, titulo: input.titulo.trim(), acao: 'material.atualizar' as const }
       }
-      const { error } = await supabase.from('materiais_complementares').insert(payload)
+      const { data, error } = await supabase
+        .from('materiais_complementares')
+        .insert(payload)
+        .select('id')
+        .single()
       if (error) throw error
+      return { id: data.id, titulo: input.titulo.trim(), acao: 'material.criar' as const }
     },
-    onSuccess: () => {
+    onSuccess: (result) => {
+      if (result) {
+        void logAudit({
+          acao: result.acao,
+          entidade: 'materiais_complementares',
+          entidade_id: result.id,
+          detalhes: { conteudo_id: conteudoId, titulo: result.titulo },
+        })
+      }
       toast.success(isEditing ? 'Material atualizado' : 'Material cadastrado')
       reset()
       onOpenChange(false)

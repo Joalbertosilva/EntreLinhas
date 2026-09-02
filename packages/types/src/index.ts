@@ -46,6 +46,7 @@ export interface Profile {
   nome_usuario: string;
   perfil: Perfil;
   status: boolean;
+  deve_trocar_senha?: boolean;
   created_at: string;
   updated_at: string;
 }
