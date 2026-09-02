@@ -18,22 +18,22 @@ export function LoginForm({ register, errors, isSubmitting, onSubmit }: LoginFor
   return (
     <form id="login-form" onSubmit={onSubmit} className="space-y-5" noValidate>
       <AuthField label="Seu usuário" htmlFor="nome_usuario" error={errors.nome_usuario?.message} icon={User}>
-        <Input autoComplete="username" placeholder="Como você entra na plataforma" {...register('nome_usuario')} />
+        <Input autoComplete="username" placeholder="Usuário" {...register('nome_usuario')} />
       </AuthField>
 
       <AuthField label="Sua senha" htmlFor="senha" error={errors.senha?.message} icon={Lock}>
-        <PasswordInput autoComplete="current-password" placeholder="A senha que você recebeu" {...register('senha')} />
+        <PasswordInput autoComplete="current-password" placeholder="Sua senha" {...register('senha')} />
       </AuthField>
 
       <div className="space-y-3 pt-0.5">
         <Button type="submit" variant="brand" className="h-11 w-full text-[15px]" size="lg" disabled={isSubmitting}>
-          {isSubmitting ? 'Abrindo sua conta...' : 'Continuar'}
+          {isSubmitting ? 'Entrando...' : 'Entrar'}
         </Button>
 
         <p className="text-center">
           <Link
             to="/esqueci-senha"
-            className="text-sm font-medium text-brand-navy transition-colors hover:text-[#002855] hover:underline"
+            className="text-sm font-medium text-primary transition-colors hover:text-primary-hover hover:underline"
           >
             Esqueci minha senha
           </Link>

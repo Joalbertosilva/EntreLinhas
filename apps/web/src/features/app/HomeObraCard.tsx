@@ -87,7 +87,7 @@ export function HomeObraCard({ obra, isLoading }: HomeObraCardProps) {
         <div className="mt-4">
           <p className="text-base font-semibold text-text group-hover:text-primary">Comece sua obra</p>
           <p className="mt-1 text-sm leading-relaxed text-text-muted">
-            Livro, crônica ou poema. Depois você troca a capa por uma foto sua.
+            Livro, crônica ou poema — seu espaço de escrita.
           </p>
         </div>
       </Link>
@@ -119,9 +119,6 @@ export function HomeObraCard({ obra, isLoading }: HomeObraCardProps) {
               ? `Última produção: ${obra.ultimaProducao.titulo}`
               : 'Toque para continuar escrevendo')}
         </p>
-        {!obra.capa_url && (
-          <p className="mt-2 text-xs font-medium text-primary/80">Personalize a capa em Minha obra</p>
-        )}
       </div>
     </Link>
   )

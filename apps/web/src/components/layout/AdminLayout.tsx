@@ -144,7 +144,7 @@ export function AdminLayout() {
   )
 
   return (
-    <div className="relative flex min-h-screen">
+    <div className="platform-bg relative flex min-h-screen">
       <SkipLink />
       <aside className="hidden w-[232px] shrink-0 flex-col border-r border-border bg-white lg:flex" aria-label="Menu lateral">
         {sidebar}

@@ -2,34 +2,48 @@
 @import "tailwindcss";
 
 @theme {
-  --color-primary: #0066cc;
-  --color-primary-hover: #0052a3;
-  --color-primary-dark: #004a99;
-  --color-primary-light: #e6f2ff;
-  --color-primary-muted: #f0f6fc;
-  --color-accent: #ffd100;
-  --color-accent-hover: #e6bc00;
-  --color-accent-light: #fff8cc;
+  --color-primary: #2a9d8f;
+  --color-primary-hover: #238276;
+  --color-primary-dark: #1c756a;
+  --color-primary-light: #e3f7f4;
+  --color-primary-muted: #f0faf8;
+  --color-accent: #efb034;
+  --color-accent-hover: #d99a2a;
+  --color-accent-light: #fef6e4;
   --color-surface: #ffffff;
-  --color-surface-warm: #fffef9;
-  --color-text: #0a1628;
-  --color-text-muted: #5a6b82;
-  --color-border: #d8e3f0;
+  --color-surface-warm: #f7fdfc;
+  --color-text: #1a3342;
+  --color-text-muted: #5a7282;
+  --color-border: #d4ebe6;
   --color-error: #dc2626;
   --color-success: #16a34a;
-  /* Ponte com a logo oficial — azul profundo + dourado quente */
-  --color-brand-navy: #003366;
+  --color-brand-navy: #1a3342;
   --color-brand-gold: #efb034;
-  --color-brand-light: #e8eef6;
+  --color-brand-light: #e8f7f4;
   --color-brand-surface: #ffffff;
+  --color-viva: #6ec4b5;
+  --color-viva-deep: #3ebfae;
+  --color-viva-soft: #d4f0ea;
   --color-elevated: #ffffff;
-  --color-elevated-muted: rgb(255 255 255 / 0.82);
+  --color-elevated-muted: rgb(255 255 255 / 0.92);
+  --platform-bg-top: #fafefc;
+  --platform-bg-mid: #e5f7f3;
+  --platform-bg-bottom: #c8ebe4;
+  --platform-bg-gradient: linear-gradient(
+    180deg,
+    var(--platform-bg-top) 0%,
+    var(--platform-bg-mid) 38%,
+    var(--platform-bg-bottom) 62%,
+    #e8f7f4 78%,
+    #f6fcfa 90%,
+    #ffffff 100%
+  );
   --font-sans: "Plus Jakarta Sans", system-ui, -apple-system, sans-serif;
   --font-display: "Fraunces", "Iowan Old Style", "Palatino Linotype", Georgia, serif;
-  --shadow-soft: 0 1px 2px rgb(0 51 102 / 0.05), 0 2px 8px rgb(0 51 102 / 0.04);
-  --shadow-card: 0 2px 8px rgb(0 51 102 / 0.07), 0 8px 24px rgb(0 51 102 / 0.05);
-  --shadow-glow: 0 0 0 3px rgb(0 102 204 / 0.12);
-  --shadow-glow-brand: 0 0 0 3px rgb(0 51 102 / 0.1);
+  --shadow-soft: 0 1px 3px rgb(26 51 66 / 0.06);
+  --shadow-card: 0 4px 16px rgb(26 51 66 / 0.08);
+  --shadow-glow: 0 0 0 3px rgb(42 157 143 / 0.18);
+  --shadow-glow-brand: 0 0 0 3px rgb(42 157 143 / 0.12);
 }
 
 @layer base {
@@ -66,9 +80,11 @@
   }
 
   body {
-    @apply bg-white text-text font-sans antialiased text-[15px];
+    @apply text-text font-sans antialiased text-[15px];
     margin: 0;
     min-height: 100vh;
+    background: var(--platform-bg-gradient);
+    background-attachment: fixed;
     -webkit-font-smoothing: antialiased;
   }
 
@@ -107,38 +123,28 @@
     box-shadow: var(--shadow-soft);
   }
 
+  .platform-bg {
+    background: var(--platform-bg-gradient);
+    background-attachment: fixed;
+  }
+
   .app-shell {
     --app-header-height: 3.25rem;
-    --app-bg-soft: #dceaf8;
-    --app-bg-mid: #edf4fb;
-    --app-bg-light: #f6f9fd;
-    background: linear-gradient(
-      180deg,
-      var(--app-bg-soft) 0%,
-      var(--app-bg-mid) 22%,
-      var(--app-bg-light) 48%,
-      #ffffff 78%
-    );
+    background: transparent;
   }
 
   [data-theme='dark'] .app-shell {
-    --app-bg-soft: #343a42;
-    --app-bg-mid: #3a3f45;
-    --app-bg-light: #3e4349;
-    background: linear-gradient(
-      180deg,
-      var(--app-bg-soft) 0%,
-      var(--app-bg-mid) 35%,
-      var(--app-bg-light) 65%,
-      var(--color-surface) 100%
-    );
+    background: transparent;
+  }
+
+  [data-theme='dark'] body {
+    background: var(--color-surface);
+    background-attachment: fixed;
   }
 
   .app-header-bar {
-    border-bottom: 1px solid color-mix(in srgb, var(--color-primary) 12%, var(--color-border));
-    background-color: rgb(255 255 255 / 0.82);
-    backdrop-filter: blur(10px);
-    -webkit-backdrop-filter: blur(10px);
+    border-bottom: 1px solid var(--color-border);
+    background-color: var(--color-surface);
     box-shadow: none;
   }
 
@@ -167,11 +173,7 @@
     left: 0;
     height: 2px;
     border-radius: 9999px;
-    background: linear-gradient(
-      90deg,
-      color-mix(in srgb, var(--color-primary) 85%, white),
-      var(--color-primary)
-    );
+    background: var(--color-primary);
     transition:
       transform 0.38s cubic-bezier(0.34, 1.25, 0.64, 1),
       width 0.38s cubic-bezier(0.34, 1.25, 0.64, 1),
@@ -327,8 +329,8 @@
 
   .home-hero-band {
     position: relative;
-    overflow: visible;
-    padding: 2rem 0 2.5rem;
+    overflow: hidden;
+    padding: 2rem 0 2.75rem;
     background: transparent;
   }
 
@@ -383,7 +385,7 @@
 
   .home-hero-subtitle {
     margin-top: 0.5rem;
-    max-width: 32rem;
+    max-width: 34rem;
     font-size: 0.9375rem;
     line-height: 1.55;
     color: var(--color-text-muted);
@@ -395,7 +397,7 @@
     font-weight: 600;
     letter-spacing: 0.06em;
     text-transform: uppercase;
-    color: color-mix(in srgb, var(--color-primary) 65%, var(--color-text-muted));
+    color: color-mix(in srgb, var(--color-primary) 70%, var(--color-text-muted));
   }
 
   .home-hero-grid {
@@ -418,10 +420,10 @@
   /* Jornada de leitura — livro com virada de página */
   .home-progress-wrap,
   .leitura-jornada-hero {
-    --jornada-ink: #00008a;
-    --jornada-surface: #eef0f8;
-    --jornada-progress: #b8860b;
-    --jornada-progress-track: #f2ebe0;
+    --jornada-ink: #1a6b62;
+    --jornada-surface: #ffffff;
+    --jornada-progress: #efb034;
+    --jornada-progress-track: #e8f4f2;
   }
 
   .home-progress-wrap {
@@ -431,10 +433,10 @@
 
   .leitura-jornada {
     border-radius: 1rem;
-    border: 1px solid rgb(0 0 138 / 0.22);
+    border: 1px solid var(--color-border);
     background: var(--jornada-ambient, var(--jornada-surface));
     padding: 1rem;
-    box-shadow: none;
+    box-shadow: var(--shadow-soft);
     transition: border-color 0.2s ease;
   }
 
@@ -1421,11 +1423,11 @@
   }
 
   .content-carousel-fade-catalog.content-carousel-fade-right::after {
-    background: linear-gradient(to left, rgb(246 249 253 / 0.96), transparent);
+    background: linear-gradient(to left, rgb(229 247 243 / 0.96), transparent);
   }
 
   .content-carousel-fade-catalog.content-carousel-fade-left::before {
-    background: linear-gradient(to right, rgb(246 249 253 / 0.96), transparent);
+    background: linear-gradient(to right, rgb(229 247 243 / 0.96), transparent);
   }
 
   [data-theme='dark'] .content-carousel-fade-hero.content-carousel-fade-right::after,
@@ -1600,38 +1602,82 @@
     min-height: calc(100vh - var(--app-header-height, 3.25rem) - 12rem);
   }
 
-  /* Login — fundo entrelaçado completo */
-  .login-weave {
-    background: #ffffff;
+  /* Login — gradiente mint + card branco */
+  .login-ambient {
+    position: fixed;
+    inset: 0;
+    z-index: 0;
+    pointer-events: none;
+    overflow: hidden;
+    background: var(--platform-bg-gradient);
   }
 
-  .login-weave__art {
-    display: block;
+  .login-ambient__scene {
+    position: absolute;
+    bottom: 0;
+    left: 0;
     width: 100%;
-    height: 100%;
-    min-height: 100vh;
-    min-width: 100%;
+    height: min(38vh, 320px);
   }
 
-  [data-theme='dark'] .login-weave {
-    background: var(--color-surface);
+  .login-hero-tagline {
+    font-family: var(--font-display);
+    letter-spacing: -0.01em;
   }
 
-  [data-theme='dark'] .login-weave__art {
-    opacity: 0.28;
+  .login-card {
+    position: relative;
+    overflow: hidden;
+    border-radius: 1.25rem;
+    border: 1px solid rgb(255 255 255 / 0.65);
+    background: rgb(255 255 255 / 0.97);
+    padding: 1.75rem 1.5rem;
+    box-shadow: 0 8px 32px rgb(26 51 66 / 0.1);
+  }
+
+  .login-card::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 3px;
+    background: linear-gradient(
+      90deg,
+      var(--color-brand-gold) 0%,
+      var(--color-primary) 52%,
+      var(--color-brand-navy) 100%
+    );
+  }
+
+  .auth-split {
+    isolation: isolate;
+    overflow-x: clip;
+  }
+
+  .auth-split > .login-brand-panel,
+  .auth-split > main {
+    position: relative;
+    z-index: 1;
+  }
+
+  @media (min-width: 640px) {
+    .login-card {
+      padding: 2rem 1.75rem;
+    }
   }
 
   .content-carousel-fade-hero.content-carousel-fade-right::after {
-    background: linear-gradient(to left, rgb(237 244 251 / 0.92), transparent);
+    background: linear-gradient(to left, rgb(229 247 243 / 0.95), transparent);
   }
 
   .content-carousel-fade-hero.content-carousel-fade-left::before {
-    background: linear-gradient(to right, rgb(237 244 251 / 0.92), transparent);
+    background: linear-gradient(to right, rgb(229 247 243 / 0.95), transparent);
   }
 
   .scrollbar-thin {
     scrollbar-width: thin;
-    scrollbar-color: #c5d5e8 transparent;
+    scrollbar-color: #b8ddd4 transparent;
   }
 
   .bg-dot-pattern {
@@ -1751,11 +1797,10 @@
 
   .auth-form-panel {
     border-radius: 1rem;
-    border: 1px solid rgb(0 51 102 / 0.1);
-    background: #ffffff;
+    border: 1px solid var(--color-border);
+    background: var(--color-surface);
     padding: 1.375rem;
     box-shadow: var(--shadow-soft);
-    animation: auth-panel-enter 0.55s cubic-bezier(0.22, 1, 0.36, 1) 0.08s both;
   }
 
   @media (min-width: 640px) {
@@ -1766,21 +1811,21 @@
 
   .input-auth {
     height: 2.75rem;
-    border-color: rgb(0 51 102 / 0.12);
-    background-color: white;
-    box-shadow: var(--shadow-soft);
+    border-color: var(--color-border);
+    background-color: var(--color-surface);
+    box-shadow: none;
     transition-property: color, background-color, border-color, box-shadow;
     transition-duration: 150ms;
   }
 
   .input-auth:hover {
-    border-color: rgb(0 51 102 / 0.2);
+    border-color: color-mix(in srgb, var(--color-primary) 35%, var(--color-border));
   }
 
   .input-auth:focus-visible {
     outline: none;
-    border-color: rgb(0 51 102 / 0.35);
-    box-shadow: var(--shadow-glow-brand);
+    border-color: var(--color-primary);
+    box-shadow: var(--shadow-glow);
   }
 
   .page-enter {
@@ -1849,7 +1894,7 @@
     top: 0;
     bottom: 0;
     width: 3.5rem;
-    background: linear-gradient(to left, rgb(246 249 253 / 0.95), transparent);
+    background: linear-gradient(to left, rgb(229 247 243 / 0.95), transparent);
   }
 
   .content-carousel-fade-left::before {
@@ -1861,7 +1906,7 @@
     bottom: 0;
     width: 3.5rem;
     z-index: 1;
-    background: linear-gradient(to right, rgb(246 249 253 / 0.95), transparent);
+    background: linear-gradient(to right, rgb(229 247 243 / 0.95), transparent);
   }
 
   .carousel-track {
@@ -1914,69 +1959,60 @@
     border-color: var(--color-border);
   }
 
-  /* Moldura de leitura — aspecto de página de livro em telas grandes */
+  /* Página de leitura — card branco central estilo leitor (Kindle) */
   .book-reading-shell {
     position: relative;
     margin-inline: 0;
+    padding-block: 0.5rem 1.5rem;
+  }
+
+  .book-reading-page {
+    position: relative;
+    max-width: 46rem;
+    margin-inline: auto;
+    padding: 1.25rem 1rem 2rem;
+    border-radius: 6px;
+    border: 1px solid rgb(26 51 66 / 0.07);
+    background: linear-gradient(180deg, #ffffff 0%, #fffefb 100%);
+    box-shadow:
+      0 2px 8px rgb(26 51 66 / 0.04),
+      0 12px 40px rgb(26 51 66 / 0.07);
+  }
+
+  .book-reading-page .book-hero {
+    border: none;
+    box-shadow: none;
+    border-radius: 0;
+    background: transparent;
+    padding-inline: 0;
+    padding-top: 0;
+  }
+
+  .book-reading-page .book-interaction-panel {
+    border-color: rgb(26 51 66 / 0.08);
+  }
+
+  .book-reading-page .book-comment-bubble {
+    background: var(--color-surface-warm);
   }
 
   @media (min-width: 640px) {
     .book-reading-shell {
-      margin-inline: -0.5rem;
+      margin-inline: -0.25rem;
+    }
+
+    .book-reading-page {
+      padding: 1.75rem 1.5rem 2.5rem;
     }
   }
 
   @media (min-width: 1024px) {
     .book-reading-shell {
-      margin-inline: -1.5rem;
-      padding-block: 0.5rem 1.5rem;
-    }
-
-    .book-reading-shell::before,
-    .book-reading-shell::after {
-      content: '';
-      pointer-events: none;
-      position: absolute;
-      top: 0;
-      bottom: 0;
-      width: min(12vw, 9rem);
-      z-index: 0;
-    }
-
-    .book-reading-shell::before {
-      left: 0;
-      background: linear-gradient(
-        90deg,
-        color-mix(in srgb, var(--color-brand-navy) 10%, var(--color-surface-warm)) 0%,
-        transparent 100%
-      );
-      border-right: 1px solid rgb(0 51 102 / 0.06);
-    }
-
-    .book-reading-shell::after {
-      right: 0;
-      background: linear-gradient(
-        270deg,
-        color-mix(in srgb, var(--color-brand-navy) 10%, var(--color-surface-warm)) 0%,
-        transparent 100%
-      );
-      border-left: 1px solid rgb(0 51 102 / 0.06);
+      padding-block: 0.75rem 2rem;
     }
 
     .book-reading-page {
-      position: relative;
-      z-index: 1;
-      max-width: 46rem;
-      margin-inline: auto;
-      padding: 2rem 2.25rem;
-      border-radius: 2px;
-      border: 1px solid rgb(0 51 102 / 0.1);
-      background: linear-gradient(180deg, #fffef9 0%, #fffdf5 100%);
-      box-shadow:
-        inset 0 0 100px rgb(0 51 102 / 0.025),
-        -12px 0 28px rgb(0 51 102 / 0.05),
-        12px 0 28px rgb(0 51 102 / 0.05),
-        0 10px 40px rgb(0 51 102 / 0.08);
+      padding: 2rem 2.25rem 2.75rem;
     }
 
     .book-reading-page .prose-content {
@@ -1990,7 +2026,7 @@
   @media (min-width: 1280px) {
     .book-reading-page {
       max-width: 50rem;
-      padding: 2.5rem 3rem;
+      padding: 2.5rem 3rem 3rem;
     }
   }
 
@@ -2007,6 +2043,7 @@
       #fffef9 100%
     );
     border: 1px solid rgb(0 51 102 / 0.08);
+    box-shadow: var(--shadow-card);
     padding: 1.75rem 1.25rem 2rem;
   }
 
@@ -2408,6 +2445,18 @@
   }
 
   /* Modo escuro — componentes do livro */
+  [data-theme='dark'] .book-reading-page {
+    background: linear-gradient(180deg, var(--color-elevated) 0%, var(--color-surface-warm) 100%);
+    border-color: var(--color-border);
+    box-shadow:
+      0 2px 8px rgb(0 0 0 / 0.18),
+      0 12px 40px rgb(0 0 0 / 0.22);
+  }
+
+  [data-theme='dark'] .book-reading-page .book-hero {
+    background: transparent;
+  }
+
   [data-theme='dark'] .book-hero {
     background: linear-gradient(
       145deg,
@@ -2847,7 +2896,7 @@
   height: 12rem;
   width: 12rem;
   border-radius: 9999px;
-  background: radial-gradient(circle, rgb(0 102 204 / 0.12), transparent 68%);
+  background: radial-gradient(circle, rgb(42 157 143 / 0.14), transparent 68%);
 }
 
 .minhas-leituras-hero-inner {

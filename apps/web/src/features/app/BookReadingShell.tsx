@@ -6,7 +6,7 @@ interface BookReadingShellProps {
   className?: string
 }
 
-/** Moldura de leitura — preenche laterais e remete a uma página de livro em telas grandes. */
+/** Área de leitura — card branco central sobre o fundo mint. */
 export function BookReadingShell({ children, className }: BookReadingShellProps) {
   return (
     <div className={cn('book-reading-shell', className)}>

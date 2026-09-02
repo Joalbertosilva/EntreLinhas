@@ -14,9 +14,11 @@ export function HomeHero({ userId, firstName }: HomeHeroProps) {
   const { data: obra, isLoading: loadingObra } = useMinhaObra(userId)
   const destaques = HOME_SECTIONS[0]
 
-  const subtitle = obra
-    ? 'Retome sua escrita — ou mergulhe nos livros em destaque.'
-    : 'Comece sua obra — ou mergulhe nos livros em destaque.'
+  const hasProducao = Boolean(obra?.ultimaProducao)
+  const obraSectionLabel = hasProducao ? 'Continue sua obra' : 'Comece sua obra'
+  const subtitle = hasProducao
+    ? 'Que tal continuar sua última leitura ou retomar sua escrita?'
+    : 'Que tal começar sua obra ou explorar os destaques?'
 
   return (
     <section className="home-hero-band" aria-labelledby="home-greeting">
@@ -30,7 +32,7 @@ export function HomeHero({ userId, firstName }: HomeHeroProps) {
 
         <div className="home-hero-grid mt-8 sm:mt-10">
           <div className="home-hero-obra min-w-0">
-            <h2 className="home-hero-section-label">Continue sua obra</h2>
+            <h2 className="home-hero-section-label">{obraSectionLabel}</h2>
             <HomeObraCard obra={obra ?? null} isLoading={loadingObra} />
             <div className="mt-5">
               <HomeProgressCard userId={userId} />

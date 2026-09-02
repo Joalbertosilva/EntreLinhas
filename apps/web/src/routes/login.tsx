@@ -4,7 +4,6 @@ import { AuthSplitLayout } from '@/components/layout/AuthSplitLayout'
 import { AuthLegalFooter } from '@/components/layout/AuthLegalFooter'
 import { SkipLink } from '@/components/ui/SkipLink'
 import {
-  AuthFormPanel,
   AuthPageHeader,
   LoginBrand,
   LoginForm,
@@ -27,30 +26,26 @@ function LoginPage() {
     <>
       <SkipLink href="#login-form" />
       <AuthSplitLayout hero={<LoginHeroPanel />} footer={<AuthLegalFooter />}>
-        <div className="page-enter mx-auto w-full max-w-[400px] lg:mx-0">
-          <div className="mb-5 lg:hidden">
-            <LoginBrand className="mx-auto max-w-[200px]" />
-          </div>
-
-          <AuthFormPanel className="space-y-5">
-            <AuthPageHeader
-              title="Entrar na plataforma"
-              description="Use o nome de usuário e a senha fornecidos pela instituição."
-            />
-
-            <LoginForm
-              register={register}
-              errors={errors}
-              isSubmitting={isSubmitting}
-              onSubmit={onSubmit}
-            />
-          </AuthFormPanel>
-
-          <p className="mt-4 text-center text-xs leading-relaxed text-text-muted lg:text-left">
-            Acesso restrito a usuários cadastrados. Em caso de dúvida, fale com seu professor ou
-            administrador.
-          </p>
+        <div className="mb-5 lg:hidden">
+          <LoginBrand className="mx-auto max-w-[200px]" />
         </div>
+
+        <AuthPageHeader
+          title="Boas-vindas"
+          description="Use seu usuário e senha para entrar na plataforma."
+        />
+
+        <LoginForm
+          register={register}
+          errors={errors}
+          isSubmitting={isSubmitting}
+          onSubmit={onSubmit}
+        />
+
+        <p className="mt-5 text-center text-xs leading-relaxed text-text-muted lg:text-left">
+          Acesso restrito a usuários cadastrados. Em caso de dúvida, fale com seu professor ou
+          administrador.
+        </p>
       </AuthSplitLayout>
     </>
   )

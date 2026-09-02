@@ -80,7 +80,7 @@ function TrocarSenhaPage() {
   }
 
   return (
-    <div className="flex min-h-screen flex-col bg-login-form">
+    <div className="flex min-h-screen flex-col">
       <SkipLink href="#trocar-senha-form" />
       <main className="flex flex-1 items-center justify-center px-5 py-10">
         <div className="page-enter w-full max-w-md">
