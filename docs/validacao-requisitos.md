@@ -4,6 +4,8 @@ Matriz viva: o que **já atende**, o que **parcialmente atende** e o que **falta
 
 Legenda: ✅ implementado · 🔄 parcial · ⏳ pendente · ❌ fora do MVP
 
+> **Atualizado:** 2026-09-01 — plataforma `/app` implementada; falta **validação manual** e lacunas pontuais.
+
 ---
 
 ## Requisitos funcionais
@@ -11,23 +13,24 @@ Legenda: ✅ implementado · 🔄 parcial · ⏳ pendente · ❌ fora do MVP
 | RF | Descrição | Gerenciador | Plataforma aluno | Notas |
 |----|-----------|-------------|------------------|-------|
 | RF001 | Cadastro de usuários (admin) | ✅ | — | Edge Function `create-user` |
-| RF002 | Login | ✅ | ⏳ | Aluno redirecionado; `/app` não existe |
-| RF003 | Gerenciar usuários | ✅ | — | Criar, editar, ativar/desativar |
-| RF004 | CRUD conteúdos | ✅ | ⏳ | Aluno só consultará (RF007) |
-| RF005 | Temas | ✅ | ⏳ | |
-| RF006 | Materiais | ✅ | ⏳ | |
-| RF007 | Consulta/pesquisa conteúdos | — | ⏳ | **Próxima fase** `/app/*` |
-| RF008 | Interações | — | ⏳ | Tabela + RLS prontos |
-| RF009 | Leitura | — | ⏳ | |
-| RF010 | Evolução | 🔄 | ⏳ | View `evolucao_aluno`; aluno vê no perfil |
-| RF011 | Produções | — | ⏳ | |
-| RF012 | Obra autoral | — | ⏳ | |
+| RF002 | Login | ✅ | ✅ | `/login` → `/app` ou `/admin` |
+| RF003 | Gerenciar usuários | ✅ | — | Criar, editar, ativar/desativar, redefinir senha |
+| RF004 | CRUD conteúdos | ✅ | ✅ | Aluno consulta via RF007 |
+| RF005 | Temas | ✅ | ✅ | Detalhe do conteúdo |
+| RF006 | Materiais | ✅ | ✅ | Links no detalhe |
+| RF007 | Consulta/pesquisa conteúdos | — | 🔄 | Home + rotas por tipo; **busca header pendente** |
+| RF008 | Interações | — | ✅ | Comentários + reflexão orientada |
+| RF009 | Leitura | — | ✅ | Minhas leituras, status em cards |
+| RF010 | Evolução | 🔄 | 🔄 | View `evolucao_aluno`; admin vê; aluno parcial no perfil |
+| RF011 | Produções | — | ✅ | Via minha obra (capítulos/itens) |
+| RF012 | Obra autoral | — | ✅ | Minha obra + publicar + obras comunidade |
 | RF013 | Acompanhamento alunos | ✅ | — | `/admin/alunos` |
 | RF014 | Visão admin | ✅ | — | Dashboard + auditoria |
-| RF015 | Perfil / senha | ✅ | ⏳ | Gerenciador ok; aluno no `/app` |
+| RF015 | Perfil / senha | ✅ | ✅ | `/admin/perfil`, `/app/perfil` |
 
 **Gerenciador:** RF001–RF006, RF013–RF015 ✅  
-**Sistema completo:** falta RF007–RF012 (área do aluno)
+**Aluno web:** RF002, RF004–RF009, RF011–RF012, RF015 ✅ · RF007 🔄 · RF010 🔄  
+**Próximo:** validar manualmente → [`docs/roteiro-validacao-aluno.md`](./roteiro-validacao-aluno.md)
 
 ---
 
@@ -35,17 +38,17 @@ Legenda: ✅ implementado · 🔄 parcial · ⏳ pendente · ❌ fora do MVP
 
 | RNF | Status | Evidência |
 |-----|--------|-----------|
-| RNF01 Interface intuitiva | 🔄 | Gerenciador usável; app aluno pendente |
+| RNF01 Interface intuitiva | 🔄 | Gerenciador ok; aluno implementado — validar com usuários |
 | RNF02 Erros claros | ✅ | Toasts + `FieldError` em PT |
-| RNF03 Responsivo | 🔄 | Layout mobile no admin; falta testar todas as telas |
-| RNF04 Compatibilidade | 🔄 | Vite/React modernos; teste manual pendente |
+| RNF03 Responsivo | 🔄 | Mobile web (hamburger); revisar todas telas |
+| RNF04 Compatibilidade | 🔄 | Vite/React; teste manual pendente |
 | RNF05 Desempenho | 🔄 | TanStack Query; sem profiling formal |
 | RNF06 Integridade | ✅ | Postgres + RLS + Zod |
-| RNF07 Disponibilidade | ⏳ | Depende deploy institucional |
-| RNF08 Backup | 🔄 | Supabase backups; política institucional |
-| RNF09 Consistência app/web | ⏳ | Mobile não iniciado |
-| RNF10 Legibilidade | ✅ | Design system, 15px+, PT claro |
-| RNF11 Acessibilidade | 🔄 | Base implementada; ver `docs/acessibilidade.md` |
+| RNF07 Disponibilidade | ⏳ | Local + Supabase nuvem; deploy longe |
+| RNF08 Backup | 🔄 | Backups Supabase; ver [`supabase-nuvem.md`](./supabase-nuvem.md) |
+| RNF09 Consistência app/web | ⏳ | Mobile (`apps/mobile`) não iniciado |
+| RNF10 Legibilidade | ✅ | Design system, PT claro |
+| RNF11 Acessibilidade | 🔄 | Skip link, landmarks; revisar leitor e Tab |
 
 ---
 
@@ -53,57 +56,28 @@ Legenda: ✅ implementado · 🔄 parcial · ⏳ pendente · ❌ fora do MVP
 
 | RS | Status | Evidência |
 |----|--------|-----------|
-| RS001 Auth segura | ✅ | Supabase Auth, hash, logout |
+| RS001 Auth segura | ✅ | Supabase Auth, JWT, logout |
 | RS002 Isolamento alunos | ✅ | RLS `auth.uid()` |
-| RS003 RBAC | ✅ | RLS + guards nas rotas admin |
-| RS004 Sem vazamento | 🔄 | Erros genéricos no login; revisar logs |
-| RS005 LGPD | 🔄 | Princípios em `docs/security.md`; falta política/página institucional |
-| RS006 Integridade/soft delete | 🔄 | Soft delete usuários/conteúdos; hard delete conteúdo com confirmação |
-| RS007 Auditoria | 🔄 | Tabela + UI; nem todas ações admin logam ainda |
+| RS003 RBAC | ✅ | RLS + guards rotas admin |
+| RS004 Sem vazamento | 🔄 | Erros genéricos no login |
+| RS005 LGPD | 🔄 | `/privacidade` ok; falta export formal, DPO |
+| RS006 Integridade/soft delete | 🔄 | Soft delete usuários/conteúdos |
+| RS007 Auditoria | 🔄 | UI + logs parciais |
 | RS008 Links externos | 🔄 | Zod URL; whitelist futura |
-| RS009 Privacidade interações | ✅ | RLS restritivo (quando aluno usar) |
+| RS009 Privacidade interações | ✅ | RLS reflexões privadas |
 | RS010 Incidentes | ⏳ | Procedimento institucional |
 
-### LGPD — o que já temos
+### LGPD — feito
 
-- **Minimização:** só nome, login, perfil, atividades pedagógicas
-- **Finalidade documentada** em `docs/security.md`
-- **Sem diagnóstico psicológico automático** (RF008)
-- **Retenção:** usuários inativos permanecem (soft delete), conforme RF001
+- Página [`/privacidade`](./privacidade) (web)
+- Princípios em `docs/security.md`
+- Sem diagnóstico automático (RF008)
 
-### LGPD — o que falta para produção
+### LGPD — pendente
 
-- [ ] Termo/política de privacidade (texto institucional)
-- [ ] Registro de consentimento (se exigido pela instituição)
-- [ ] DPO/contato para titulares de dados
-- [ ] Exportação/exclusão formal sob demanda (processo admin)
-
----
-
-## Variáveis e segredos
-
-| Item | Status |
-|------|--------|
-| `.env.local` no gitignore | ✅ |
-| Service role só na Edge Function | ✅ |
-| Anon key no client (esperado) | ✅ |
-| Senhas nunca em logs/audit | ✅ |
-| Validação Zod compartilhada (`packages/schemas`) | ✅ |
-
----
-
-## Arquitetura de código (POO / encapsulamento)
-
-Este projeto **não usa herança de classes** como eixo — padrão **TypeScript + composição**, que é o adequado para React:
-
-| Conceito | Como aparece no projeto |
-|----------|-------------------------|
-| **Encapsulamento** | `packages/schemas` (validação), `lib/storage.ts`, Edge Functions |
-| **Separação de camadas** | UI → hooks/queries → Supabase → RLS |
-| **Contratos** | `packages/types` + Zod infer |
-| **Herança clássica** | Não aplicada de propósito — composição de componentes |
-
-Adicionar classes só onde agregar valor (ex.: domínio complexo no backend), não por dogma de POO.
+- [ ] Texto institucional formal (banca/instituição)
+- [ ] DPO/contato titulares
+- [ ] Exportação de dados do aluno (admin)
 
 ---
 
@@ -111,23 +85,24 @@ Adicionar classes só onde agregar valor (ex.: domínio complexo no backend), n�
 
 | Tipo | Status |
 |------|--------|
-| Vitest schemas | ⏳ planejado em `mvp-scope.md` |
-| RTL componentes | ⏳ |
-| RLS manual (Studio) | 🔄 feito na implantação backend |
+| Vitest schemas | ⏳ `pnpm test:schemas` |
+| RTL componentes | ⏳ LoginForm, ContentCard |
+| RLS manual | 🔄 feito na implantação |
 | E2E | ⏳ |
 
 ---
 
-## Como validar antes de entregar o TCC
+## Como validar antes do mobile
 
-1. **Roteiro manual** — percorrer cada RF do gerenciador com admin e professor
-2. **Checklist** — `docs/gerenciador-checklist.md`
-3. **Segurança** — `docs/security.md` checklist
-4. **Acessibilidade** — Tab pelo gerenciador + `docs/acessibilidade.md`
-5. **Próximo:** implementar `/app/*` e repetir matriz para RF007–RF012
+1. [`docs/gerenciador-roteiro-teste.md`](./gerenciador-roteiro-teste.md) — admin/professor
+2. [`docs/roteiro-validacao-aluno.md`](./roteiro-validacao-aluno.md) — aluno
+3. [`docs/security.md`](./security.md) — checklist segurança
+4. [`docs/acessibilidade.md`](./acessibilidade.md) — Tab e leitor
+5. Corrigir bugs → Passo 3 em [`session/current.md`](../session/current.md)
+6. **Só então** iniciar `apps/mobile`
 
 ---
 
 ## Próxima entrega
 
-Ver `docs/plano-plataforma-aluno.md` — home e fluxo do aluno conectados ao banco.
+Ver [`session/current.md`](../session/current.md) — passo a passo completo até o app mobile.

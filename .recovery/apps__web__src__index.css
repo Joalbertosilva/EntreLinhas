@@ -1243,28 +1243,40 @@
 
   .home-section-rail {
     position: relative;
-    isolation: isolate;
     display: flex;
-    align-items: stretch;
+    flex-direction: column;
     width: 100%;
-    max-width: 40rem;
-    margin-inline: auto;
-    gap: 0.12rem;
+    max-width: 100%;
     overflow: hidden;
-    padding: 0.14rem;
     border-radius: 9999px;
-    border: 1px solid rgb(0 51 102 / 0.2);
+    border: 1px solid rgb(0 51 102 / 0.24);
     background: #efb034;
   }
 
+  .home-section-rail__cap {
+    flex-shrink: 0;
+    height: 0.4375rem;
+    overflow: hidden;
+    line-height: 0;
+  }
+
+  .home-section-rail__cap--foot {
+    transform: scaleY(-1);
+  }
+
   .home-section-rail__weave {
-    position: absolute;
-    inset: -1px;
-    z-index: 0;
     display: block;
-    width: calc(100% + 2px);
-    height: calc(100% + 2px);
+    width: 100%;
+    height: 0.4375rem;
     pointer-events: none;
+  }
+
+  .home-section-rail__track {
+    display: flex;
+    width: 100%;
+    align-items: center;
+    gap: 0.22rem;
+    padding: 0.22rem 0.3rem;
   }
 
   .home-section-rail-item {
@@ -1277,39 +1289,7 @@
     border-radius: 9999px;
     transition:
       background-color 0.18s ease,
-      color 0.18s ease,
-      box-shadow 0.18s ease;
-  }
-
-  .home-section-rail-item .section-icon--rail {
-    height: 1.5rem;
-    width: 1.5rem;
-    border-radius: 0.375rem;
-    background: rgb(255 255 255 / 0.16);
-    color: inherit;
-    --tw-ring-color: rgb(255 255 255 / 0.28);
-  }
-
-  .home-section-rail-item .section-icon--rail svg {
-    height: 0.8125rem;
-    width: 0.8125rem;
-  }
-
-  @media (min-width: 640px) {
-    .home-section-rail {
-      gap: 0.14rem;
-      padding: 0.16rem;
-    }
-
-    .home-section-rail-item .section-icon--rail {
-      height: 1.625rem;
-      width: 1.625rem;
-    }
-
-    .home-section-rail-item .section-icon--rail svg {
-      height: 0.875rem;
-      width: 0.875rem;
-    }
+      color 0.18s ease;
   }
 
   .home-section-rail-item[data-section='livros'] {
@@ -1325,69 +1305,66 @@
   }
 
   .home-section-rail-item[data-section='poemas'] {
-    background: #efb034;
-    color: #003366;
-  }
-
-  .home-section-rail-item.is-emphasis,
-  .home-section-rail-item.is-active {
     background: #ffffff;
-    box-shadow: 0 1px 4px rgb(0 51 102 / 0.12);
+    color: #003366;
+    box-shadow: inset 0 0 0 1px rgb(0 51 102 / 0.1);
   }
 
-  .home-section-rail-item[data-section='livros'].is-emphasis,
-  .home-section-rail-item[data-section='livros'].is-active {
+  .home-section-rail-item.is-emphasis {
+    background: #ffffff;
+    box-shadow: inset 0 0 0 1px rgb(0 51 102 / 0.12);
+  }
+
+  .home-section-rail-item[data-section='livros'].is-emphasis {
     color: #00008a;
   }
 
-  .home-section-rail-item[data-section='cronicas'].is-emphasis,
-  .home-section-rail-item[data-section='cronicas'].is-active {
+  .home-section-rail-item[data-section='cronicas'].is-emphasis {
     color: #003366;
   }
 
-  .home-section-rail-item[data-section='musicas'].is-emphasis,
-  .home-section-rail-item[data-section='musicas'].is-active {
+  .home-section-rail-item[data-section='musicas'].is-emphasis {
     color: #0066cc;
   }
 
-  .home-section-rail-item[data-section='poemas'].is-emphasis,
-  .home-section-rail-item[data-section='poemas'].is-active {
+  .home-section-rail-item[data-section='poemas'].is-emphasis {
     color: #003366;
   }
 
+  .home-section-rail-item .section-icon--rail {
+    background: rgb(255 255 255 / 0.16);
+    color: inherit;
+    --tw-ring-color: rgb(255 255 255 / 0.28);
+  }
+
   .home-section-rail-item[data-section='poemas'] .section-icon--rail {
-    background: rgb(0 51 102 / 0.08);
+    background: rgb(0 51 102 / 0.07);
     --tw-ring-color: rgb(0 51 102 / 0.14);
   }
 
-  .home-section-rail-item.is-emphasis .section-icon--rail,
-  .home-section-rail-item.is-active .section-icon--rail {
+  .home-section-rail-item.is-emphasis .section-icon--rail {
     background: rgb(0 51 102 / 0.06);
     --tw-ring-color: rgb(0 51 102 / 0.12);
   }
 
-  .home-section-rail-item[data-section='livros'].is-emphasis .section-icon--rail,
-  .home-section-rail-item[data-section='livros'].is-active .section-icon--rail {
+  .home-section-rail-item[data-section='livros'].is-emphasis .section-icon--rail {
     color: #00008a;
     background: rgb(0 0 138 / 0.08);
     --tw-ring-color: rgb(0 0 138 / 0.16);
   }
 
-  .home-section-rail-item[data-section='cronicas'].is-emphasis .section-icon--rail,
-  .home-section-rail-item[data-section='cronicas'].is-active .section-icon--rail {
+  .home-section-rail-item[data-section='cronicas'].is-emphasis .section-icon--rail {
     color: #003366;
     background: rgb(0 51 102 / 0.08);
   }
 
-  .home-section-rail-item[data-section='musicas'].is-emphasis .section-icon--rail,
-  .home-section-rail-item[data-section='musicas'].is-active .section-icon--rail {
+  .home-section-rail-item[data-section='musicas'].is-emphasis .section-icon--rail {
     color: #0066cc;
     background: rgb(0 102 204 / 0.08);
     --tw-ring-color: rgb(0 102 204 / 0.14);
   }
 
-  .home-section-rail-item[data-section='poemas'].is-emphasis .section-icon--rail,
-  .home-section-rail-item[data-section='poemas'].is-active .section-icon--rail {
+  .home-section-rail-item[data-section='poemas'].is-emphasis .section-icon--rail {
     color: #8a6914;
     background: rgb(239 176 52 / 0.18);
     --tw-ring-color: rgb(239 176 52 / 0.35);
@@ -1596,7 +1573,7 @@
     }
   }
 
-  .app-main-surface {
+
     min-height: calc(100vh - var(--app-header-height, 3.25rem) - 12rem);
   }
 
@@ -1654,11 +1631,7 @@
   }
 
   .bg-login-hero {
-    background: rgb(255 255 255 / 0.38);
-  }
-
-  .login-form-wrap {
-    width: 100%;
+    background: rgb(255 255 255 / 0.42);
   }
 
   .auth-hero-visual {

@@ -30,16 +30,20 @@ Painel em `/admin/*` para **professor** e **administrador**.
 
 Roteiro manual: **`docs/gerenciador-roteiro-teste.md`**
 
-Testes automatizados (schemas): `pnpm test`
+Testes automatizados (schemas): `pnpm test:schemas`
 
 ---
 
-## ❌ Fora do gerenciador (próxima fase)
+## Plataforma aluno (`/app`) — fora deste checklist
 
-| RF | Destino |
-|----|---------|
-| RF007–RF012 | Plataforma aluno `/app/*` |
-| Link “Plataforma” no menu | Junto com `/app/*` |
+Implementada em paralelo ao gerenciador. Validação separada:
+
+**`docs/roteiro-validacao-aluno.md`**
+
+| RF | Rota aluno | Status impl. |
+|----|------------|--------------|
+| RF007–RF012 | `/app/*` | ✅ implementado — validar manualmente |
+| RF015 | `/app/perfil` | ✅ |
 
 ---
 

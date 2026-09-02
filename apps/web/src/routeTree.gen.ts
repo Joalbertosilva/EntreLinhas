@@ -32,6 +32,7 @@ import { Route as AppMinhasLeiturasRouteImport } from './routes/app/minhas-leitu
 import { Route as AppMusicasRouteImport } from './routes/app/musicas'
 import { Route as AppPerfilRouteImport } from './routes/app/perfil'
 import { Route as AppPoemasRouteImport } from './routes/app/poemas'
+import { Route as AppProgressoRouteImport } from './routes/app/progresso'
 import { Route as AdminConteudosConteudoIdRouteImport } from './routes/admin/conteudos.$conteudoId'
 import { Route as AppConteudosConteudoIdRouteImport } from './routes/app/conteudos.$conteudoId'
 import { Route as AppObrasObraIdRouteImport } from './routes/app/obras.$obraId'
@@ -152,6 +153,11 @@ const AppPoemasRoute = AppPoemasRouteImport.update({
   path: '/poemas',
   getParentRoute: () => AppRouteRoute,
 } as any)
+const AppProgressoRoute = AppProgressoRouteImport.update({
+  id: '/progresso',
+  path: '/progresso',
+  getParentRoute: () => AppRouteRoute,
+} as any)
 const AdminConteudosConteudoIdRoute =
   AdminConteudosConteudoIdRouteImport.update({
     id: '/$conteudoId',
@@ -196,6 +202,7 @@ export interface FileRoutesByFullPath {
   '/app/musicas': typeof AppMusicasRoute
   '/app/perfil': typeof AppPerfilRouteWithChildren
   '/app/poemas': typeof AppPoemasRoute
+  '/app/progresso': typeof AppProgressoRoute
   '/admin/': typeof AdminIndexRoute
   '/app/': typeof AppIndexRoute
   '/admin/conteudos/$conteudoId': typeof AdminConteudosConteudoIdRoute
@@ -223,6 +230,7 @@ export interface FileRoutesByTo {
   '/app/musicas': typeof AppMusicasRoute
   '/app/perfil': typeof AppPerfilRouteWithChildren
   '/app/poemas': typeof AppPoemasRoute
+  '/app/progresso': typeof AppProgressoRoute
   '/admin': typeof AdminIndexRoute
   '/app': typeof AppIndexRoute
   '/admin/conteudos/$conteudoId': typeof AdminConteudosConteudoIdRoute
@@ -253,6 +261,7 @@ export interface FileRoutesById {
   '/app/musicas': typeof AppMusicasRoute
   '/app/perfil': typeof AppPerfilRouteWithChildren
   '/app/poemas': typeof AppPoemasRoute
+  '/app/progresso': typeof AppProgressoRoute
   '/admin/': typeof AdminIndexRoute
   '/app/': typeof AppIndexRoute
   '/admin/conteudos/$conteudoId': typeof AdminConteudosConteudoIdRoute
@@ -284,6 +293,7 @@ export interface FileRouteTypes {
     | '/app/musicas'
     | '/app/perfil'
     | '/app/poemas'
+    | '/app/progresso'
     | '/admin/'
     | '/app/'
     | '/admin/conteudos/$conteudoId'
@@ -311,6 +321,7 @@ export interface FileRouteTypes {
     | '/app/musicas'
     | '/app/perfil'
     | '/app/poemas'
+    | '/app/progresso'
     | '/admin'
     | '/app'
     | '/admin/conteudos/$conteudoId'
@@ -340,6 +351,7 @@ export interface FileRouteTypes {
     | '/app/musicas'
     | '/app/perfil'
     | '/app/poemas'
+    | '/app/progresso'
     | '/admin/'
     | '/app/'
     | '/admin/conteudos/$conteudoId'
@@ -521,6 +533,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AppPoemasRouteImport
       parentRoute: typeof AppRouteRoute
     }
+    '/app/progresso': {
+      id: '/app/progresso'
+      path: '/progresso'
+      fullPath: '/app/progresso'
+      preLoaderRoute: typeof AppProgressoRouteImport
+      parentRoute: typeof AppRouteRoute
+    }
     '/admin/conteudos/$conteudoId': {
       id: '/admin/conteudos/$conteudoId'
       path: '/$conteudoId'
@@ -610,6 +629,7 @@ interface AppRouteRouteChildren {
   AppMusicasRoute: typeof AppMusicasRoute
   AppPerfilRoute: typeof AppPerfilRouteWithChildren
   AppPoemasRoute: typeof AppPoemasRoute
+  AppProgressoRoute: typeof AppProgressoRoute
   AppIndexRoute: typeof AppIndexRoute
   AppConteudosConteudoIdRoute: typeof AppConteudosConteudoIdRoute
   AppObrasObraIdRoute: typeof AppObrasObraIdRoute
@@ -623,6 +643,7 @@ const AppRouteRouteChildren: AppRouteRouteChildren = {
   AppMusicasRoute: AppMusicasRoute,
   AppPerfilRoute: AppPerfilRouteWithChildren,
   AppPoemasRoute: AppPoemasRoute,
+  AppProgressoRoute: AppProgressoRoute,
   AppIndexRoute: AppIndexRoute,
   AppConteudosConteudoIdRoute: AppConteudosConteudoIdRoute,
   AppObrasObraIdRoute: AppObrasObraIdRoute,

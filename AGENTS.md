@@ -22,7 +22,7 @@ Orientação geral para agentes de IA que atuam neste repositório.
 8. **Sem cadastro público.** Criação de usuários somente pelo Administrador via Edge Function.
 9. **Soft delete:** preferir `status = inativo` em vez de exclusão definitiva quando houver histórico.
 10. **Formulários:** React Hook Form + Zod. Não usar Formik + Yup.
-11. **Docker obrigatório** para desenvolvimento local. Backend Supabase roda em containers (`supabase start`). Ver `docs/docker.md`.
+11. **Ambiente Supabase:** modo atual é **nuvem** (`docs/supabase-nuvem.md`) — site local com `pnpm web:dev`. Docker local é opcional (`docs/docker.md`). **Nunca** `db:reset` / `supabase db reset --linked` no projeto nuvem.
 12. **Design UI:** seguir **obrigatoriamente** `docs/design-system.md` — interface natural, cores CESMAC, **proibido** aspecto genérico de template/IA em qualquer tela (gerenciador, plataforma, mobile).
 
 ## Estrutura do monorepo
@@ -63,11 +63,12 @@ tcc-sistema/
 
 ## Prioridades de implementação (MVP)
 
-Ordem adotada: **Backend → Web → Mobile** (ver `session/current.md`)
+Ordem adotada: **Backend → Web (validar) → Mobile** (ver `session/current.md`)
 
-1. Backend: Docker, Supabase, migrations, auth, RLS
-2. Web: gerenciador + área aluno + testes Vitest/RTL
-3. Mobile: paridade aluno + testes RNTL
+1. Backend: Supabase nuvem, migrations, auth, RLS — ✅
+2. Web: gerenciador + área aluno — implementado; **validar manualmente** antes de avançar
+3. Lacunas web: busca, testes, a11y (conforme validação)
+4. Mobile: paridade aluno — **só após critério “web validado”** (Passo 7)
 
 ## O que NÃO fazer
 
@@ -88,5 +89,8 @@ Ordem adotada: **Backend → Web → Mobile** (ver `session/current.md`)
 - `docs/mvp-scope.md` — escopo da primeira versão
 - `docs/user-flows.md` — fluxos principais
 - `docs/design-system.md` — **obrigatório** — cores CESMAC, tom de voz, anti-“IA”
-- `docs/gerenciador-checklist.md` — o que falta/no gerenciador
-- `docs/docker.md` — Docker, Supabase local e compose
+- `docs/gerenciador-checklist.md` — checklist gerenciador
+- `docs/supabase-nuvem.md` — nuvem, preservar dados, o que nunca rodar
+- `docs/roteiro-validacao-aluno.md` — validação manual aluno
+- `session/current.md` — **passo a passo atual** (sempre ler primeiro)
+- `docs/docker.md` — Docker / Supabase local (opcional)

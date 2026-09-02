@@ -137,7 +137,7 @@ Instale antes de clonar:
 |------------|---------------|----------|
 | [Node.js](https://nodejs.org/) | 20+ | Apps frontend e scripts |
 | [pnpm](https://pnpm.io/) | 9+ (projeto usa 11.x) | Monorepo |
-| [Docker](https://docs.docker.com/) + Compose | Atual | Supabase local |
+| [Docker](https://docs.docker.com/) + Compose | Atual | Supabase **local** (opcional) |
 | [Supabase CLI](https://supabase.com/docs/guides/cli) | Atual | Migrations, functions, `db:start` |
 
 Verificar:
@@ -153,31 +153,31 @@ supabase --version
 
 ## Instalação e primeiro uso
 
+**Modo atual (Supabase nuvem + site local):**
+
 ```bash
-# 1. Clonar
 git clone <url-do-repositorio>
 cd tcc-sistema
-
-# 2. Dependências
 pnpm install
+cp .env.example apps/web/.env.local   # preencher com credenciais da nuvem
+pnpm web:dev                          # → http://localhost:5173
+```
 
-# 3. Backend local (Docker)
+Ver [`docs/supabase-nuvem.md`](./docs/supabase-nuvem.md) — **não** rodar `db:reset` na nuvem.
+
+<details>
+<summary>Modo Docker local (opcional — banco separado)</summary>
+
+```bash
 pnpm db:start
 pnpm db:migrate
-
-# 4. Variáveis de ambiente (web)
-cp .env.example apps/web/.env.local
-# Preencher VITE_SUPABASE_ANON_KEY — valor em: pnpm db:status
-
-# 5. Usuário admin inicial (primeira vez ou após db:reset)
+cp .env.example apps/web/.env.local   # chaves de pnpm db:status
 pnpm db:seed-admin
-
-# 6. Edge Functions (necessário para criar usuários e recuperação de senha)
 pnpm functions:serve   # terminal separado
-
-# 7. Frontend
-pnpm web:dev         # → http://localhost:5173
+pnpm web:dev
 ```
+
+</details>
 
 **Login de desenvolvimento (após seed):**
 
@@ -201,18 +201,24 @@ Guia completo: [`docs/dev-commands.md`](./docs/dev-commands.md) · [`docs/quando
 
 ## Comandos do dia a dia
 
-Rotina típica — **3 terminais**:
+**Modo atual (Supabase nuvem + site local):**
 
 ```bash
-# Terminal 1 — backend
+pnpm web:dev    # → http://localhost:5173
+```
+
+Ver [`docs/quando-rodar-comandos.md`](./docs/quando-rodar-comandos.md) e [`docs/supabase-nuvem.md`](./docs/supabase-nuvem.md).
+
+<details>
+<summary>Modo Docker local (opcional — banco separado da nuvem)</summary>
+
+```bash
 pnpm db:start
-
-# Terminal 2 — Edge Functions (criar usuário / recuperar senha)
-pnpm functions:serve
-
-# Terminal 3 — frontend
+pnpm functions:serve   # terminal separado
 pnpm web:dev
 ```
+
+</details>
 
 | Comando | Descrição |
 |---------|-----------|
@@ -291,15 +297,17 @@ Escopo MVP: [`docs/mvp-scope.md`](./docs/mvp-scope.md)
 
 | Módulo | Status |
 |--------|--------|
-| Backend (migrations, RLS, storage) | ✅ |
+| Backend Supabase (nuvem) | ✅ |
 | Login + recuperação de senha | ✅ |
 | Gerenciador `/admin` | ✅ |
-| Plataforma aluno `/app` | 🔄 em evolução |
-| Leitor de livro paginado, reflexão, comentários, curtidas | ✅ |
-| Busca global, evolução do aluno, produções/obras | ⏳ roadmap |
-| App mobile (`apps/mobile`) | ⏳ Fase 3 |
+| Plataforma aluno `/app` | 🔄 implementada — **validar manualmente** |
+| Minha obra, leituras, interações, obras públicas | ✅ |
+| Busca global no header | ⏳ |
+| Testes automatizados | ⏳ |
+| App mobile (`apps/mobile`) | ⏳ após web validado |
+| Deploy público | ⏳ longe |
 
-Estado detalhado da sessão: [`session/current.md`](./session/current.md)
+**Próximo passo:** [`session/current.md`](./session/current.md) — Passos 0–2 (validação).
 
 ---
 
@@ -318,7 +326,10 @@ Estado detalhado da sessão: [`session/current.md`](./session/current.md)
 | [`docs/user-flows.md`](./docs/user-flows.md) | Fluxos de uso |
 | [`docs/dev-commands.md`](./docs/dev-commands.md) | Todos os comandos |
 | [`docs/quando-rodar-comandos.md`](./docs/quando-rodar-comandos.md) | O que rodar sempre vs uma vez |
-| [`docs/docker.md`](./docs/docker.md) | Docker e ambiente local |
+| [`docs/supabase-nuvem.md`](./docs/supabase-nuvem.md) | Nuvem + preservar dados |
+| [`docs/roteiro-validacao-aluno.md`](./docs/roteiro-validacao-aluno.md) | Checklist manual aluno |
+| [`session/current.md`](./session/current.md) | **Passo a passo atual** |
+| [`docs/docker.md`](./docs/docker.md) | Docker local (opcional) |
 | [`AGENTS.md`](./AGENTS.md) | Orientação para agentes de IA (Cursor) |
 
 ---

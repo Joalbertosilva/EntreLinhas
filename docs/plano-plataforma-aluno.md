@@ -1,94 +1,61 @@
 # Plano — Plataforma do aluno (`/app/*`)
 
-Mesmo design (CESMAC equilibrado + acessibilidade). Conectado ao banco já existente.
+> **Status (2026-09-01):** ✅ **Implementada na web** — fase atual é **validação manual**, não construção greenfield.  
+> Roteiro: [`roteiro-validacao-aluno.md`](./roteiro-validacao-aluno.md)  
+> Passo a passo geral: [`session/current.md`](../session/current.md)
 
 ---
 
-## Objetivo
+## Objetivo (atingido na web)
 
-Entregar RF007–RF012 para o perfil **aluno** na web, antes ou em paralelo ao mobile.
-
----
-
-## Rotas propostas
-
-| Rota | RF | Descrição |
-|------|-----|-----------|
-| `/app` | RF007 | Home — conteúdos ativos, busca e filtros |
-| `/app/conteudos/$id` | RF007–RF009 | Detalhe: capa, temas, materiais, marcar leitura |
-| `/app/conteudos/$id/interagir` | RF008 | Comentário livre / reflexão orientada |
-| `/app/evolucao` | RF010 | Progresso individual |
-| `/app/producoes` | RF011 | Lista e editor de produções |
-| `/app/obras` | RF012 | Montagem da obra autoral |
-| `/app/perfil` | RF015 | Perfil, senha, resumo evolução |
+Entregar RF007–RF012 para o perfil **aluno** na web, antes do mobile.
 
 ---
 
-## Layout
+## Rotas implementadas
 
-- Reutilizar tokens (`index.css`), `Button`, `Card`, `PageHeader`, `SkipLink`
-- Sidebar ou top nav **mais simples** que o gerenciador (foco leitura)
-- Link no gerenciador: “Ir para plataforma” (staff que também for aluno — futuro)
-
----
-
-## Backend (já pronto)
-
-| Tabela / view | Uso |
-|---------------|-----|
-| `conteudos` | SELECT ativos (RLS aluno) |
-| `temas`, `materiais_complementares` | Detalhe |
-| `interacoes` | RF008 |
-| `leituras` | RF009 |
-| `evolucao_aluno` | RF010 |
-| `producoes`, `obras`, `obra_itens` | RF011–RF012 |
+| Rota | RF | Status |
+|------|-----|--------|
+| `/app` | RF007 | ✅ Home, vitrines, destaques |
+| `/app/livros`, `/cronicas`, `/poemas`, `/musicas` | RF007 | ✅ |
+| `/app/conteudos/$id` | RF007–RF009 | ✅ Detalhe, leitura, interações |
+| `/app/minhas-leituras` | RF009 | ✅ |
+| `/app/minha-obra` | RF011–RF012 | ✅ Editor + publicar |
+| `/app/obras/$id` | RF012 | ✅ Obras públicas |
+| `/app/perfil`, `/app/perfil/senha` | RF015 | ✅ |
 
 ---
 
-## Ordem de implementação
+## Pendente na web (pós-validação)
 
-```
-1. Auth aluno → redirect /app (hoje bloqueado no login)
-2. Layout /app + home (grid conteúdos, busca)
-3. Detalhe conteúdo + marcar leitura
-4. Interações (comentário/reflexão)
-5. Evolução + perfil aluno
-6. Produções + obras
-```
+| Item | RF | Prioridade |
+|------|-----|------------|
+| Busca no header | RF007 | Alta |
+| Evolução completa no perfil aluno | RF010 | Média |
+| Revisão responsivo + a11y | RNF | Média |
 
 ---
 
-## Auth
+## Layout (como ficou)
 
-Hoje login de aluno mostra toast e redireciona para `/admin`. Ajustar:
-
-- `aluno` → `/app`
-- `professor` / `administrador` → `/admin`
-- Staff pode ter link cruzado depois
+- Top nav + menu pill na home + drawer mobile
+- Design system CESMAC (`docs/design-system.md`)
+- Tema claro fixo
 
 ---
 
-## Design
+## Backend (nuvem)
 
-- Fundo com pontos (`bg-dot-pattern`)
-- Blocos azul/amarelo **suaves** (cards, stats evolução)
-- Hover `card-lift` nos cards de livro
-- Capas do Storage (`covers` bucket público)
+Mesmas tabelas documentadas em [`database.md`](./database.md). Dados em Supabase cloud — **não resetar**.
 
 ---
 
-## Acessibilidade
+## Próximo: mobile
 
-Seguir `docs/acessibilidade.md` desde a primeira tela — não deixar para o final.
+Após critério “web validado” em `session/current.md`:
 
----
+- Scaffold `apps/mobile` (Expo)
+- Paridade mínima com `/app`
+- Mesmo Supabase nuvem
 
-## Critério de pronto (fase aluno web)
-
-- [ ] Aluno loga e vê home com conteúdos cadastrados no gerenciador
-- [ ] Busca e filtro por tipo funcionam
-- [ ] Detalhe exibe temas e materiais
-- [ ] Marca leitura concluída (sem duplicata)
-- [ ] Cria interação e vê evolução
-- [ ] CRUD produções + montar obra básica
-- [ ] Mesmo visual do gerenciador (consistente, não exagerado)
+Skill: `skills/create-feature-mobile/SKILL.md`

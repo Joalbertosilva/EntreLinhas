@@ -44,7 +44,7 @@ export function LoginHeroPanel() {
   return (
     <>
       <aside
-        className="login-brand-panel relative hidden min-h-0 flex-1 flex-col justify-center overflow-hidden bg-login-hero px-8 py-10 xl:px-14 lg:flex lg:min-h-screen lg:w-1/2"
+        className="login-brand-panel relative hidden min-h-screen flex-col justify-center overflow-hidden bg-login-hero px-8 py-12 xl:px-14 lg:flex lg:w-1/2"
         aria-label="EntreLinhas"
       >
         <LoginHeroDecorations />
