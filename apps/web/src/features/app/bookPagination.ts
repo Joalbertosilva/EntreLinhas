@@ -39,3 +39,26 @@ export function countBookPages(
 export function getBookPageStorageKey(conteudoId: string): string {
   return `entrelinhas-book-page-${conteudoId}`
 }
+
+export function getObraPageStorageKey(obraId: string): string {
+  return `entrelinhas-obra-page-${obraId}`
+}
+
+export interface ObraCapituloPage {
+  id: string
+  ordem: number
+  titulo: string
+  texto: string
+}
+
+/** Capítulos da obra do aluno → páginas do leitor paginado */
+export function buildObraBookPages(capitulos: ObraCapituloPage[]): BookPage[] {
+  return capitulos
+    .filter((c) => c.texto?.trim())
+    .sort((a, b) => a.ordem - b.ordem)
+    .map((c) => ({
+      id: c.id,
+      title: c.titulo,
+      body: c.texto.trim(),
+    }))
+}

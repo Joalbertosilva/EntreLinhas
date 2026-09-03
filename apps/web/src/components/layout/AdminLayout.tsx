@@ -118,7 +118,7 @@ export function AdminLayout() {
 
       <div className="space-y-1 border-t border-border bg-surface/50 p-3">
         <Link
-          to="/admin/perfil"
+          to="/app/perfil"
           onClick={() => setMobileOpen(false)}
           className="flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm transition-all duration-200 hover:bg-primary-light/60"
         >
@@ -186,7 +186,7 @@ export function AdminLayout() {
             <UserAccountMenu
               profile={profile}
               onSignOut={handleSignOut}
-              accountPath="/admin/perfil"
+              accountPath="/app/perfil"
               compact
             />
             <Link

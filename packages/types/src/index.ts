@@ -40,6 +40,24 @@ export type TipoProducao = (typeof TIPOS_PRODUCAO)[number];
 export const TIPOS_OBRA = ['livro', 'cronica', 'poema'] as const;
 export type TipoObra = (typeof TIPOS_OBRA)[number];
 
+/** Categoria / gênero da obra — usada na capa conceitual */
+export const CATEGORIAS_OBRA = [
+  'biografia',
+  'autobiografia',
+  'ficcao',
+  'conto',
+  'cronica',
+  'poesia',
+  'memorias',
+  'ensaio',
+  'fantasia',
+  'romance',
+  'misterio',
+  'aventura',
+  'outro',
+] as const;
+export type CategoriaObra = (typeof CATEGORIAS_OBRA)[number];
+
 export interface Profile {
   id: string;
   nome: string;

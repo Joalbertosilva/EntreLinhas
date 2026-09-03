@@ -4,7 +4,6 @@ import { useQueryClient } from '@tanstack/react-query'
 import { useAuth } from '@/features/auth/AuthProvider'
 import { ContentCarousel, HOME_SECTIONS, ScrollReveal } from '@/features/app'
 import { HomeHero } from '@/features/app/HomeHero'
-import { HomeObrasPublicas } from '@/features/app/HomeObrasPublicas'
 import { HomeSectionRailSticky } from '@/features/app/HomeSectionRailSticky'
 
 export const Route = createFileRoute('/app/')({
@@ -24,10 +23,6 @@ function AppHomePage() {
   return (
     <div className="home-page">
       <HomeHero userId={profile?.id} firstName={firstName} />
-
-      <div className="home-obras-publicas-wrap">
-        <HomeObrasPublicas />
-      </div>
 
       <HomeSectionRailSticky />
 

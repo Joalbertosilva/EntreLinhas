@@ -1,17 +1,29 @@
 import { supabase } from '@/lib/supabase'
 
 const COVERS_BUCKET = 'covers'
-const ALLOWED_TYPES = ['image/jpeg', 'image/png', 'image/webp']
 const MAX_BYTES = 5 * 1024 * 1024
 
 export function validateCoverFile(file: File): string | null {
-  if (!ALLOWED_TYPES.includes(file.type)) {
+  const type = file.type.toLowerCase()
+  const name = file.name.toLowerCase()
+  const allowedTypes = ['image/jpeg', 'image/jpg', 'image/png', 'image/webp']
+  const allowedExt = ['.jpg', '.jpeg', '.png', '.webp']
+  const typeOk = !type || allowedTypes.includes(type)
+  const extOk = allowedExt.some((ext) => name.endsWith(ext))
+  if (!typeOk && !extOk) {
     return 'Use JPG, PNG ou WebP'
   }
   if (file.size > MAX_BYTES) {
     return 'A imagem deve ter no máximo 5 MB'
   }
   return null
+}
+
+/** URL pública com parâmetro para evitar cache do navegador após novo upload */
+export function withCacheBust(url: string, version?: number | string): string {
+  const v = version ?? Date.now()
+  const sep = url.includes('?') ? '&' : '?'
+  return `${url}${sep}v=${v}`
 }
 
 export function extractCoverStoragePath(url: string): string | null {
@@ -59,12 +71,13 @@ export async function uploadObraCover(
 
   const { error } = await supabase.storage.from(COVERS_BUCKET).upload(path, file, {
     upsert: true,
-    contentType: file.type,
+    contentType: file.type || 'image/jpeg',
+    cacheControl: '3600',
   })
   if (error) throw new Error(error.message)
 
   const { data } = supabase.storage.from(COVERS_BUCKET).getPublicUrl(path)
-  return data.publicUrl
+  return withCacheBust(data.publicUrl)
 }
 
 export async function deleteCoverByUrl(url: string | null | undefined): Promise<void> {

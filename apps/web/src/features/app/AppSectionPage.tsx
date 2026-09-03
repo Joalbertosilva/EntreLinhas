@@ -1,6 +1,7 @@
 import { Link } from '@tanstack/react-router'
 import type { AppNavItem } from '@/features/app/appNavigation'
 import { ContentCarousel } from '@/features/app/ContentCarousel'
+import { ObrasComunidadeSection } from '@/features/app/ObrasComunidadeSection'
 import { ScrollReveal } from '@/features/app/ScrollReveal'
 import { SectionIcon } from '@/features/app/SectionIcon'
 import { useConteudosByTipo } from '@/features/app/useConteudos'
@@ -67,6 +68,12 @@ export function AppSectionPage({ item }: AppSectionPageProps) {
           showViewAll={false}
         />
       </ScrollReveal>
+
+      {item.id === 'livros' && (
+        <ScrollReveal delayMs={140}>
+          <ObrasComunidadeSection limit={16} />
+        </ScrollReveal>
+      )}
     </div>
   )
 }

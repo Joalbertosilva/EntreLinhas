@@ -1,50 +1,43 @@
 import type { AlunoProgressStats } from '@/features/app/alunoProgress'
-import { calcularProgressoAluno } from '@/features/app/alunoProgress'
+import { calcularProgressoAluno, faixaDoNivel } from '@/features/app/alunoProgress'
 import { supabase } from '@/lib/supabase'
 
-/** Azul escuro do card / livro / chips */
-export const JORNADA_AZUL = '#00008A'
-
-/** Cor separada só para a barra de progresso — âmbar natural */
-export const JORNADA_PROGRESSO = '#b8860b'
-export const JORNADA_PROGRESSO_TRACK = '#f2ebe0'
-
 export interface PaletaLivro {
-  /** Azul #00008A — chips, livro, botão */
   accent: string
   marcador: string
   pagina: string
   paginaEscura: string
   glow: string
-  /** Barra de progresso — cor distinta do azul */
   barra: string
   barraTrack: string
-  /** Fundo do card — branco levemente azulado, sem lilás */
+  /** Fundo sólido do card — mesma ideia do avatar (cor pintada) */
   ambiente: string
+  faixaNome: string
+  texto: string
+  textoMuted: string
 }
 
-const AZUL = { r: 0, g: 0, b: 138 } as const
+/** Paleta sólida por faixa — card pintado como o avatar do aluno */
+export function paletaLivroCinematico(nivel: number, _progressoPct: number): PaletaLivro {
+  const faixa = faixaDoNivel(nivel)
 
-function rgba(c: { r: number; g: number; b: number }, a: number) {
-  return `rgb(${c.r} ${c.g} ${c.b} / ${a})`
-}
-
-/** Card azul #00008A + barra âmbar — tudo sólido, sem gradiente */
-export function paletaLivroCinematico(_nivel: number, _progressoPct: number): PaletaLivro {
   return {
-    accent: JORNADA_AZUL,
-    marcador: JORNADA_AZUL,
-    pagina: rgba(AZUL, 0.28),
-    paginaEscura: rgba(AZUL, 0.4),
-    glow: 'transparent',
-    barra: JORNADA_PROGRESSO,
-    barraTrack: JORNADA_PROGRESSO_TRACK,
-    ambiente: '#eef0f8',
+    accent: faixa.cor,
+    marcador: '#ffffff',
+    pagina: 'rgb(255 255 255 / 0.38)',
+    paginaEscura: 'rgb(255 255 255 / 0.52)',
+    glow: faixa.cor,
+    barra: '#ffffff',
+    barraTrack: 'rgb(255 255 255 / 0.28)',
+    ambiente: faixa.cor,
+    faixaNome: faixa.nome,
+    texto: '#ffffff',
+    textoMuted: 'rgb(255 255 255 / 0.82)',
   }
 }
 
-export function corMarcador(_nivel: number): string {
-  return JORNADA_AZUL
+export function corMarcador(nivel: number): string {
+  return faixaDoNivel(nivel).cor
 }
 
 export function fraseCapitulo(nivel: number): string {

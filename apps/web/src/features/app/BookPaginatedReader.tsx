@@ -9,12 +9,14 @@ interface BookPaginatedReaderProps {
   pages: BookPage[]
   conteudoId: string
   titulo: string
+  /** Chave de sessionStorage; padrão usa conteudoId */
+  storageKey?: string
 }
 
 type TurnDirection = 'next' | 'prev' | null
 
-export function BookPaginatedReader({ pages, conteudoId, titulo }: BookPaginatedReaderProps) {
-  const storageKey = getBookPageStorageKey(conteudoId)
+export function BookPaginatedReader({ pages, conteudoId, titulo, storageKey: storageKeyProp }: BookPaginatedReaderProps) {
+  const storageKey = storageKeyProp ?? getBookPageStorageKey(conteudoId)
   const scrollRef = useRef<HTMLDivElement>(null)
 
   const [pageIndex, setPageIndex] = useState(0)

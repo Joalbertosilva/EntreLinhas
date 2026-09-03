@@ -1,5 +1,5 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
-import type { TipoObra, TipoProducao } from '@tcc-sistema/types'
+import type { CategoriaObra, TipoObra, TipoProducao } from '@tcc-sistema/types'
 import { supabase } from '@/lib/supabase'
 
 export interface ObraCapitulo {
@@ -17,6 +17,8 @@ export interface MinhaObraResumo {
   descricao: string | null
   capa_url: string | null
   tipo: TipoObra
+  categoria: CategoriaObra
+  curtidas_count: number
   publicado: boolean
   publicado_em: string | null
   updated_at: string
@@ -38,13 +40,15 @@ export interface ObraPublica {
   descricao: string | null
   capa_url: string | null
   tipo: TipoObra
+  categoria: CategoriaObra
+  curtidas_count: number
   publicado_em: string | null
   autor: { nome: string; nome_usuario: string } | null
   capitulos: ObraCapitulo[]
 }
 
 const OBRA_FIELDS =
-  'id, titulo, descricao, capa_url, tipo, publicado, publicado_em, updated_at'
+  'id, titulo, descricao, capa_url, tipo, categoria, curtidas_count, publicado, publicado_em, updated_at'
 
 function producaoTipoForObra(tipo: TipoObra): TipoProducao {
   if (tipo === 'poema') return 'poema'
@@ -201,6 +205,8 @@ export function useMinhaObra(userId: string | undefined) {
       return {
         ...obra,
         tipo: obra.tipo as TipoObra,
+        categoria: (obra.categoria as CategoriaObra) ?? 'outro',
+        curtidas_count: (obra.curtidas_count as number) ?? 0,
         publicado: obra.publicado as boolean,
         publicado_em: obra.publicado_em as string | null,
         ultimaProducao,
@@ -221,6 +227,8 @@ export function useMinhaObraEditor(userId: string | undefined, defaultTitle: str
         descricao: obra.descricao,
         capa_url: obra.capa_url ?? null,
         tipo: obra.tipo as TipoObra,
+        categoria: (obra.categoria as CategoriaObra) ?? 'outro',
+        curtidas_count: (obra.curtidas_count as number) ?? 0,
         publicado: obra.publicado as boolean,
         publicado_em: obra.publicado_em as string | null,
         updated_at: obra.updated_at,
@@ -241,6 +249,7 @@ export function useSalvarObraMeta(userId: string | undefined) {
       descricao: string | null
       capa_url?: string | null
       tipo?: TipoObra
+      categoria?: CategoriaObra
     }) => {
       const { error } = await supabase
         .from('obras')
@@ -249,6 +258,7 @@ export function useSalvarObraMeta(userId: string | undefined) {
           descricao: input.descricao,
           ...(input.capa_url !== undefined ? { capa_url: input.capa_url } : {}),
           ...(input.tipo !== undefined ? { tipo: input.tipo } : {}),
+          ...(input.categoria !== undefined ? { categoria: input.categoria } : {}),
         })
         .eq('id', input.obraId)
         .eq('usuario_id', userId!)
@@ -369,7 +379,7 @@ export function useObrasPublicas(limit = 12) {
     queryFn: async () => {
       const { data, error } = await supabase
         .from('obras')
-        .select('id, titulo, descricao, capa_url, tipo, publicado_em, profiles(nome, nome_usuario)')
+        .select('id, titulo, descricao, capa_url, tipo, categoria, publicado_em, profiles(nome, nome_usuario)')
         .eq('publicado', true)
         .eq('status', true)
         .order('publicado_em', { ascending: false })
@@ -383,6 +393,7 @@ export function useObrasPublicas(limit = 12) {
         descricao: row.descricao as string | null,
         capa_url: row.capa_url as string | null,
         tipo: row.tipo as TipoObra,
+        categoria: (row.categoria as CategoriaObra) ?? 'outro',
         publicado_em: row.publicado_em as string | null,
         autor: Array.isArray(row.profiles) ? row.profiles[0] ?? null : row.profiles,
       }))
@@ -396,7 +407,7 @@ export function useObraPublica(obraId: string) {
     queryFn: async (): Promise<ObraPublica | null> => {
       const { data: obra, error } = await supabase
         .from('obras')
-        .select('id, titulo, descricao, capa_url, tipo, publicado_em, profiles(nome, nome_usuario)')
+        .select('id, titulo, descricao, capa_url, tipo, categoria, curtidas_count, publicado_em, profiles(nome, nome_usuario)')
         .eq('id', obraId)
         .eq('publicado', true)
         .eq('status', true)
@@ -413,6 +424,8 @@ export function useObraPublica(obraId: string) {
         descricao: obra.descricao as string | null,
         capa_url: obra.capa_url as string | null,
         tipo: obra.tipo as TipoObra,
+        categoria: (obra.categoria as CategoriaObra) ?? 'outro',
+        curtidas_count: (obra.curtidas_count as number) ?? 0,
         publicado_em: obra.publicado_em as string | null,
         autor: Array.isArray(obra.profiles) ? obra.profiles[0] ?? null : obra.profiles,
         capitulos,

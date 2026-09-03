@@ -170,12 +170,84 @@ export function rotuloNivel(nivel: number, nivelMaximo: boolean): string {
 }
 
 export function tituloJornada(nivel: number): string {
-  if (nivel <= 3) return 'Primeiros passos'
-  if (nivel <= 10) return 'Leitor em formação'
-  if (nivel <= 20) return 'Explorador de histórias'
-  if (nivel <= 35) return 'Construtor de sentidos'
-  if (nivel <= 45) return 'Voz da comunidade'
-  return 'Entre linhas mestre'
+  return faixaDoNivel(nivel).rotulo
+}
+
+/** Faixas de nível — a cada 10 níveis, cor e título mudam (1–50) */
+export interface FaixaNivel {
+  id: number
+  nome: string
+  rotulo: string
+  nivelMin: number
+  nivelMax: number
+  cor: string
+  corClara: string
+  corBarra: string
+}
+
+export const FAIXAS_NIVEL: FaixaNivel[] = [
+  {
+    id: 1,
+    nome: 'Iniciante',
+    rotulo: 'Leitor iniciante',
+    nivelMin: 1,
+    nivelMax: 10,
+    cor: '#2a9d8f',
+    corClara: '#e8f7f4',
+    corBarra: '#ffffff',
+  },
+  {
+    id: 2,
+    nome: 'Aprendiz',
+    rotulo: 'Leitor aprendiz',
+    nivelMin: 11,
+    nivelMax: 20,
+    cor: '#238276',
+    corClara: '#d4f0ea',
+    corBarra: '#ffffff',
+  },
+  {
+    id: 3,
+    nome: 'Explorador',
+    rotulo: 'Explorador de histórias',
+    nivelMin: 21,
+    nivelMax: 30,
+    cor: '#3ebfae',
+    corClara: '#e3f7f4',
+    corBarra: '#ffffff',
+  },
+  {
+    id: 4,
+    nome: 'Construtor',
+    rotulo: 'Construtor de sentidos',
+    nivelMin: 31,
+    nivelMax: 40,
+    cor: '#d99a2a',
+    corClara: '#fef6e4',
+    corBarra: '#ffffff',
+  },
+  {
+    id: 5,
+    nome: 'Mestre',
+    rotulo: 'Entre linhas mestre',
+    nivelMin: 41,
+    nivelMax: 50,
+    cor: '#1c756a',
+    corClara: '#f0faf8',
+    corBarra: '#ffffff',
+  },
+]
+
+export function faixaDoNivel(nivel: number): FaixaNivel {
+  const clamped = Math.min(NIVEL_MAXIMO, Math.max(1, nivel))
+  return (
+    FAIXAS_NIVEL.find((f) => clamped >= f.nivelMin && clamped <= f.nivelMax) ?? FAIXAS_NIVEL[0]!
+  )
+}
+
+export function rotuloFaixaNivel(nivel: number): string {
+  const faixa = faixaDoNivel(nivel)
+  return `Nível ${nivel} · ${faixa.nome}`
 }
 
 /** Próximos marcos para a tela explicativa */

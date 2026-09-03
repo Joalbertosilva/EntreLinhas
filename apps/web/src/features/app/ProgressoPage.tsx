@@ -6,11 +6,13 @@ import {
   XP_EM_ANDAMENTO,
   XP_NIVEL_THRESHOLDS,
   xpIncrementoProximoNivel,
+  tituloJornada,
+  rotuloFaixaNivel,
 } from '@/features/app/alunoProgress'
 import { BookProgressVisual } from '@/features/app/BookProgressVisual'
+import { ProgressFaixasNivel } from '@/features/app/ProgressFaixasNivel'
 import { ProgressLevelBar } from '@/features/app/ProgressLevelBar'
 import {
-  fraseCapitulo,
   mensagemAcolhedora,
   paletaLivroCinematico,
   resumoLeituras,
@@ -26,7 +28,7 @@ import { cn } from '@/lib/utils'
 export function ProgressoPage() {
   const { profile } = useAuth()
   const { data: progress, isLoading } = useAlunoProgress(profile?.id)
-  const { pageProgress, justLeveledUp } = useBookProgressAnimation(progress)
+  const { pageProgress, displayPct, justLeveledUp } = useBookProgressAnimation(progress)
 
   if (isLoading) {
     return (
@@ -65,13 +67,14 @@ export function ProgressoPage() {
       <ScrollReveal delayMs={40}>
         <div
           className={cn(
-            'leitura-jornada-hero leitura-jornada-hero--interactive',
+            'leitura-jornada-hero leitura-jornada-hero--interactive leitura-jornada-hero--solid',
             justLeveledUp && 'leitura-jornada--celebrate',
           )}
           style={heroStyle}
         >
           <div className="flex flex-col items-center gap-6 sm:flex-row sm:items-start">
-            <BookProgressVisual
+            <div className="leitura-jornada__book-col leitura-jornada__book-col--solid">
+              <BookProgressVisual
               pageProgress={pageProgress}
               nivel={progress.nivel}
               marcadorCor={paleta.marcador}
@@ -80,27 +83,36 @@ export function ProgressoPage() {
               size="lg"
               cinematic
             />
+            </div>
             <div className="min-w-0 flex-1 text-center sm:text-left">
               <div className="flex flex-wrap items-baseline justify-center gap-x-3 gap-y-1 sm:justify-start">
-                <p className="text-lg font-medium text-brand-navy">{fraseCapitulo(progress.nivel)}</p>
-                <span className="text-sm font-semibold tabular-nums text-[color:var(--jornada-accent,var(--jornada-ink,#00008A))]">{progress.xp} XP</span>
+                <p className="text-lg font-medium text-white">{tituloJornada(progress.nivel)}</p>
+                <span className="leitura-jornada__faixa-chip text-xs font-semibold uppercase tracking-wide">
+                  {rotuloFaixaNivel(progress.nivel)}
+                </span>
+                <span className="text-sm font-semibold tabular-nums text-white">{progress.xp} XP</span>
               </div>
-              <p className="mt-2 text-sm leading-relaxed text-text-muted">{mensagemAcolhedora(progress)}</p>
-              <p className="mt-2 text-sm text-text">{resumoLeituras(progress)}</p>
+              <p className="mt-2 text-sm leading-relaxed text-white/82">{mensagemAcolhedora(progress)}</p>
+              <p className="mt-2 text-sm text-white/90">{resumoLeituras(progress)}</p>
             </div>
           </div>
 
           <ProgressLevelBar
             className="mt-6"
-            pct={progress.progressoNivelPct}
+            pct={displayPct}
             barra={paleta.barra}
             barraTrack={paleta.barraTrack}
             xpTotal={progress.xp}
             nivel={progress.nivel}
             xpParaProximo={progress.xpParaProximoNivel}
             nivelMaximo={progress.nivelMaximo}
+            onSolidBg
           />
         </div>
+      </ScrollReveal>
+
+      <ScrollReveal delayMs={60}>
+        <ProgressFaixasNivel nivelAtual={progress.nivel} />
       </ScrollReveal>
 
       <ScrollReveal delayMs={80}>

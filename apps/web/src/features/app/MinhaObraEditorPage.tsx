@@ -1,5 +1,5 @@
 import { Link } from '@tanstack/react-router'
-import type { TipoObra } from '@tcc-sistema/types'
+import type { CategoriaObra, TipoObra } from '@tcc-sistema/types'
 import {
   ArrowLeft,
   BookMarked,
@@ -33,6 +33,12 @@ import {
   TIPO_OBRA_HINT,
   TIPO_OBRA_LABEL,
 } from '@/lib/obraLabels'
+import {
+  CATEGORIA_OBRA_LABEL,
+  CATEGORIAS_LIVRO,
+  CATEGORIAS_TEXTO,
+} from '@/lib/obraCategoriaLabels'
+import { generateObraCoverFile } from '@/lib/obraCoverArt'
 import { DEFAULT_OBRA_COVER } from '@/lib/obraCover'
 import { uploadObraCover, validateCoverFile } from '@/lib/storage'
 import { Badge } from '@/components/ui/Badge'
@@ -64,25 +70,38 @@ export function MinhaObraEditorPage() {
   const [descricao, setDescricao] = useState('')
   const [capaUrl, setCapaUrl] = useState<string | null>(null)
   const [tipoObra, setTipoObra] = useState<TipoObra>('livro')
+  const [categoriaObra, setCategoriaObra] = useState<CategoriaObra>('ficcao')
   const [capituloAtivoId, setCapituloAtivoId] = useState<string | null>(null)
   const [tituloCapitulo, setTituloCapitulo] = useState('')
   const [texto, setTexto] = useState('')
   const [dirty, setDirty] = useState(false)
   const [uploadingCapa, setUploadingCapa] = useState(false)
+  const [capaPreview, setCapaPreview] = useState<string | null>(null)
 
   const salvarRef = useRef(salvar)
   salvarRef.current = salvar
   const fileRef = useRef<HTMLInputElement>(null)
+  const obraIdRef = useRef<string | null>(null)
 
   const isLivro = tipoObra === 'livro'
   const isPublicada = obra?.publicado ?? false
 
   useEffect(() => {
     if (!obra || isLoading) return
+
+    const obraMudou = obraIdRef.current !== obra.id
+    obraIdRef.current = obra.id
+
     setTituloObra(obra.titulo)
     setDescricao(obra.descricao ?? '')
-    setCapaUrl(obra.capa_url)
     setTipoObra(obra.tipo)
+    setCategoriaObra(obra.categoria ?? 'outro')
+
+    if (obraMudou) {
+      setCapaUrl(obra.capa_url)
+      setCapaPreview(null)
+    }
+
     if (!capituloAtivoId && obra.capitulos[0]) {
       const cap = obra.capitulos[0]
       setCapituloAtivoId(cap.id)
@@ -149,30 +168,71 @@ export function MinhaObraEditorPage() {
     }
   }
 
+  const handleCategoriaChange = async (next: CategoriaObra) => {
+    if (!obra || next === categoriaObra) return
+    try {
+      await salvarMeta.mutateAsync({
+        obraId: obra.id,
+        titulo: tituloObra.trim() || defaultTitle,
+        descricao: descricao.trim() || null,
+        categoria: next,
+      })
+      setCategoriaObra(next)
+    } catch {
+      toast.error('Não foi possível alterar a categoria')
+    }
+  }
+
   const handleNovaCapa = async (file: File) => {
-    if (!obra || !profile) return
+    if (!obra || !profile) {
+      toast.error('Sessão ou obra indisponível. Recarregue a página.')
+      return
+    }
     const err = validateCoverFile(file)
     if (err) {
       toast.error(err)
       return
     }
+
+    const previewUrl = URL.createObjectURL(file)
+    setCapaPreview(previewUrl)
     setUploadingCapa(true)
+
     try {
-      const url = await uploadObraCover(file, profile.id, obra.id)
+      const coverFile = await generateObraCoverFile({
+        photoFile: file,
+        categoria: categoriaObra,
+        titulo: tituloObra.trim() || defaultTitle,
+        autorNome: profile.nome,
+      })
+      const url = await uploadObraCover(coverFile, profile.id, obra.id)
       await salvarMeta.mutateAsync({
         obraId: obra.id,
         titulo: tituloObra.trim() || defaultTitle,
         descricao: descricao.trim() || null,
-        capa_url: url,
+        capa_url: url.split('?')[0] ?? url,
       })
       setCapaUrl(url)
-      toast.success('Capa atualizada')
-    } catch {
-      toast.error('Não foi possível enviar a capa')
+      setCapaPreview(null)
+      URL.revokeObjectURL(previewUrl)
+      toast.success('Capa conceitual criada!')
+    } catch (e) {
+      const msg = e instanceof Error ? e.message : 'Erro desconhecido'
+      toast.error(
+        msg.includes('policy') || msg.includes('row-level')
+          ? 'Sem permissão para enviar capa. Use uma conta de aluno.'
+          : `Não foi possível gerar a capa: ${msg}`,
+      )
+      setCapaPreview(null)
+      URL.revokeObjectURL(previewUrl)
     } finally {
       setUploadingCapa(false)
     }
   }
+
+  const capaExibida = capaPreview ?? capaUrl
+
+  const categoriasDisponiveis = isLivro ? CATEGORIAS_LIVRO : CATEGORIAS_TEXTO
 
   const handleNovoCapitulo = async () => {
     if (!obra) return
@@ -305,16 +365,43 @@ export function MinhaObraEditorPage() {
                 </div>
               </div>
 
+              <div className="border-b border-border/70 px-5 py-4 sm:px-7">
+                <p className="mb-2 text-xs font-semibold uppercase tracking-wide text-text-muted">
+                  Categoria da obra
+                </p>
+                <p className="mb-3 text-xs text-text-muted">
+                  Define o estilo da capa conceitual quando você enviar uma foto.
+                </p>
+                <div className="flex flex-wrap gap-2">
+                  {categoriasDisponiveis.map((cat) => (
+                    <button
+                      key={cat}
+                      type="button"
+                      className={cn(
+                        'inline-flex items-center rounded-full border px-3 py-1.5 text-xs font-medium transition-colors',
+                        categoriaObra === cat
+                          ? 'border-primary bg-primary-light text-primary'
+                          : 'border-border bg-elevated text-text-muted hover:border-primary/25 hover:text-text',
+                      )}
+                      onClick={() => void handleCategoriaChange(cat)}
+                    >
+                      {CATEGORIA_OBRA_LABEL[cat]}
+                    </button>
+                  ))}
+                </div>
+              </div>
+
               <div className={cn('minha-obra-layout', !isLivro && 'is-single')}>
                 <aside className="minha-obra-aside">
                   <button
                     type="button"
-                    className="minha-obra-cover group"
+                    className={cn('minha-obra-cover group', uploadingCapa && 'is-uploading')}
                     onClick={() => fileRef.current?.click()}
                     disabled={uploadingCapa}
+                    aria-busy={uploadingCapa}
                   >
-                    {capaUrl ? (
-                      <img src={capaUrl} alt="" className="h-full w-full object-cover" />
+                    {capaExibida ? (
+                      <img src={capaExibida} alt="" className="h-full w-full object-cover" />
                     ) : (
                       <>
                         <img
@@ -325,19 +412,26 @@ export function MinhaObraEditorPage() {
                         <div className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-brand-navy/70 to-transparent p-3 pt-8">
                           <span className="flex items-center justify-center gap-1.5 text-xs font-semibold text-white">
                             <ImagePlus className="h-4 w-4" aria-hidden />
-                            Trocar capa
+                            Enviar foto
                           </span>
                         </div>
                       </>
                     )}
                     <span className="minha-obra-cover-overlay">
-                      {uploadingCapa ? 'Enviando…' : 'Alterar capa'}
+                      {uploadingCapa ? (
+                        <>
+                          <Loader2 className="mr-2 h-4 w-4 animate-spin" aria-hidden />
+                          Gerando capa…
+                        </>
+                      ) : (
+                        'Enviar foto · capa conceitual'
+                      )}
                     </span>
                   </button>
                   <input
                     ref={fileRef}
                     type="file"
-                    accept="image/jpeg,image/png,image/webp"
+                    accept="image/jpeg,image/jpg,image/png,image/webp,.jpg,.jpeg,.png,.webp"
                     className="sr-only"
                     onChange={(e) => {
                       const file = e.target.files?.[0]

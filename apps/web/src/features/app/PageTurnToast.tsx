@@ -22,24 +22,28 @@ export function PageTurnToast({ leveledUp, xpGained, nivel, status, onClose }: P
       : 'Leitura iniciada'
 
   const subtitle = leveledUp
-    ? 'Você avançou. O livro ganhou uma nova cor.'
+    ? 'Novo capítulo desbloqueado'
     : status === 'concluido'
-      ? 'Chegar ao fim também faz parte da leitura.'
-      : 'Um começo tranquilo. Continue quando quiser.'
+      ? 'Mais uma obra na jornada'
+      : 'Bom começo'
 
   return (
     <div
-      className="page-turn-toast"
+      className="page-turn-toast page-turn-toast--solid"
       style={
         {
           '--toast-ambient': paleta.ambiente,
-          '--toast-glow': paleta.glow,
-          '--toast-accent': paleta.barra,
+          '--toast-accent': paleta.accent,
         } as CSSProperties
       }
       role="status"
     >
-      <button type="button" className="page-turn-toast__close" onClick={onClose} aria-label="Fechar">
+      <button
+        type="button"
+        className="page-turn-toast__close"
+        onClick={onClose}
+        aria-label="Fechar"
+      >
         <X className="h-3.5 w-3.5" />
       </button>
 
@@ -58,11 +62,7 @@ export function PageTurnToast({ leveledUp, xpGained, nivel, status, onClose }: P
       <div className="page-turn-toast__text">
         <p className="page-turn-toast__title">{title}</p>
         <p className="page-turn-toast__subtitle">{subtitle}</p>
-        {xpGained > 0 && (
-          <p className="page-turn-toast__xp">
-            +{xpGained} XP
-          </p>
-        )}
+        {xpGained > 0 && <p className="page-turn-toast__xp">+{xpGained} XP</p>}
       </div>
     </div>
   )

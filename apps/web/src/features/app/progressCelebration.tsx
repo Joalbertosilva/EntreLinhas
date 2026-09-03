@@ -4,6 +4,7 @@ import { toast } from 'sonner'
 import { PageTurnToast } from '@/features/app/PageTurnToast'
 import { fetchAlunoProgress } from '@/features/app/progressCopy'
 import type { AlunoProgressStats } from '@/features/app/alunoProgress'
+import { playLevelUpSound } from '@/features/app/playLevelUpSound'
 import { playPageTurnSound } from '@/features/app/playPageTurnSound'
 
 export const PAGE_TURN_EVENT = 'entrelinhas:page-turn'
@@ -12,6 +13,7 @@ export interface PageTurnDetail {
   leveledUp: boolean
   xpGained: number
   nivel: number
+  progressoNivelPct: number
   status: StatusLeitura
 }
 
@@ -20,7 +22,11 @@ export function dispatchPageTurn(detail: PageTurnDetail) {
 }
 
 export function showPageTurnCelebration(detail: PageTurnDetail) {
-  playPageTurnSound()
+  if (detail.leveledUp) {
+    playLevelUpSound()
+  } else {
+    playPageTurnSound()
+  }
   dispatchPageTurn(detail)
 
   const duration = detail.leveledUp ? 6200 : detail.status === 'concluido' ? 4800 : 3200
@@ -75,6 +81,7 @@ export async function celebrateReadingProgressChange(
     leveledUp,
     xpGained,
     nivel: next.nivel,
+    progressoNivelPct: next.progressoNivelPct,
     status,
   })
 }
