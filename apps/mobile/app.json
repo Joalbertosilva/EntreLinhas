@@ -1,0 +1,40 @@
+{
+  "expo": {
+    "name": "EntreLinhas",
+    "slug": "entrelinhas",
+    "version": "1.0.0",
+    "orientation": "portrait",
+    "icon": "./assets/images/favicon.png",
+    "scheme": "entrelinhas",
+    "userInterfaceStyle": "light",
+    "newArchEnabled": true,
+    "splash": {
+      "image": "./assets/images/favicon.png",
+      "resizeMode": "contain",
+      "backgroundColor": "#e5f7f3"
+    },
+    "ios": {
+      "supportsTablet": true,
+      "bundleIdentifier": "com.cesmac.entrelinhas"
+    },
+    "android": {
+      "adaptiveIcon": {
+        "foregroundImage": "./assets/images/favicon.png",
+        "backgroundColor": "#e5f7f3"
+      },
+      "package": "com.cesmac.entrelinhas"
+    },
+    "web": {
+      "bundler": "metro",
+      "output": "static"
+    },
+    "plugins": [
+      "expo-router",
+      "expo-secure-store",
+      "expo-font"
+    ],
+    "experiments": {
+      "typedRoutes": true
+    }
+  }
+}
