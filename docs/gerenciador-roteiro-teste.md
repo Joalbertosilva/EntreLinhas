@@ -48,7 +48,7 @@ Use este roteiro para validar o gerenciador antes de iniciar a plataforma do alu
 
 - [ ] Admin vê contadores na home
 - [ ] Professor vê home sem stats de usuários
-- [ ] Auditoria lista criação de usuário e ações de conteúdo
+- [ ] Auditoria: cards, gráficos, lista/timeline/fluxo de senha, export CSV, detalhe ao clicar
 
 ---
 

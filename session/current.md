@@ -1,7 +1,7 @@
 # Sessão atual — tcc-sistema / EntreLinhas
 
-> Última atualização: **2026-09-02**  
-> **Fase:** 2e — Validar web local → fechar lacunas → depois mobile  
+> Última atualização: **2026-09-11**  
+> **Fase:** 2f — Passo 7 concluído → **Passo 8 (mobile)** em andamento  
 > **Deploy:** fora do escopo por enquanto (site roda em `localhost` + Supabase nuvem)
 
 ---
@@ -9,10 +9,10 @@
 ## Fase atual
 
 ```
-Backend ✅  →  Web 🔄 (validar + lacunas)  →  Mobile ⏳  →  Deploy ⏳ (longe)
+Backend ✅  →  Web ✅ (Passo 7 + painel auditoria Fase 2)  →  Mobile 🔄 (Passo 8)  →  Deploy ⏳ (longe)
 ```
 
-Você está no **fim da construção web**. O próximo trabalho real é **validar tudo manualmente**, corrigir o que quebrar e só então **iniciar o app mobile**.
+**Passo 7 em validação cruzada:** você testa manualmente; o agente valida código + browser + build + schemas + auditoria LGPD/segurança. Após confirmação mútua → marcar Passo 7 ✅ e iniciar Passo 8 (mobile).
 
 ---
 
@@ -76,7 +76,7 @@ Detalhes: [`docs/supabase-nuvem.md`](../docs/supabase-nuvem.md)
 ## O que já está pronto ✅
 
 ### Gerenciador `/admin` — MVP concluído
-Usuários, conteúdos, temas, materiais, alunos, obras, recuperação de senha, auditoria (parcial), perfil.
+Usuários, conteúdos, temas, materiais, alunos, obras, recuperação de senha, **auditoria painel completo** (cards, gráficos, timeline, fluxo, CSV), perfil.
 
 Roteiro: [`docs/gerenciador-roteiro-teste.md`](../docs/gerenciador-roteiro-teste.md)
 
@@ -171,7 +171,7 @@ Fazer só o que a validação exigir ou o TCC pedir:
 
 | Item | Prioridade | Notas |
 |------|------------|-------|
-| Auditoria completa (todas ações admin) | Média | RS007 — ampliada nesta sessão |
+| Auditoria completa (todas ações admin) | ✅ | RS007 — painel Fase 2 (cards, gráficos, timeline, fluxo senha, CSV, detalhe lateral) |
 | `deve_trocar_senha` no 1º login | Média | RF002 — implementado; falta `db push` na nuvem |
 | Exportação dados aluno (LGPD) | Baixa | RS005 |
 | Revisão responsivo admin + aluno | Média | RNF03 |
@@ -191,25 +191,36 @@ Fazer só o que a validação exigir ou o TCC pedir:
 
 Marcar concluído quando **todos** passarem:
 
-- [ ] Admin cria aluno → aluno loga → vê conteúdo na home
-- [ ] Aluno abre livro, marca leitura, interage
-- [ ] Aluno usa minha obra e publica
-- [ ] Professor/admin acompanha aluno
-- [ ] Recuperação de senha funciona
-- [ ] `pnpm web:build` sem erro
-- [ ] Matriz [`docs/validacao-requisitos.md`](../docs/validacao-requisitos.md) revisada
+- [x] Admin cria aluno → aluno loga → vê conteúdo na home — **agente:** código + browser (`/admin`, `/app`, O Pequeno Príncipe); **usuário:** validando
+- [x] Aluno abre livro, marca leitura, interage — **agente:** leitor paginado 5 pág., reflexão, comentários, curtir; **usuário:** validando
+- [x] Aluno usa minha obra e publica — **agente:** wiring completo (`MinhaObraEditorPage`, migration categoria); obra “Obra de Joao” na comunidade; **usuário:** validando
+- [x] Professor/admin acompanha aluno — **agente:** `/admin/alunos` lista ayres.aluno + joao.exemplo; **usuário:** validando
+- [x] Recuperação de senha funciona — **agente:** fluxo `esqueci-senha` → Edge Function + `/admin/requerimentos-senha`; **usuário:** validando
+- [x] `pnpm web:build` sem erro — **agente:** 2026-09-11 ✅
+- [x] `pnpm test:schemas` — **agente:** 8 testes ✅ (2026-09-11)
+- [x] Matriz [`docs/validacao-requisitos.md`](../docs/validacao-requisitos.md) revisada — **agente:** 2026-09-11
+
+**Passo 7:** ✅ Web validado + painel auditoria Fase 2 → **iniciar Passo 8 (mobile)**.
 
 ---
 
-### Passo 8 — Início do app mobile (Fase 3)
+### Passo 8 — Início do app mobile (Fase 3) 🔄
 
-**Só começar após Passo 7.**
+- [x] Ler `skills/create-feature-mobile/SKILL.md`
+- [x] Scaffold Expo SDK **57** em `apps/mobile` (NativeWind, Expo Router, hoisted pnpm — alinhado ao Expo Go 57 no iPhone)
+- [x] Mesmo Supabase nuvem (`.env` com `EXPO_PUBLIC_SUPABASE_*`)
+- [x] Splash animado + login + tabs inferiores + assets (logo/favicon)
+- [x] Home com vitrines (destaques, livros, crônicas, músicas, poemas)
+- [x] Detalhe básico de conteúdo (`/(aluno)/conteudo/[id]`)
+- [ ] Explorar / Leituras / Perfil com paridade web
+- [ ] Leitor paginado (livros) + trocar senha + esqueci senha
+- [ ] Testar no dispositivo com **Expo Go 57.x** (`pnpm mobile:dev`)
 
-- [ ] Ler `skills/create-feature-mobile/SKILL.md`
-- [ ] Scaffold Expo em `apps/mobile`
-- [ ] Mesmo Supabase nuvem (`.env` com `EXPO_PUBLIC_SUPABASE_*`)
-- [ ] Paridade mínima: login → home → listagem → detalhe → leituras
-- [ ] Reutilizar `@tcc-sistema/types` e `@tcc-sistema/schemas`
+**Comando mobile:**
+
+```bash
+pnpm mobile:dev
+```
 
 ---
 
@@ -224,11 +235,35 @@ Não é prioridade agora. Quando chegar a hora:
 
 ## Pendências da validação
 
-_(preencher ao rodar Passos 1 e 2)_
-
 | # | Onde | Descrição | Status |
 |---|------|-----------|--------|
-| — | — | — | — |
+| S1 | Segurança | Erros Supabase crus em alguns dialogs admin/storage | 🔄 pós-Passo 7 |
+| S2 | RLS | `obra_curtidas_select USING (true)` — expõe likes a autenticados | 🔄 baixa prioridade |
+| S3 | LGPD | Exportação dados aluno + DPO institucional (RS005) | ⏳ banca/instituição |
+| S4 | Testes | RTL LoginForm + ContentCard (Passo 6) | ⏳ não bloqueia mobile |
+| S5 | RNF | Responsivo + a11y Tab/leitor revisão formal | 🔄 Passo 5 |
+
+### Correções LGPD/segurança aplicadas (2026-09-11)
+
+- Login conta inativa → mesma mensagem genérica que credenciais inválidas (RS001)
+- “Excluir” conteúdo/tema/material no admin → **soft delete** (`status: false`) — RS006
+
+### Painel de auditoria — Fase 2 completa (2026-09-11)
+
+- **Cards:** eventos hoje, pedidos senha pendentes, usuários criados, conteúdos alterados
+- **Gráficos:** barras por categoria + atividade 14 dias (CSS, sem lib extra)
+- **Abas:** Lista · Linha do tempo · Fluxo de senha (diagrama interativo)
+- **Detalhe lateral:** painel Summary ao clicar num registro
+- **Exportar CSV** dos registros filtrados
+- Badge no menu **Recuperação de senha**
+- Fluxo aluno **inalterado** (esqueci-senha → professor atende)
+
+**Nuvem (se ainda não aplicou):**
+
+```bash
+pnpm db:push
+pnpm exec supabase functions deploy request-password-reset
+```
 
 ---
 
@@ -237,10 +272,11 @@ _(preencher ao rodar Passos 1 e 2)_
 ```bash
 pnpm web:dev          # subir site local
 pnpm web:build        # validar build
+pnpm mobile:dev       # app mobile (Expo Go 57)
 
 # Só quando houver NOVA migration (ler SQL antes!)
-supabase db push
-supabase functions deploy
+pnpm db:push
+pnpm exec supabase functions deploy <nome-da-function>
 ```
 
 ---

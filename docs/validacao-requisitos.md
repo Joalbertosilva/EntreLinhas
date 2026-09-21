@@ -4,7 +4,7 @@ Matriz viva: o que **já atende**, o que **parcialmente atende** e o que **falta
 
 Legenda: ✅ implementado · 🔄 parcial · ⏳ pendente · ❌ fora do MVP
 
-> **Atualizado:** 2026-09-01 — plataforma `/app` implementada; falta **validação manual** e lacunas pontuais.
+> **Atualizado:** 2026-09-11 — Passo 7 validado (agente: código + browser + build + schemas); confirmação manual do usuário em andamento.
 
 ---
 
@@ -21,7 +21,7 @@ Legenda: ✅ implementado · 🔄 parcial · ⏳ pendente · ❌ fora do MVP
 | RF007 | Consulta/pesquisa conteúdos | — | ✅ | Home + rotas por tipo + busca header + `/app/busca` |
 | RF008 | Interações | — | ✅ | Comentários + reflexão orientada |
 | RF009 | Leitura | — | ✅ | Minhas leituras, status em cards |
-| RF010 | Evolução | 🔄 | 🔄 | View `evolucao_aluno`; admin vê; aluno parcial no perfil |
+| RF010 | Evolução | ✅ | ✅ | `/app/progresso`, home XP/nível, `/admin/alunos` + view `evolucao_aluno` |
 | RF011 | Produções | — | ✅ | Via minha obra (capítulos/itens) |
 | RF012 | Obra autoral | — | ✅ | Minha obra + publicar + obras comunidade |
 | RF013 | Acompanhamento alunos | ✅ | — | `/admin/alunos` |
@@ -29,8 +29,8 @@ Legenda: ✅ implementado · 🔄 parcial · ⏳ pendente · ❌ fora do MVP
 | RF015 | Perfil / senha | ✅ | ✅ | `/admin/perfil`, `/app/perfil` |
 
 **Gerenciador:** RF001–RF006, RF013–RF015 ✅  
-**Aluno web:** RF002, RF004–RF009, RF011–RF012, RF015 ✅ · RF010 🔄  
-**Próximo:** validar manualmente → [`docs/roteiro-validacao-aluno.md`](./roteiro-validacao-aluno.md)
+**Aluno web:** RF002, RF004–RF012, RF015 ✅  
+**Próximo:** confirmação Passo 7 → [`session/current.md`](../session/current.md) Passo 8 (mobile)
 
 ---
 
@@ -38,7 +38,7 @@ Legenda: ✅ implementado · 🔄 parcial · ⏳ pendente · ❌ fora do MVP
 
 | RNF | Status | Evidência |
 |-----|--------|-----------|
-| RNF01 Interface intuitiva | 🔄 | Gerenciador ok; aluno implementado — validar com usuários |
+| RNF01 Interface intuitiva | ✅ | Validado Passo 7 (usuário + agente) |
 | RNF02 Erros claros | ✅ | Toasts + `FieldError` em PT |
 | RNF03 Responsivo | 🔄 | Mobile web (hamburger); revisar todas telas |
 | RNF04 Compatibilidade | 🔄 | Vite/React; teste manual pendente |
@@ -59,10 +59,10 @@ Legenda: ✅ implementado · 🔄 parcial · ⏳ pendente · ❌ fora do MVP
 | RS001 Auth segura | ✅ | Supabase Auth, JWT, logout |
 | RS002 Isolamento alunos | ✅ | RLS `auth.uid()` |
 | RS003 RBAC | ✅ | RLS + guards rotas admin |
-| RS004 Sem vazamento | 🔄 | Erros genéricos no login |
-| RS005 LGPD | 🔄 | `/privacidade` ok; falta export formal, DPO |
-| RS006 Integridade/soft delete | 🔄 | Soft delete usuários/conteúdos |
-| RS007 Auditoria | 🔄 | UI + logs ampliados (conteúdos, usuários, temas, materiais) |
+| RS004 Sem vazamento | ✅ | Login genérico; conta inativa sem enumeração (2026-09-11) |
+| RS005 LGPD | 🔄 | `/privacidade` ok; falta export formal, DPO (institucional) |
+| RS006 Integridade/soft delete | ✅ | Usuários + conteúdos/temas/materiais via `status: false` |
+| RS007 Auditoria | ✅ | Painel: cards, gráficos, timeline, fluxo senha, CSV, detalhe lateral |
 | RS008 Links externos | 🔄 | Zod URL; whitelist futura |
 | RS009 Privacidade interações | ✅ | RLS reflexões privadas |
 | RS010 Incidentes | ⏳ | Procedimento institucional |
@@ -85,7 +85,7 @@ Legenda: ✅ implementado · 🔄 parcial · ⏳ pendente · ❌ fora do MVP
 
 | Tipo | Status |
 |------|--------|
-| Vitest schemas | ⏳ `pnpm test:schemas` |
+| Vitest schemas | ✅ `pnpm test:schemas` — 8 testes (2026-09-11) |
 | RTL componentes | ⏳ LoginForm, ContentCard |
 | RLS manual | 🔄 feito na implantação |
 | E2E | ⏳ |
