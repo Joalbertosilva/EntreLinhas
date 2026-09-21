@@ -3,18 +3,41 @@ import { useCallback, useRef, useState } from 'react'
 import { Alert, Platform } from 'react-native'
 
 const SPEECH_LANG = 'pt-BR'
-let cachedPtVoice: string | undefined
+/** 1.0 = velocidade normal no expo-speech (iOS multiplica pela taxa padrão do sistema). */
+const SPEECH_RATE = 1.05
+const PT_BR_VOICE_HINTS = ['luciana', 'felipe']
 
-async function resolvePtVoice() {
-  if (cachedPtVoice !== undefined) return cachedPtVoice
+let cachedPtBrVoice: string | undefined
+
+function isPtBrLanguage(language: string) {
+  const tag = language.replace('_', '-').toLowerCase()
+  return tag === 'pt-br' || tag.startsWith('pt-br-')
+}
+
+function scorePtBrVoice(voice: Speech.Voice) {
+  let score = 0
+  if (voice.quality === Speech.VoiceQuality.Enhanced) score += 10
+  const name = voice.name.toLowerCase()
+  if (PT_BR_VOICE_HINTS.some((hint) => name.includes(hint))) score += 5
+  return score
+}
+
+async function resolvePtBrVoice(): Promise<string | undefined> {
+  if (cachedPtBrVoice !== undefined) return cachedPtBrVoice || undefined
   try {
     const voices = await Speech.getAvailableVoicesAsync()
-    cachedPtVoice =
-      voices.find((voice) => voice.language.toLowerCase().startsWith('pt'))?.identifier ?? ''
+    const ptBrVoices = voices.filter((voice) => isPtBrLanguage(voice.language))
+    if (ptBrVoices.length === 0) {
+      cachedPtBrVoice = ''
+      return undefined
+    }
+    ptBrVoices.sort((a, b) => scorePtBrVoice(b) - scorePtBrVoice(a))
+    cachedPtBrVoice = ptBrVoices[0].identifier
+    return cachedPtBrVoice
   } catch {
-    cachedPtVoice = ''
+    cachedPtBrVoice = ''
+    return undefined
   }
-  return cachedPtVoice
 }
 
 export function useSpeech() {
@@ -70,15 +93,15 @@ export function useSpeech() {
 
       resetTimerRef.current = setTimeout(() => {
         if (activeRef.current) markStopped()
-      }, Math.max(10000, trimmed.length * 90))
+      }, Math.max(10000, trimmed.length * 70))
 
-      const voice = await resolvePtVoice()
+      const voice = await resolvePtBrVoice()
 
       try {
         Speech.speak(trimmed, {
           language: SPEECH_LANG,
           ...(voice ? { voice } : {}),
-          rate: Platform.OS === 'ios' ? 0.52 : 0.95,
+          rate: SPEECH_RATE,
           pitch: 1,
           volume: 1,
           onStart: () => {

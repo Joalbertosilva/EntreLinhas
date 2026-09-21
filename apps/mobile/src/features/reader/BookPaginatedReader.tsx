@@ -1,12 +1,15 @@
 import AsyncStorage from '@react-native-async-storage/async-storage'
-import { ChevronLeft, ChevronRight, Volume2 } from 'lucide-react-native'
+import { LinearGradient } from 'expo-linear-gradient'
+import { ChevronDown, ChevronLeft, ChevronRight, Volume2 } from 'lucide-react-native'
 import { useCallback, useEffect, useRef, useState } from 'react'
 import {
   Pressable,
   Text,
   TextInput,
   View,
+  useWindowDimensions,
   type NativeSyntheticEvent,
+  type TextInputScrollEvent,
   type TextInputSelectionChangeEventData,
 } from 'react-native'
 import { useAccessibility } from '@/features/accessibility/AccessibilityProvider'
@@ -32,8 +35,14 @@ export function BookPaginatedReader({ pages, conteudoId, titulo, storageKey: sto
   const selectionRef = useRef({ start: 0, end: 0 })
   const [pageIndex, setPageIndex] = useState(0)
   const [hydrated, setHydrated] = useState(false)
+  const [scrollMetrics, setScrollMetrics] = useState({
+    contentHeight: 0,
+    viewportHeight: 0,
+    offsetY: 0,
+  })
   const { fontMultiplier } = useAccessibility()
   const { speak, stop, isSpeaking } = useSpeechContext()
+  const { height: windowHeight } = useWindowDimensions()
 
   useEffect(() => {
     let cancelled = false
@@ -60,6 +69,7 @@ export function BookPaginatedReader({ pages, conteudoId, titulo, storageKey: sto
 
   useEffect(() => {
     selectionRef.current = { start: 0, end: 0 }
+    setScrollMetrics({ contentHeight: 0, viewportHeight: 0, offsetY: 0 })
   }, [pageIndex])
 
   const current = pages[pageIndex]
@@ -95,6 +105,31 @@ export function BookPaginatedReader({ pages, conteudoId, titulo, storageKey: sto
     [pageIndex, pages.length],
   )
 
+  const onScroll = useCallback((event: TextInputScrollEvent) => {
+    const offsetY = event.nativeEvent.contentOffset.y
+    setScrollMetrics((metrics) => (metrics.offsetY === offsetY ? metrics : { ...metrics, offsetY }))
+  }, [])
+
+  const onContentSizeChange = useCallback(
+    (event: NativeSyntheticEvent<{ contentSize: { width: number; height: number } }>) => {
+      const contentHeight = event.nativeEvent.contentSize.height
+      setScrollMetrics((metrics) =>
+        metrics.contentHeight === contentHeight ? metrics : { ...metrics, contentHeight },
+      )
+    },
+    [],
+  )
+
+  const onTextAreaLayout = useCallback(
+    (event: NativeSyntheticEvent<{ layout: { height: number } }>) => {
+      const viewportHeight = event.nativeEvent.layout.height
+      setScrollMetrics((metrics) =>
+        metrics.viewportHeight === viewportHeight ? metrics : { ...metrics, viewportHeight },
+      )
+    },
+    [],
+  )
+
   if (pages.length === 0 || !current) return null
 
   const atStart = pageIndex === 0
@@ -102,6 +137,16 @@ export function BookPaginatedReader({ pages, conteudoId, titulo, storageKey: sto
   const progress = ((pageIndex + 1) / pages.length) * 100
   const readerFontSize = Math.round(16 * fontMultiplier)
   const readerLineHeight = Math.round(24 * fontMultiplier)
+  const textAreaMinHeight = Math.round(200 * Math.min(fontMultiplier, 1.35))
+  const textAreaMaxHeight = Math.min(
+    Math.round(320 * fontMultiplier),
+    Math.round(windowHeight * 0.45),
+  )
+
+  const viewportHeight = scrollMetrics.viewportHeight || textAreaMaxHeight
+  const scrollOverflow = scrollMetrics.contentHeight > viewportHeight + 2
+  const maxScrollOffset = Math.max(scrollMetrics.contentHeight - viewportHeight, 1)
+  const hasMoreBelow = scrollOverflow && scrollMetrics.offsetY < maxScrollOffset - 8
 
   const onSelectionChange = (event: NativeSyntheticEvent<TextInputSelectionChangeEventData>) => {
     selectionRef.current = event.nativeEvent.selection
@@ -138,29 +183,69 @@ export function BookPaginatedReader({ pages, conteudoId, titulo, storageKey: sto
           <Text className="font-sans-semibold text-base text-brand-navy">{current.title}</Text>
         </View>
 
-        <TextInput
-          key={`reader-page-${pageIndex}`}
-          defaultValue={current.body}
-          readOnly
-          multiline
-          scrollEnabled={false}
-          showSoftInputOnFocus={false}
-          caretHidden
-          contextMenuHidden={false}
-          selectTextOnFocus={false}
-          selectionColor="#1c756a"
-          onSelectionChange={onSelectionChange}
+        <View
+          onLayout={onTextAreaLayout}
           style={{
-            minHeight: Math.round(220 * Math.min(fontMultiplier, 1.35)),
-            padding: 16,
-            fontFamily: 'PlusJakartaSans_400Regular',
-            fontSize: readerFontSize,
-            lineHeight: readerLineHeight,
-            color: '#1a3342',
-            textAlignVertical: 'top',
+            position: 'relative',
+            overflow: 'hidden',
+            height: textAreaMaxHeight,
+            minHeight: textAreaMinHeight,
           }}
-          className="w-full font-sans text-text"
-        />
+        >
+          <TextInput
+            key={`reader-page-${pageIndex}`}
+            defaultValue={current.body}
+            readOnly
+            multiline
+            scrollEnabled
+            onScroll={onScroll}
+            onContentSizeChange={onContentSizeChange}
+            showSoftInputOnFocus={false}
+            caretHidden
+            contextMenuHidden={false}
+            selectTextOnFocus={false}
+            selectionColor="#1c756a"
+            onSelectionChange={onSelectionChange}
+            style={{
+              height: textAreaMaxHeight,
+              minHeight: textAreaMinHeight,
+              maxHeight: textAreaMaxHeight,
+              paddingTop: 16,
+              paddingBottom: hasMoreBelow ? 40 : 16,
+              paddingLeft: 16,
+              paddingRight: 16,
+              fontFamily: 'PlusJakartaSans_400Regular',
+              fontSize: readerFontSize,
+              lineHeight: readerLineHeight,
+              color: '#1a3342',
+              textAlignVertical: 'top',
+            }}
+            className="w-full font-sans text-text"
+          />
+
+          {hasMoreBelow ? (
+            <>
+              <LinearGradient
+                pointerEvents="none"
+                colors={['rgba(255,255,255,0)', 'rgba(255,255,255,0.92)', '#ffffff']}
+                style={{
+                  position: 'absolute',
+                  left: 0,
+                  right: 0,
+                  bottom: 0,
+                  height: 44,
+                }}
+              />
+              <View
+                pointerEvents="none"
+                className="absolute bottom-2 left-0 right-0 flex-row items-center justify-center gap-1"
+              >
+                <ChevronDown color="#1c756a" size={14} />
+                <Text className="font-sans-semibold text-[11px] text-primary">Role para ver mais</Text>
+              </View>
+            </>
+          ) : null}
+        </View>
 
         <View className="flex-row flex-wrap gap-2 border-t border-border/40 px-4 py-3">
           <Pressable
@@ -182,7 +267,7 @@ export function BookPaginatedReader({ pages, conteudoId, titulo, storageKey: sto
         </View>
 
         <Text className="border-t border-border/40 px-4 py-2 text-center font-sans text-[11px] text-text-muted">
-          Toque e arraste para selecionar um trecho · role a tela para ler tudo
+          Toque e arraste para selecionar um trecho · role dentro da caixa para ler tudo
         </Text>
       </Speakable>
 
