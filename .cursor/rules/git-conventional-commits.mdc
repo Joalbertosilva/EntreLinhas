@@ -1,0 +1,35 @@
+---
+description: Commits e push no GitHub — Conventional Commits em português
+alwaysApply: true
+---
+
+# Git — Conventional Commits
+
+Ao **commitar** ou **preparar PR**, siga `.github/COMMITS.md`.
+
+## Formato obrigatório
+
+```
+tipo(escopo): descrição imperativa em português
+```
+
+Tipos: `feat`, `fix`, `docs`, `style`, `refactor`, `perf`, `test`, `build`, `ci`, `chore`, `revert`.
+
+Escopos: `mobile`, `web`, `supabase`, `schemas`, `github`, `deps`.
+
+## Workflow do agente
+
+1. `git status` + `git diff` em paralelo antes de commitar
+2. Agrupar arquivos por área lógica — **um assunto por commit**
+3. Nunca commitar `.env`, credenciais, `node_modules`
+4. Mensagem via HEREDOC; foco no **porquê**
+5. **`git push` só se o usuário pedir explicitamente**
+6. Skill completa: `.cursor/skills/github-workflow/SKILL.md`
+
+## Exemplos
+
+```
+feat(mobile): adicionar leitura da tela com ícones de áudio por card
+fix(mobile): usar tunnel no Expo para evitar timeout no iPhone
+docs(github): documentar convenção de commits
+```
