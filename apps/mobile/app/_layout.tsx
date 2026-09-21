@@ -2,7 +2,9 @@ import '../global.css'
 import { Stack } from 'expo-router'
 import * as SplashScreen from 'expo-splash-screen'
 import { useEffect } from 'react'
+import { View } from 'react-native'
 import { GestureHandlerRootView } from 'react-native-gesture-handler'
+import { SafeAreaProvider } from 'react-native-safe-area-context'
 import {
   PlusJakartaSans_400Regular,
   PlusJakartaSans_500Medium,
@@ -10,6 +12,9 @@ import {
   PlusJakartaSans_700Bold,
   useFonts,
 } from '@expo-google-fonts/plus-jakarta-sans'
+import { GlobalAccessibilityLayer } from '@/components/layout/GlobalAccessibilityLayer'
+import { AccessibilityProvider } from '@/features/accessibility/AccessibilityProvider'
+import { SpeechProvider } from '@/features/accessibility/SpeechProvider'
 import { AuthProvider } from '@/providers/AuthProvider'
 import { QueryProvider } from '@/providers/QueryProvider'
 
@@ -33,11 +38,20 @@ export default function RootLayout() {
 
   return (
     <GestureHandlerRootView style={{ flex: 1 }}>
-      <QueryProvider>
-        <AuthProvider>
-          <Stack screenOptions={{ headerShown: false, animation: 'fade' }} />
-        </AuthProvider>
-      </QueryProvider>
+      <SafeAreaProvider>
+        <AccessibilityProvider>
+          <SpeechProvider>
+            <QueryProvider>
+              <AuthProvider>
+                <View style={{ flex: 1 }}>
+                  <Stack screenOptions={{ headerShown: false, animation: 'fade' }} />
+                  <GlobalAccessibilityLayer />
+                </View>
+              </AuthProvider>
+            </QueryProvider>
+          </SpeechProvider>
+        </AccessibilityProvider>
+      </SafeAreaProvider>
     </GestureHandlerRootView>
   )
 }

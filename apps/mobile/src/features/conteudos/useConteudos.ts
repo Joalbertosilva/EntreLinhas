@@ -1,5 +1,5 @@
 import { useQuery } from '@tanstack/react-query'
-import type { Conteudo, TipoConteudo } from '@tcc-sistema/types'
+import type { Conteudo, MaterialComplementar, Tema, TipoConteudo } from '@tcc-sistema/types'
 import type { HomeSectionConfig } from '@/features/conteudos/homeSections'
 import { supabase } from '@/lib/supabase'
 
@@ -88,13 +88,31 @@ export function useSectionConteudos(
   })
 }
 
+export function useConteudosByTipo(tipo: TipoConteudo) {
+  return useQuery({
+    queryKey: ['app-conteudos', { tipo }],
+    queryFn: () => fetchActiveConteudos({ tipo }),
+    staleTime: 60_000,
+  })
+}
+
+export function useAllConteudos(limit = 40) {
+  return useQuery({
+    queryKey: ['app-conteudos', 'all', limit],
+    queryFn: () => fetchActiveConteudos({ limit }),
+    staleTime: 60_000,
+  })
+}
+
 export function useConteudoDetail(conteudoId: string | undefined) {
   return useQuery({
     queryKey: ['app-conteudo', conteudoId],
     queryFn: async () => {
       const { data, error } = await supabase
         .from('conteudos')
-        .select('id, titulo, tipo, autor, capa_url, conteudo_textual, resumo, descricao, status')
+        .select(
+          'id, titulo, tipo, autor, capa_url, conteudo_textual, resumo, descricao, personagens, contexto, pontos_importantes, curiosidades, curtidas_count, status',
+        )
         .eq('id', conteudoId!)
         .eq('status', true)
         .single()
@@ -103,5 +121,39 @@ export function useConteudoDetail(conteudoId: string | undefined) {
       return data
     },
     enabled: Boolean(conteudoId),
+  })
+}
+
+export function useConteudoTemas(conteudoId: string | undefined) {
+  return useQuery({
+    queryKey: ['app-temas', conteudoId],
+    enabled: Boolean(conteudoId),
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from('temas')
+        .select('*')
+        .eq('conteudo_id', conteudoId!)
+        .eq('status', true)
+        .order('created_at', { ascending: true })
+      if (error) throw error
+      return data as Tema[]
+    },
+  })
+}
+
+export function useConteudoMateriais(conteudoId: string | undefined) {
+  return useQuery({
+    queryKey: ['app-materiais', conteudoId],
+    enabled: Boolean(conteudoId),
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from('materiais_complementares')
+        .select('*')
+        .eq('conteudo_id', conteudoId!)
+        .eq('status', true)
+        .order('created_at', { ascending: true })
+      if (error) throw error
+      return data as MaterialComplementar[]
+    },
   })
 }

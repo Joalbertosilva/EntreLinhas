@@ -13,7 +13,8 @@ export function BrandLogo({ variant = 'full', className, showTagline = true }: B
     return (
       <Image
         source={require('../../../assets/images/favicon.png')}
-        className={cn('h-12 w-12', className)}
+        style={{ width: 40, height: 40 }}
+        className={className}
         resizeMode="contain"
         accessibilityLabel={BRAND_NAME}
       />

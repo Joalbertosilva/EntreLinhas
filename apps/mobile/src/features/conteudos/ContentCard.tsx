@@ -3,9 +3,15 @@ import { Image } from 'expo-image'
 import type { TipoConteudo } from '@tcc-sistema/types'
 import { BookMarked, FileText, Music, Quote, Sparkles } from 'lucide-react-native'
 import { Pressable, Text, View } from 'react-native'
+import { Speakable } from '@/features/accessibility/Speakable'
 import type { ConteudoCardData } from '@/features/conteudos/useConteudos'
+import { contentCardSpeakLabel } from '@/lib/contentSpeakLabel'
+import { ContentCardLeituraMenu } from '@/features/leituras/ContentCardLeituraMenu'
+import { useLeiturasMap } from '@/features/leituras/useLeiturasMap'
 import { TIPO_CONTEUDO_LABEL } from '@/lib/labels'
+import { CONTENT_CARD_WIDTH, CONTENT_COVER_HEIGHT } from '@/lib/layout'
 import { cn } from '@/lib/cn'
+import { useAuth } from '@/providers/AuthProvider'
 
 const TIPO_META: Record<TipoConteudo, { icon: typeof BookMarked; bgClass: string }> = {
   livro: { icon: BookMarked, bgClass: 'bg-primary-light' },
@@ -19,44 +25,67 @@ const TIPO_META: Record<TipoConteudo, { icon: typeof BookMarked; bgClass: string
 interface ContentCardProps {
   conteudo: ConteudoCardData
   showTipo?: boolean
-  className?: string
+  width?: number
 }
 
-export function ContentCard({ conteudo, showTipo = false, className }: ContentCardProps) {
+export function ContentCard({ conteudo, showTipo = false, width }: ContentCardProps) {
   const router = useRouter()
+  const { profile } = useAuth()
+  const { data: leiturasMap } = useLeiturasMap(profile?.id)
   const meta = TIPO_META[conteudo.tipo]
   const Icon = meta.icon
+  const cardWidth = width ?? CONTENT_CARD_WIDTH
+  const coverHeight = Math.round(cardWidth * (CONTENT_COVER_HEIGHT / CONTENT_CARD_WIDTH))
+  const showMenu = conteudo.tipo === 'livro' && Boolean(profile)
+  const leituraStatus = leiturasMap?.[conteudo.id] ?? null
 
-  const open = () => {
-    router.push(`/(aluno)/conteudo/${conteudo.id}`)
-  }
+  const open = () => router.push(`/(aluno)/conteudo/${conteudo.id}`)
+
+  const speakLabel = contentCardSpeakLabel(conteudo, leituraStatus)
 
   return (
-    <Pressable
-      onPress={open}
-      accessibilityRole="button"
-      accessibilityLabel={`Abrir ${conteudo.titulo}`}
-      className={cn('w-[140px]', className)}
-    >
-      <View className="aspect-[3/4] overflow-hidden rounded-xl border border-primary/10 bg-white shadow-sm">
-        {conteudo.capa_url ? (
-          <Image
-            source={{ uri: conteudo.capa_url }}
-            style={{ width: '100%', height: '100%' }}
-            contentFit="cover"
-            accessibilityLabel=""
-          />
-        ) : (
-          <View className={cn('flex-1 items-start justify-end p-3', meta.bgClass)}>
-            <View className="rounded-lg bg-white/90 p-2">
-              <Icon color="#1c756a" size={18} strokeWidth={1.75} />
+    <Speakable label={speakLabel} style={{ width: cardWidth }}>
+      <View style={{ width: cardWidth, height: coverHeight }} className="relative">
+        <Pressable
+          onPress={open}
+          accessibilityRole="button"
+          accessibilityLabel={`Abrir ${conteudo.titulo}`}
+          className="overflow-hidden rounded-xl border border-primary/10 bg-white shadow-sm"
+          style={{ width: cardWidth, height: coverHeight }}
+        >
+          {conteudo.capa_url ? (
+            <Image
+              source={{ uri: conteudo.capa_url }}
+              style={{ width: cardWidth, height: coverHeight }}
+              contentFit="cover"
+            />
+          ) : (
+            <View className={cn('flex-1 items-start justify-end p-2.5', meta.bgClass)}>
+              <View className="rounded-lg bg-white/90 p-1.5">
+                <Icon color="#1c756a" size={16} strokeWidth={1.75} />
+              </View>
             </View>
-          </View>
-        )}
+          )}
+
+          {leituraStatus === 'em_andamento' ? (
+            <View className="absolute bottom-1.5 left-1.5 rounded-full bg-primary px-2 py-0.5">
+              <Text className="font-sans-bold text-[9px] uppercase text-white">Lendo</Text>
+            </View>
+          ) : null}
+          {leituraStatus === 'concluido' ? (
+            <View className="absolute bottom-1.5 left-1.5 rounded-full bg-success px-2 py-0.5">
+              <Text className="font-sans-bold text-[9px] uppercase text-white">Lido</Text>
+            </View>
+          ) : null}
+        </Pressable>
+
+        {showMenu ? (
+          <ContentCardLeituraMenu conteudoId={conteudo.id} status={leituraStatus} variant="cover" />
+        ) : null}
       </View>
 
-      <View className="mt-2.5 px-0.5">
-        <Text className="font-sans-semibold text-sm leading-snug text-text" numberOfLines={2}>
+      <Pressable onPress={open}>
+        <Text className="mt-2 font-sans-semibold text-sm leading-snug text-text" numberOfLines={2}>
           {conteudo.titulo}
         </Text>
         {conteudo.autor ? (
@@ -69,7 +98,7 @@ export function ContentCard({ conteudo, showTipo = false, className }: ContentCa
             {TIPO_CONTEUDO_LABEL[conteudo.tipo]}
           </Text>
         ) : null}
-      </View>
-    </Pressable>
+      </Pressable>
+    </Speakable>
   )
 }

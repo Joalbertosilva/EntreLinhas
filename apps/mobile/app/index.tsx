@@ -1,34 +1,58 @@
 import { useRouter } from 'expo-router'
-import { useCallback, useState } from 'react'
+import { useCallback, useEffect, useRef, useState } from 'react'
+import { View } from 'react-native'
 import { AnimatedSplash } from '@/components/splash/AnimatedSplash'
 import { fetchAuthProfile, resolvePostLoginRoute } from '@/lib/authSession'
 import { supabase } from '@/lib/supabase'
 
+const MIN_SPLASH_MS = 2200
+
+async function resolveInitialRoute(): Promise<string> {
+  const { data } = await supabase.auth.getSession()
+  const session = data.session
+
+  if (!session?.user.id) return '/(auth)/login'
+
+  const profile = await fetchAuthProfile(session.user.id)
+  if (!profile) {
+    await supabase.auth.signOut()
+    return '/(auth)/login'
+  }
+
+  return resolvePostLoginRoute(profile)
+}
+
 export default function SplashRoute() {
   const router = useRouter()
-  const [ready, setReady] = useState(false)
+  const routeRef = useRef<string | null>(null)
+  const [exiting, setExiting] = useState(false)
+  const [navigated, setNavigated] = useState(false)
 
-  const navigateAfterSplash = useCallback(async () => {
-    if (ready) return
-    setReady(true)
+  useEffect(() => {
+    let cancelled = false
 
-    const { data } = await supabase.auth.getSession()
-    const session = data.session
+    void Promise.all([resolveInitialRoute(), new Promise((r) => setTimeout(r, MIN_SPLASH_MS))]).then(
+      ([route]) => {
+        if (cancelled) return
+        routeRef.current = route
+        setExiting(true)
+      },
+    )
 
-    if (!session?.user.id) {
-      router.replace('/(auth)/login')
-      return
+    return () => {
+      cancelled = true
     }
+  }, [])
 
-    const profile = await fetchAuthProfile(session.user.id)
-    if (!profile) {
-      await supabase.auth.signOut()
-      router.replace('/(auth)/login')
-      return
-    }
+  const onExitComplete = useCallback(() => {
+    if (navigated || !routeRef.current) return
+    setNavigated(true)
+    router.replace(routeRef.current as never)
+  }, [navigated, router])
 
-    router.replace(await resolvePostLoginRoute(profile) as never)
-  }, [ready, router])
-
-  return <AnimatedSplash onFinish={() => void navigateAfterSplash()} />
+  return (
+    <View style={{ flex: 1 }}>
+      <AnimatedSplash exiting={exiting} onExitComplete={onExitComplete} />
+    </View>
+  )
 }

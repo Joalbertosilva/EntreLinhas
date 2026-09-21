@@ -1,9 +1,17 @@
 import { Redirect, Tabs } from 'expo-router'
 import { BookOpen, Home, Library, User } from 'lucide-react-native'
+import { Platform } from 'react-native'
+import { useSafeAreaInsets } from 'react-native-safe-area-context'
+import { useAccessibility } from '@/features/accessibility/AccessibilityProvider'
 import { useAuth } from '@/providers/AuthProvider'
 
 export default function AlunoLayout() {
   const { session, profile, isLoading } = useAuth()
+  const { fontMultiplier } = useAccessibility()
+  const insets = useSafeAreaInsets()
+  const tabBarBottom = Math.max(insets.bottom, Platform.OS === 'ios' ? 16 : 12)
+  const tabLabelSize = Math.round(11 * fontMultiplier)
+  const tabIconSize = Math.round(23 * fontMultiplier)
 
   if (isLoading) return null
 
@@ -25,13 +33,17 @@ export default function AlunoLayout() {
           backgroundColor: '#ffffff',
           borderTopColor: '#d4ebe6',
           borderTopWidth: 1,
-          height: 64,
-          paddingBottom: 8,
+          height: 52 + tabBarBottom,
+          paddingBottom: tabBarBottom,
           paddingTop: 8,
         },
         tabBarLabelStyle: {
           fontFamily: 'PlusJakartaSans_600SemiBold',
-          fontSize: 11,
+          fontSize: tabLabelSize,
+          marginTop: 2,
+        },
+        tabBarIconStyle: {
+          marginTop: 2,
         },
       }}
     >
@@ -39,34 +51,63 @@ export default function AlunoLayout() {
         name="index"
         options={{
           title: 'Início',
-          tabBarIcon: ({ color, size }) => <Home color={color} size={size} strokeWidth={1.75} />,
+          tabBarIcon: ({ color }) => <Home color={color} size={tabIconSize} strokeWidth={1.75} />,
         }}
       />
       <Tabs.Screen
         name="explorar"
         options={{
           title: 'Explorar',
-          tabBarIcon: ({ color, size }) => <Library color={color} size={size} strokeWidth={1.75} />,
+          tabBarIcon: ({ color }) => <Library color={color} size={tabIconSize} strokeWidth={1.75} />,
         }}
       />
       <Tabs.Screen
         name="leituras"
         options={{
           title: 'Leituras',
-          tabBarIcon: ({ color, size }) => <BookOpen color={color} size={size} strokeWidth={1.75} />,
+          tabBarIcon: ({ color }) => <BookOpen color={color} size={tabIconSize} strokeWidth={1.75} />,
         }}
       />
       <Tabs.Screen
         name="perfil"
         options={{
           title: 'Perfil',
-          tabBarIcon: ({ color, size }) => <User color={color} size={size} strokeWidth={1.75} />,
+          tabBarIcon: ({ color }) => <User color={color} size={tabIconSize} strokeWidth={1.75} />,
         }}
       />
       <Tabs.Screen
         name="conteudo/[id]"
         options={{
           href: null,
+          tabBarStyle: { display: 'none' },
+        }}
+      />
+      <Tabs.Screen
+        name="obra/[id]"
+        options={{
+          href: null,
+          tabBarStyle: { display: 'none' },
+        }}
+      />
+      <Tabs.Screen
+        name="minha-obra"
+        options={{
+          href: null,
+          tabBarStyle: { display: 'none' },
+        }}
+      />
+      <Tabs.Screen
+        name="progresso"
+        options={{
+          href: null,
+          tabBarStyle: { display: 'none' },
+        }}
+      />
+      <Tabs.Screen
+        name="alterar-senha"
+        options={{
+          href: null,
+          tabBarStyle: { display: 'none' },
         }}
       />
     </Tabs>
