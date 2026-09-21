@@ -87,7 +87,7 @@ export const CATEGORIA_COVER_PALETTE: Record<CategoriaObra, CoverPalette> = {
     mid: '#b8dfc4',
     bottom: '#3d7a52',
     text: '#1a4030',
-    accent: '#2a9d8f',
+    accent: '#1c756a',
     frame: '#c9a962',
   },
   autobiografia: {
@@ -95,7 +95,7 @@ export const CATEGORIA_COVER_PALETTE: Record<CategoriaObra, CoverPalette> = {
     mid: '#b8d4e8',
     bottom: '#2a5a7a',
     text: '#1a3342',
-    accent: '#2a9d8f',
+    accent: '#1c756a',
     frame: '#c9a962',
   },
   ficcao: {
@@ -119,7 +119,7 @@ export const CATEGORIA_COVER_PALETTE: Record<CategoriaObra, CoverPalette> = {
     mid: '#c8dce8',
     bottom: '#3a6070',
     text: '#1a3342',
-    accent: '#2a9d8f',
+    accent: '#1c756a',
     frame: '#8899aa',
   },
   poesia: {
@@ -143,7 +143,7 @@ export const CATEGORIA_COVER_PALETTE: Record<CategoriaObra, CoverPalette> = {
     mid: '#b8c8d8',
     bottom: '#3a5060',
     text: '#1a2838',
-    accent: '#2a9d8f',
+    accent: '#1c756a',
     frame: '#8899aa',
   },
   fantasia: {
@@ -181,7 +181,7 @@ export const CATEGORIA_COVER_PALETTE: Record<CategoriaObra, CoverPalette> = {
   outro: {
     top: '#f0faf8',
     mid: '#b8e8df',
-    bottom: '#2a9d8f',
+    bottom: '#1c756a',
     text: '#1a3342',
     accent: '#efb034',
     frame: '#c9a962',

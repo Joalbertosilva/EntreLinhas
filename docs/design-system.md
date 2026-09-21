@@ -14,7 +14,7 @@ A interface deve parecer **produto humano**, pensado para adolescentes, professo
 - Textos em **português natural**, diretos (“Seus alunos”, “Cadastrar conteúdo”)
 - **Espaço em branco** generoso; fundo com padrão de pontos suave (`bg-dot-pattern`)
 - Cores CESMAC com **equilíbrio** — azul e amarelo em blocos pastel, botões e acentos (sem dominar a tela)
-- Tipografia legível, tamanhos confortáveis (corpo ≥ 15px)
+- Tipografia legível, tamanhos confortáveis (corpo **16px** / `text-base`)
 - Botões `rounded-xl`, hover e leve elevação nos cards
 - Um foco visual claro por tela (título + ação principal)
 - `cursor: pointer` em tudo que for clicável

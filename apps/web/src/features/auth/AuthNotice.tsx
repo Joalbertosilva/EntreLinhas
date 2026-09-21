@@ -12,7 +12,7 @@ export function AuthNotice({ title, children, className }: AuthNoticeProps) {
   return (
     <div
       className={cn(
-        'rounded-xl border border-brand-navy/10 bg-brand-light/60 px-4 py-3.5 text-sm leading-relaxed text-text-muted',
+        'rounded-xl border border-brand-navy/10 bg-brand-light/60 px-4 py-3.5 text-base leading-relaxed text-text-muted',
         className,
       )}
     >

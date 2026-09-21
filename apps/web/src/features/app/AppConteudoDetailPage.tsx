@@ -250,7 +250,7 @@ function ConteudoHero({ conteudo }: { conteudo: Conteudo }) {
               <p className="mt-1 text-text-muted">por {conteudo.autor}</p>
             )}
             {conteudo.descricao && (
-              <p className="mt-4 text-sm leading-relaxed text-text-muted sm:text-[15px]">
+              <p className="mt-4 text-base leading-relaxed text-text-muted">
                 {conteudo.descricao}
               </p>
             )}
@@ -397,7 +397,7 @@ function ConteudoInfo({ conteudo }: { conteudo: Conteudo }) {
             </span>
           </summary>
           <div className="border-t border-border/50 px-5 pb-5 pt-3 sm:px-6 sm:pb-6">
-            <p className="whitespace-pre-wrap text-sm leading-relaxed text-text-muted sm:text-[15px]">
+            <p className="whitespace-pre-wrap text-base leading-relaxed text-text-muted">
               {section.value}
             </p>
           </div>
@@ -408,7 +408,7 @@ function ConteudoInfo({ conteudo }: { conteudo: Conteudo }) {
         <Card className="border-primary/10 bg-white/80 backdrop-blur-sm">
           <CardContent className="p-5 sm:p-6">
             <h2 className="text-lg font-semibold text-brand-navy">Texto da leitura</h2>
-            <div className="prose-content mt-4 whitespace-pre-wrap text-sm leading-relaxed text-text sm:text-[15px]">
+            <div className="prose-content mt-4 whitespace-pre-wrap text-base leading-relaxed text-text">
               {conteudo.conteudo_textual}
             </div>
           </CardContent>
@@ -441,7 +441,7 @@ function TemasInfoSection({
             <CardContent className="p-5">
               <h3 className="font-semibold text-text">{tema.tema}</h3>
               {tema.descricao && (
-                <p className="mt-2 text-sm leading-relaxed text-text-muted">{tema.descricao}</p>
+                <p className="mt-2 text-base leading-relaxed text-text-muted">{tema.descricao}</p>
               )}
             </CardContent>
           </Card>

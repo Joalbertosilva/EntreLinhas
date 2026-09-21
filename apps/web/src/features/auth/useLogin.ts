@@ -35,7 +35,7 @@ export function useLogin() {
 
     if (!profile?.status) {
       await supabase.auth.signOut()
-      toast.error('Conta inativa. Entre em contato com o administrador.')
+      toast.error('Credenciais inválidas. Verifique seu usuário e senha.')
       return
     }
 

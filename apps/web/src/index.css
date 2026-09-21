@@ -2,9 +2,13 @@
 @import "tailwindcss";
 
 @theme {
-  --color-primary: #2a9d8f;
-  --color-primary-hover: #238276;
-  --color-primary-dark: #1c756a;
+  /* Primary acessível (≥4.5:1 com branco e sobre fundos claros) */
+  --color-primary: #1c756a;
+  --color-primary-hover: #155a52;
+  --color-primary-dark: #124a44;
+  --color-primary-solid: #1c756a;
+  --color-primary-solid-hover: #155a52;
+  --color-primary-soft: #2a9d8f;
   --color-primary-light: #e3f7f4;
   --color-primary-muted: #f0faf8;
   --color-accent: #efb034;
@@ -16,14 +20,16 @@
   --color-text-muted: #5a7282;
   --color-border: #d4ebe6;
   --color-error: #dc2626;
-  --color-success: #16a34a;
+  --color-success: #15803d;
   --color-brand-navy: #1a3342;
   --color-brand-gold: #efb034;
   --color-brand-light: #e8f7f4;
   --color-brand-surface: #ffffff;
   --color-viva: #6ec4b5;
-  --color-viva-deep: #3ebfae;
+  --color-viva-deep: #1c756a;
   --color-viva-soft: #d4f0ea;
+  --color-on-primary: #ffffff;
+  --color-on-accent: #1a3342;
   --color-elevated: #ffffff;
   --color-elevated-muted: rgb(255 255 255 / 0.92);
   --platform-bg-top: #fafefc;
@@ -42,8 +48,8 @@
   --font-display: "Fraunces", "Iowan Old Style", "Palatino Linotype", Georgia, serif;
   --shadow-soft: 0 1px 3px rgb(26 51 66 / 0.06);
   --shadow-card: 0 4px 16px rgb(26 51 66 / 0.08);
-  --shadow-glow: 0 0 0 3px rgb(42 157 143 / 0.18);
-  --shadow-glow-brand: 0 0 0 3px rgb(42 157 143 / 0.12);
+  --shadow-glow: 0 0 0 3px rgb(28 117 106 / 0.18);
+  --shadow-glow-brand: 0 0 0 3px rgb(28 117 106 / 0.12);
 }
 
 @layer base {
@@ -51,41 +57,22 @@
     @apply border-border;
   }
 
-  /* Modo escuro fosco — cinza mate legível */
-  [data-theme='dark'] {
-    color-scheme: dark;
-    --color-primary: #6eb5ff;
-    --color-primary-hover: #8fc7ff;
-    --color-primary-dark: #4a9ae8;
-    --color-primary-light: #3d4f63;
-    --color-primary-muted: #404850;
-    --color-accent: #e6c04a;
-    --color-accent-hover: #f0cc55;
-    --color-accent-light: #4a4535;
-    --color-surface: #3a3f45;
-    --color-surface-warm: #3e4349;
-    --color-text: #f2f4f7;
-    --color-text-muted: #b8c0c9;
-    --color-border: #565e68;
-    --color-brand-navy: #f0f4f8;
-    --color-brand-gold: #efb034;
-    --color-brand-light: #454b54;
-    --color-brand-surface: #3e4349;
-    --color-elevated: #484e57;
-    --color-elevated-muted: #424850;
-    --shadow-soft: 0 1px 2px rgb(0 0 0 / 0.18), 0 2px 8px rgb(0 0 0 / 0.12);
-    --shadow-card: 0 2px 8px rgb(0 0 0 / 0.22), 0 8px 24px rgb(0 0 0 / 0.16);
-    --shadow-glow: 0 0 0 3px rgb(110 181 255 / 0.22);
-    --shadow-glow-brand: 0 0 0 3px rgb(240 244 248 / 0.1);
-  }
-
   body {
-    @apply text-text font-sans antialiased text-[15px];
+    @apply text-text font-sans antialiased text-base;
     margin: 0;
     min-height: 100vh;
     background: var(--platform-bg-gradient);
     background-attachment: fixed;
     -webkit-font-smoothing: antialiased;
+  }
+
+  p:not([class*='text-']) {
+    @apply text-base leading-relaxed;
+  }
+
+  .prose-content {
+    font-size: 1rem;
+    line-height: 1.625;
   }
 
   :focus-visible {
@@ -131,15 +118,6 @@
   .app-shell {
     --app-header-height: 3.25rem;
     background: transparent;
-  }
-
-  [data-theme='dark'] .app-shell {
-    background: transparent;
-  }
-
-  [data-theme='dark'] body {
-    background: var(--color-surface);
-    background-attachment: fixed;
   }
 
   .app-header-bar {
@@ -386,30 +364,138 @@
   .home-hero-subtitle {
     margin-top: 0.5rem;
     max-width: 34rem;
-    font-size: 0.9375rem;
+    font-size: 1rem;
     line-height: 1.55;
     color: var(--color-text-muted);
   }
 
   .home-hero-section-label {
-    margin-bottom: 0.85rem;
-    font-size: 0.8125rem;
-    font-weight: 600;
-    letter-spacing: 0.06em;
+    margin-bottom: 0.9rem;
+    font-size: 0.9375rem;
+    font-weight: 700;
+    letter-spacing: 0.05em;
     text-transform: uppercase;
-    color: color-mix(in srgb, var(--color-primary) 70%, var(--color-text-muted));
+    color: color-mix(in srgb, var(--color-primary) 75%, var(--color-brand-navy));
+  }
+
+  @media (min-width: 900px) {
+    .home-hero-section-label {
+      font-size: 1rem;
+      margin-bottom: 1rem;
+    }
   }
 
   .home-hero-grid {
     display: grid;
-    gap: 2rem;
+    gap: 1.75rem;
+    grid-template-columns: minmax(0, 1fr);
+    grid-template-areas:
+      'obra'
+      'read'
+      'progress'
+      'comunidade';
+  }
+
+  @media (min-width: 640px) {
+    .home-hero-grid {
+      grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+      grid-template-areas:
+        'obra read'
+        'progress comunidade';
+      gap: 1.75rem 2.25rem;
+      align-items: start;
+    }
+
+    .home-hero-grid--sem-comunidade {
+      grid-template-areas:
+        'obra read'
+        'progress read';
+    }
+  }
+
+  @media (min-width: 640px) and (max-width: 899px) {
+    .home-hero-inner {
+      padding-inline: 2.25rem;
+    }
+
+    .home-hero-grid {
+      gap: 1.75rem 2.75rem;
+    }
+
+    .home-hero-cell--obra .home-obra-card {
+      max-width: 11rem;
+    }
+
+    .home-hero-cell--obra .home-obra-cover {
+      max-width: 9.25rem;
+    }
+
+    .home-hero-cell--comunidade {
+      padding-inline-start: 0.75rem;
+    }
+
+    .home-hero-cell--comunidade .home-obras-publicas__list--inline {
+      margin-inline: -0.25rem;
+      padding-inline: 0.25rem 1.25rem;
+    }
   }
 
   @media (min-width: 900px) {
     .home-hero-grid {
       grid-template-columns: minmax(0, 0.95fr) minmax(0, 1.25fr);
-      align-items: start;
       gap: 2rem 2.5rem;
+    }
+  }
+
+  .home-hero-cell--obra {
+    grid-area: obra;
+  }
+
+  .home-hero-cell--read {
+    grid-area: read;
+  }
+
+  .home-hero-cell--progress {
+    grid-area: progress;
+  }
+
+  .home-hero-cell--comunidade {
+    grid-area: comunidade;
+  }
+
+  @media (max-width: 639px) {
+    .leitura-jornada--solid {
+      padding: 0.875rem;
+    }
+
+    .leitura-jornada__faixa-titulo {
+      font-size: 1rem;
+    }
+
+    .leitura-jornada__xp-destaque {
+      font-size: 1.25rem;
+    }
+
+    .home-hero-cell--obra {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      text-align: center;
+    }
+
+    .home-hero-cell--obra .home-hero-section-label {
+      align-self: stretch;
+      text-align: left;
+    }
+
+    .home-hero-cell--progress,
+    .home-hero-cell--comunidade {
+      padding-top: 0.25rem;
+      border-top: 1px solid rgb(42 157 143 / 0.12);
+    }
+
+    .home-hero-cell--read {
+      padding-bottom: 0.25rem;
     }
   }
 
@@ -428,39 +514,21 @@
 
   .home-progress-wrap {
     width: 100%;
-    max-width: 22rem;
+    max-width: none;
   }
 
-  .home-progress-comunidade-row {
-    display: grid;
-    gap: 1.25rem;
-    align-items: stretch;
-  }
-
-  @media (min-width: 720px) {
-    .home-progress-comunidade-row {
-      grid-template-columns: minmax(0, 20rem) minmax(0, 1fr);
-      gap: 1.5rem 2rem;
-      align-items: start;
-    }
-
-    .home-progress-comunidade-row .home-progress-wrap {
-      max-width: none;
+  @media (min-width: 900px) {
+    .home-progress-wrap {
+      max-width: 22rem;
     }
   }
 
-  @media (min-width: 1024px) {
-    .home-progress-comunidade-row {
-      grid-template-columns: minmax(0, 22rem) minmax(0, 1fr);
-      gap: 2rem 2.5rem;
-    }
+  .home-hero-comunidade {
+    min-width: 0;
   }
 
   .home-obras-publicas--inline {
     min-width: 0;
-    display: flex;
-    flex-direction: column;
-    justify-content: center;
   }
 
   .home-obras-publicas__list--inline {
@@ -469,18 +537,20 @@
     mask-image: linear-gradient(to right, #000 92%, transparent);
   }
 
-  @media (min-width: 720px) {
-    .home-obras-publicas--inline .home-obra-publica-card {
-      width: 132px;
-    }
-  }
-
   .leitura-jornada__faixa-titulo {
     font-size: 1.0625rem;
     font-weight: 700;
     line-height: 1.25;
     letter-spacing: -0.01em;
     color: #ffffff;
+  }
+
+  .leitura-jornada__faixa-subtitulo {
+    margin-top: 0.125rem;
+    font-size: 0.8125rem;
+    font-weight: 500;
+    line-height: 1.3;
+    color: rgb(255 255 255 / 0.95);
   }
 
   .leitura-jornada__xp-destaque {
@@ -495,7 +565,7 @@
   .leitura-jornada__meta {
     font-size: 0.6875rem;
     line-height: 1.4;
-    color: rgb(255 255 255 / 0.62);
+    color: rgb(255 255 255 / 0.88);
   }
 
   .leitura-jornada--solid .leitura-jornada__bar-head {
@@ -509,7 +579,7 @@
 
   .leitura-jornada--solid .leitura-jornada__bar-meta {
     font-size: 0.625rem;
-    color: rgb(255 255 255 / 0.58);
+    color: rgb(255 255 255 / 0.88);
   }
 
   .leitura-jornada {
@@ -591,7 +661,7 @@
   }
 
   .leitura-jornada__bar--solid .leitura-jornada__xp-label {
-    color: rgb(255 255 255 / 0.82);
+    color: rgb(255 255 255 / 0.95);
   }
 
   .leitura-jornada__inner {
@@ -1625,27 +1695,12 @@
     background: transparent;
   }
 
-  [data-theme='dark'] .home-catalog-band,
-  [data-theme='dark'] .home-hero-band {
-    background: transparent;
-  }
-
   .content-carousel-fade-catalog.content-carousel-fade-right::after {
     background: linear-gradient(to left, rgb(229 247 243 / 0.96), transparent);
   }
 
   .content-carousel-fade-catalog.content-carousel-fade-left::before {
     background: linear-gradient(to right, rgb(229 247 243 / 0.96), transparent);
-  }
-
-  [data-theme='dark'] .content-carousel-fade-hero.content-carousel-fade-right::after,
-  [data-theme='dark'] .content-carousel-fade-hero.content-carousel-fade-left::before {
-    background: linear-gradient(to left, var(--color-surface), transparent);
-  }
-
-  [data-theme='dark'] .content-carousel-fade-catalog.content-carousel-fade-right::after,
-  [data-theme='dark'] .content-carousel-fade-catalog.content-carousel-fade-left::before {
-    background: linear-gradient(to left, var(--color-surface), transparent);
   }
 
   /* Plataforma — branco contínuo; cores só em faixas pontuais */
@@ -2156,17 +2211,6 @@
     display: none;
   }
 
-  [data-theme='dark'] .input-auth {
-    background-color: var(--color-elevated);
-    border-color: var(--color-border);
-    color: var(--color-text);
-  }
-
-  [data-theme='dark'] .auth-form-panel {
-    background: var(--color-elevated-muted);
-    border-color: var(--color-border);
-  }
-
   /* Página de leitura — card branco central estilo leitor (Kindle) */
   .book-reading-shell {
     position: relative;
@@ -2308,7 +2352,7 @@
   }
 
   .book-hero-desc {
-    font-size: 0.9375rem;
+    font-size: 1rem;
     line-height: 1.65;
     color: var(--color-text-muted);
   }
@@ -2660,82 +2704,6 @@
     opacity: 0.45;
   }
 
-  /* Modo escuro — componentes do livro */
-  [data-theme='dark'] .book-reading-page {
-    background: linear-gradient(180deg, var(--color-elevated) 0%, var(--color-surface-warm) 100%);
-    border-color: var(--color-border);
-    box-shadow:
-      0 2px 8px rgb(0 0 0 / 0.18),
-      0 12px 40px rgb(0 0 0 / 0.22);
-  }
-
-  [data-theme='dark'] .book-reading-page .book-hero {
-    background: transparent;
-  }
-
-  [data-theme='dark'] .book-hero {
-    background: linear-gradient(
-      145deg,
-      var(--color-elevated) 0%,
-      var(--color-surface-warm) 55%,
-      var(--color-surface) 100%
-    );
-    border-color: var(--color-border);
-  }
-
-  [data-theme='dark'] .book-hero-kicker {
-    color: var(--color-text-muted);
-  }
-
-  [data-theme='dark'] .book-hero-title,
-  [data-theme='dark'] .book-chapter-title,
-  [data-theme='dark'] .book-page-title,
-  [data-theme='dark'] .book-meta-summary {
-    color: var(--color-text);
-  }
-
-  [data-theme='dark'] .book-hero-desc,
-  [data-theme='dark'] .book-hero-author {
-    color: var(--color-text-muted);
-  }
-
-  [data-theme='dark'] .book-journey-pill {
-    background: var(--color-elevated);
-    border-color: var(--color-border);
-    color: var(--color-text);
-  }
-
-  [data-theme='dark'] .book-journey-pill:hover {
-    background: var(--color-primary-light);
-    border-color: var(--color-primary);
-    color: var(--color-primary);
-  }
-
-  [data-theme='dark'] .book-reader-spread {
-    background: linear-gradient(180deg, var(--color-elevated) 0%, var(--color-surface-warm) 100%);
-    border-color: var(--color-border);
-    box-shadow: inset 0 0 40px rgb(0 0 0 / 0.08);
-  }
-
-  [data-theme='dark'] .book-prose {
-    color: var(--color-text);
-  }
-
-  [data-theme='dark'] .book-meta-panel,
-  [data-theme='dark'] .book-info-card,
-  [data-theme='dark'] .book-comment-bubble {
-    background: var(--color-elevated-muted);
-    border-color: var(--color-border);
-  }
-
-  [data-theme='dark'] .book-quote-block {
-    background: var(--color-accent-light);
-    border-left-color: var(--color-brand-gold);
-  }
-
-  [data-theme='dark'] .book-page-progress {
-    background: var(--color-border);
-  }
 }
 
 @media (prefers-reduced-motion: reduce) {
@@ -2870,6 +2838,17 @@
   }
 }
 
+@keyframes slide-in-right {
+  from {
+    opacity: 0;
+    transform: translateX(100%);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
 @keyframes carousel-nudge-right {
   0%,
   100% {
@@ -2892,6 +2871,10 @@
 
 .animate-dialog-enter {
   animation: dialog-enter 0.28s cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+.animate-slide-in-right {
+  animation: slide-in-right 0.28s cubic-bezier(0.22, 1, 0.36, 1) both;
 }
 
 .animate-fade-in {
@@ -3144,13 +3127,13 @@
   color: var(--color-brand-navy);
 }
 
-.minhas-leituras-subtitle {
-  margin-top: 0.65rem;
-  max-width: 34rem;
-  font-size: 0.9375rem;
-  line-height: 1.55;
-  color: var(--color-text-muted);
-}
+  .minhas-leituras-subtitle {
+    margin-top: 0.65rem;
+    max-width: 34rem;
+    font-size: 1rem;
+    line-height: 1.55;
+    color: var(--color-text-muted);
+  }
 
 .minhas-leituras-stats {
   display: grid;
@@ -3546,23 +3529,6 @@
   text-align: center;
   font-size: 0.875rem;
   color: var(--color-text-muted);
-}
-
-[data-theme='dark'] .minhas-leituras-hero {
-  background: linear-gradient(
-    135deg,
-    color-mix(in srgb, var(--color-primary-light) 55%, var(--color-elevated)) 0%,
-    color-mix(in srgb, var(--color-brand-light) 70%, var(--color-elevated)) 100%
-  );
-}
-
-[data-theme='dark'] .minhas-leituras-stat {
-  background: color-mix(in srgb, var(--color-elevated) 88%, transparent);
-  border-color: color-mix(in srgb, var(--color-border) 80%, transparent);
-}
-
-[data-theme='dark'] .minhas-leituras-item {
-  background: linear-gradient(180deg, var(--color-elevated), color-mix(in srgb, var(--color-surface) 80%, var(--color-elevated)));
 }
 
 /* Minha obra — editor estilo livro */

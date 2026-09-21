@@ -534,7 +534,7 @@ export function MinhaObraEditorPage() {
                       placeholder={TIPO_OBRA_EDITOR_PLACEHOLDER[tipoObra]}
                       className={cn(
                         'minha-obra-textarea min-h-[440px] w-full resize-y rounded-xl border border-border/80 bg-surface/50 px-4 py-4',
-                        'text-[15px] leading-7 text-text shadow-none focus-visible:ring-2 focus-visible:ring-primary/25',
+                        'text-base leading-7 text-text shadow-none focus-visible:ring-2 focus-visible:ring-primary/25',
                         tipoObra === 'poema' && 'font-display leading-8',
                       )}
                     />

@@ -10,7 +10,7 @@ export function ForgotPasswordSuccess() {
 
       <div className="space-y-2">
         <h2 className="text-lg font-semibold text-text">Pedido enviado</h2>
-        <p className="text-sm leading-relaxed text-text-muted">
+        <p className="text-base leading-relaxed text-text-muted">
           Se o usuário estiver cadastrado, seu pedido foi registrado.
           Avise seu <strong className="font-medium text-text">professor ou administrador</strong> —
           eles verão a solicitação e redefinirão sua senha com você por perto.

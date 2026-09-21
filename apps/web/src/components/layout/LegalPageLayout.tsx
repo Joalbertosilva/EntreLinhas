@@ -82,7 +82,7 @@ export function LegalSection({ id, title, children }: LegalSectionProps) {
       className="rounded-2xl border border-primary/10 bg-white/88 p-6 shadow-[var(--shadow-soft)] backdrop-blur-sm"
     >
       <h2 className="text-lg font-semibold text-brand-navy">{title}</h2>
-      <div className="mt-3 space-y-3 text-sm leading-relaxed text-text-muted [&_ul]:list-disc [&_ul]:space-y-1.5 [&_ul]:pl-5 [&_strong]:font-medium [&_strong]:text-text">
+      <div className="mt-3 space-y-3 text-base leading-relaxed text-text-muted [&_ul]:list-disc [&_ul]:space-y-1.5 [&_ul]:pl-5 [&_strong]:font-medium [&_strong]:text-text">
         {children}
       </div>
     </section>

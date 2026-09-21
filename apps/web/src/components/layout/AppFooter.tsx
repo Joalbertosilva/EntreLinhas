@@ -22,7 +22,7 @@ export function AppFooter() {
             <BrandLogo variant="icon" className="h-10 w-10 shrink-0" />
             <div>
               <p className="font-semibold text-brand-navy">{BRAND_NAME}</p>
-              <p className="mt-1 text-sm leading-relaxed text-text-muted">{BRAND_TAGLINE}</p>
+              <p className="mt-1 text-base leading-relaxed text-text-muted">{BRAND_TAGLINE}</p>
               <p className="mt-2 text-xs font-medium text-primary/80">{BRAND_INSTITUTION}</p>
             </div>
           </div>

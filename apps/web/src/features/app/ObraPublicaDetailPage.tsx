@@ -309,7 +309,7 @@ function ObraComentariosSection({
                       {formatRelativeTime(c.created_at)}
                     </time>
                   </div>
-                  <p className="mt-1 text-sm leading-relaxed text-text">{c.texto}</p>
+                  <p className="mt-1 text-base leading-relaxed text-text">{c.texto}</p>
                 </div>
               </div>
             </li>

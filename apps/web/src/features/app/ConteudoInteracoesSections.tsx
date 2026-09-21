@@ -151,13 +151,13 @@ function ReflexaoCard({
         {reflexao && (
           <div className="rounded-xl border border-accent/25 bg-accent-light/25 px-4 py-4 sm:px-5">
             <p className="text-xs font-semibold uppercase tracking-wide text-[#5c4800]">Reflexão</p>
-            <p className="mt-2 text-sm leading-relaxed text-text">{reflexao}</p>
+            <p className="mt-2 text-base leading-relaxed text-text">{reflexao}</p>
           </div>
         )}
 
         <div>
           <p className="text-xs font-semibold uppercase tracking-wide text-primary">Pergunta</p>
-          <p className="mt-2 text-sm font-semibold leading-snug text-text sm:text-[15px]">{pergunta}</p>
+          <p className="mt-2 text-base font-semibold leading-snug text-text">{pergunta}</p>
         </div>
 
         <div className="space-y-2 border-t border-border/50 pt-4">
@@ -421,7 +421,7 @@ function ComentarioPublicoCard({
             </div>
           ) : (
             <>
-              <p className="mt-1 whitespace-pre-wrap text-sm leading-relaxed text-text">
+              <p className="mt-1 whitespace-pre-wrap text-base leading-relaxed text-text">
                 {comentario.texto}
               </p>
               {isMine && (

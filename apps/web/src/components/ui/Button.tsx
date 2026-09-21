@@ -16,9 +16,9 @@ export const Button = forwardRef<HTMLButtonElement, ButtonProps>(
         'disabled:pointer-events-none disabled:opacity-50 disabled:cursor-not-allowed',
         'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2',
         {
-          'bg-primary text-white shadow-sm hover:bg-primary-hover active:scale-[0.99]':
+          'bg-primary-solid text-on-primary shadow-sm hover:bg-primary-solid-hover active:scale-[0.99]':
             variant === 'primary',
-          'bg-accent text-text shadow-sm hover:bg-accent-hover active:scale-[0.99]':
+          'bg-accent text-on-accent shadow-sm hover:bg-accent-hover active:scale-[0.99]':
             variant === 'secondary',
           'bg-brand-navy text-white shadow-sm hover:bg-[#002855] active:scale-[0.99] focus-visible:ring-brand-navy/30':
             variant === 'brand',

@@ -1,4 +1,3 @@
-import type { CSSProperties } from 'react'
 import { FAIXAS_NIVEL, NIVEL_MAXIMO, faixaDoNivel } from '@/features/app/alunoProgress'
 import { cn } from '@/lib/utils'
 

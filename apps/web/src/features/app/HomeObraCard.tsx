@@ -86,7 +86,7 @@ export function HomeObraCard({ obra, isLoading }: HomeObraCardProps) {
         />
         <div className="mt-4">
           <p className="text-base font-semibold text-text group-hover:text-primary">Comece sua obra</p>
-          <p className="mt-1 text-sm leading-relaxed text-text-muted">
+          <p className="mt-1 text-base leading-relaxed text-text-muted">
             Livro, crônica ou poema — seu espaço de escrita.
           </p>
         </div>

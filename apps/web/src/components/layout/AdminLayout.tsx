@@ -14,6 +14,7 @@ import {
 } from 'lucide-react'
 import { useState } from 'react'
 import { AccessibilityTrigger } from '@/features/accessibility'
+import { usePendingPasswordResetCount } from '@/features/admin/usePendingPasswordResetCount'
 import { AppSearchLink } from '@/features/app/AppSearchBar'
 import { useAuth } from '@/features/auth/AuthProvider'
 import { BRAND_NAME } from '@/features/auth/brand'
@@ -76,6 +77,7 @@ export function AdminLayout() {
   }
 
   const pageTitle = resolvePageTitle(pathname)
+  const { data: pendingSenhaCount = 0 } = usePendingPasswordResetCount()
 
   const sidebar = (
     <>
@@ -109,6 +111,11 @@ export function AdminLayout() {
               icon={<item.icon className="h-[18px] w-[18px]" strokeWidth={1.75} />}
               end={'end' in item ? item.end : false}
               onNavigate={() => setMobileOpen(false)}
+              badge={
+                item.to === '/admin/requerimentos-senha' && pendingSenhaCount > 0
+                  ? pendingSenhaCount
+                  : undefined
+              }
             >
               {item.label}
             </SidebarLink>
@@ -215,12 +222,14 @@ function SidebarLink({
   children,
   end,
   onNavigate,
+  badge,
 }: {
   to: string
   icon: React.ReactNode
   children: React.ReactNode
   end?: boolean
   onNavigate?: () => void
+  badge?: number
 }) {
   return (
     <Link
@@ -239,7 +248,15 @@ function SidebarLink({
       activeProps={{ className: 'active' }}
     >
       {icon}
-      {children}
+      <span className="min-w-0 flex-1 truncate">{children}</span>
+      {badge != null && badge > 0 ? (
+        <span
+          className="flex h-5 min-w-5 shrink-0 items-center justify-center rounded-full bg-accent px-1.5 text-[0.625rem] font-bold tabular-nums text-brand-navy"
+          aria-label={`${badge} pedido${badge > 1 ? 's' : ''} pendente${badge > 1 ? 's' : ''}`}
+        >
+          {badge > 99 ? '99+' : badge}
+        </span>
+      ) : null}
     </Link>
   )
 }

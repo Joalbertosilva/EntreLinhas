@@ -57,7 +57,7 @@ export function ProgressoPage() {
           <h1 className="text-2xl font-semibold tracking-tight text-brand-navy sm:text-[1.75rem]">
             O caminho que você já leu
           </h1>
-          <p className="max-w-lg text-sm leading-relaxed text-text-muted">
+          <p className="max-w-lg text-base leading-relaxed text-text-muted">
             Cada obra soma experiência. O livrinho vai ganhando cor conforme você avança — e a
             barrinha mostra o quanto falta para virar o próximo capítulo.
           </p>
@@ -92,7 +92,7 @@ export function ProgressoPage() {
                 </span>
                 <span className="text-sm font-semibold tabular-nums text-white">{progress.xp} XP</span>
               </div>
-              <p className="mt-2 text-sm leading-relaxed text-white/82">{mensagemAcolhedora(progress)}</p>
+              <p className="mt-2 text-base leading-relaxed text-white/82">{mensagemAcolhedora(progress)}</p>
               <p className="mt-2 text-sm text-white/90">{resumoLeituras(progress)}</p>
             </div>
           </div>
@@ -118,7 +118,7 @@ export function ProgressoPage() {
       <ScrollReveal delayMs={80}>
         <section className="space-y-4 rounded-2xl border border-brand-navy/8 bg-white/80 p-6">
           <h2 className="text-base font-medium text-brand-navy">Como funciona</h2>
-          <div className="space-y-3 text-sm leading-relaxed text-text-muted">
+          <div className="space-y-3 text-base leading-relaxed text-text-muted">
             <p>
               <strong className="font-medium text-text">Terminar uma obra</strong> vale +{XP_CONCLUIDO} XP
               — é como virar uma página inteira de uma vez.

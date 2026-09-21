@@ -58,7 +58,7 @@ export function Dialog({ open, onOpenChange, title, description, children, class
         </div>
         <div className="min-h-0 flex-1 overflow-y-auto px-5 py-4">
           {description && (
-            <p className="mb-4 text-sm leading-relaxed text-text-muted">{description}</p>
+            <p className="mb-4 text-base leading-relaxed text-text-muted">{description}</p>
           )}
           {children}
         </div>

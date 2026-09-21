@@ -29,7 +29,7 @@ export function AppSectionPage({ item }: AppSectionPageProps) {
             <h1 className="mt-0.5 text-2xl font-semibold tracking-tight text-brand-navy sm:text-3xl">
               {item.label}
             </h1>
-            <p className="mt-2 max-w-xl text-sm leading-relaxed text-text-muted sm:text-[15px]">
+            <p className="mt-2 max-w-xl text-base leading-relaxed text-text-muted">
               {item.description}
             </p>
           </div>
