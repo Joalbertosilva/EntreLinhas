@@ -192,7 +192,7 @@ export const FAIXAS_NIVEL: FaixaNivel[] = [
     rotulo: 'Leitor iniciante',
     nivelMin: 1,
     nivelMax: 10,
-    cor: '#2a9d8f',
+    cor: '#1c756a',
     corClara: '#e8f7f4',
     corBarra: '#ffffff',
   },
@@ -202,7 +202,7 @@ export const FAIXAS_NIVEL: FaixaNivel[] = [
     rotulo: 'Leitor aprendiz',
     nivelMin: 11,
     nivelMax: 20,
-    cor: '#238276',
+    cor: '#155a52',
     corClara: '#d4f0ea',
     corBarra: '#ffffff',
   },
@@ -212,7 +212,7 @@ export const FAIXAS_NIVEL: FaixaNivel[] = [
     rotulo: 'Explorador de histórias',
     nivelMin: 21,
     nivelMax: 30,
-    cor: '#3ebfae',
+    cor: '#1f7a6e',
     corClara: '#e3f7f4',
     corBarra: '#ffffff',
   },
@@ -222,7 +222,7 @@ export const FAIXAS_NIVEL: FaixaNivel[] = [
     rotulo: 'Construtor de sentidos',
     nivelMin: 31,
     nivelMax: 40,
-    cor: '#d99a2a',
+    cor: '#b45309',
     corClara: '#fef6e4',
     corBarra: '#ffffff',
   },
@@ -232,7 +232,7 @@ export const FAIXAS_NIVEL: FaixaNivel[] = [
     rotulo: 'Entre linhas mestre',
     nivelMin: 41,
     nivelMax: 50,
-    cor: '#1c756a',
+    cor: '#124a44',
     corClara: '#f0faf8',
     corBarra: '#ffffff',
   },
@@ -248,6 +248,51 @@ export function faixaDoNivel(nivel: number): FaixaNivel {
 export function rotuloFaixaNivel(nivel: number): string {
   const faixa = faixaDoNivel(nivel)
   return `Nível ${nivel} · ${faixa.nome}`
+}
+
+/** Percentual da jornada completa até o nível 50 (nv. 1 = 1%, nv. 50 = 100%) */
+export function percentualJornadaNivel50(nivel: number): number {
+  const clamped = Math.min(NIVEL_MAXIMO, Math.max(1, nivel))
+  if (clamped >= NIVEL_MAXIMO) return 100
+  if (clamped <= 1) return 1
+  return Math.round((clamped / NIVEL_MAXIMO) * 100)
+}
+
+export interface ProgressoJornadaAdmin {
+  percentualJornada: number
+  progressoNaFaixaPct: number
+  rotuloProximoMarco: string
+  faixaAtual: FaixaNivel
+}
+
+/** Resumo para o painel admin — jornada 1–50 + marco da faixa atual */
+export function progressoJornadaAdmin(nivel: number): ProgressoJornadaAdmin {
+  const clamped = Math.min(NIVEL_MAXIMO, Math.max(1, nivel))
+  const faixaAtual = faixaDoNivel(clamped)
+  const spanFaixa = faixaAtual.nivelMax - faixaAtual.nivelMin + 1
+  const posicaoNaFaixa = clamped - faixaAtual.nivelMin + 1
+
+  const progressoNaFaixaPct =
+    clamped >= NIVEL_MAXIMO ? 100 : Math.round((posicaoNaFaixa / spanFaixa) * 100)
+
+  let rotuloProximoMarco: string
+  if (clamped >= NIVEL_MAXIMO) {
+    rotuloProximoMarco = 'Jornada completa — nível 50'
+  } else if (clamped < faixaAtual.nivelMax) {
+    const faixaSeguinte = faixaDoNivel(faixaAtual.nivelMax + 1)
+    rotuloProximoMarco = `Próximo marco: Nv. ${faixaAtual.nivelMax} · ${faixaSeguinte.rotulo}`
+  } else {
+    const proximoNivel = clamped + 1
+    const faixaSeguinte = faixaDoNivel(proximoNivel)
+    rotuloProximoMarco = `Próximo: Nv. ${proximoNivel} · ${faixaSeguinte.rotulo}`
+  }
+
+  return {
+    percentualJornada: percentualJornadaNivel50(clamped),
+    progressoNaFaixaPct,
+    rotuloProximoMarco,
+    faixaAtual,
+  }
 }
 
 /** Próximos marcos para a tela explicativa */

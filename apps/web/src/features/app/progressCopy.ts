@@ -32,7 +32,7 @@ export function paletaLivroCinematico(nivel: number, _progressoPct: number): Pal
     ambiente: faixa.cor,
     faixaNome: faixa.nome,
     texto: '#ffffff',
-    textoMuted: 'rgb(255 255 255 / 0.82)',
+    textoMuted: 'rgb(255 255 255 / 0.95)',
   }
 }
 

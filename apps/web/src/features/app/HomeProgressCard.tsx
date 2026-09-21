@@ -2,8 +2,8 @@ import { Link } from '@tanstack/react-router'
 import type { CSSProperties } from 'react'
 import { BookProgressVisual } from '@/features/app/BookProgressVisual'
 import { ProgressLevelBar } from '@/features/app/ProgressLevelBar'
-import { tituloJornada } from '@/features/app/alunoProgress'
-import { fraseCapitulo, paletaLivroCinematico, resumoLeituras } from '@/features/app/progressCopy'
+import { rotuloNivel, tituloJornada } from '@/features/app/alunoProgress'
+import { paletaLivroCinematico, resumoLeituras } from '@/features/app/progressCopy'
 import { useBookProgressAnimation } from '@/features/app/useBookProgressAnimation'
 import { useAlunoProgress } from '@/features/app/useAlunoProgress'
 import { cn } from '@/lib/utils'
@@ -28,7 +28,8 @@ export function HomeProgressCard({ userId }: HomeProgressCardProps) {
   if (!progress) return null
 
   const paleta = paletaLivroCinematico(progress.nivel, progress.progressoNivelPct)
-  const rotulo = tituloJornada(progress.nivel)
+  const nivelRotulo = rotuloNivel(progress.nivel, progress.nivelMaximo)
+  const faixaRotulo = tituloJornada(progress.nivel)
   const resumo = resumoLeituras(progress)
 
   const cardStyle = {
@@ -48,7 +49,7 @@ export function HomeProgressCard({ userId }: HomeProgressCardProps) {
           justLeveledUp && 'leitura-jornada--celebrate',
         )}
         style={cardStyle}
-        aria-label={`${fraseCapitulo(progress.nivel)}. ${rotulo}. ${progress.xp} XP. ${displayPct}% deste capítulo.`}
+        aria-label={`${nivelRotulo}. ${faixaRotulo}. ${progress.xp} XP. ${displayPct}% deste capítulo.`}
       >
         <div className="leitura-jornada__inner">
           <div className="leitura-jornada__book-col leitura-jornada__book-col--solid">
@@ -64,7 +65,8 @@ export function HomeProgressCard({ userId }: HomeProgressCardProps) {
           </div>
 
           <div className="leitura-jornada__text min-w-0 flex-1">
-            <p className="leitura-jornada__faixa-titulo">{rotulo}</p>
+            <p className="leitura-jornada__faixa-titulo">{nivelRotulo}</p>
+            <p className="leitura-jornada__faixa-subtitulo">{faixaRotulo}</p>
             <p className="leitura-jornada__xp-destaque">{progress.xp} XP</p>
 
             <ProgressLevelBar
