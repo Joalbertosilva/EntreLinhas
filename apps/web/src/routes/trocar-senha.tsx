@@ -66,7 +66,12 @@ function TrocarSenhaPage() {
     }
 
     await refreshProfile()
-    void logAudit({ acao: 'senha.troca_obrigatoria', entidade: 'profiles' })
+    void logAudit({
+      acao: 'senha.troca_obrigatoria',
+      entidade: 'profiles',
+      entidade_id: profile?.id,
+      detalhes: profile ? { nome_usuario: profile.nome_usuario, origem: 'primeiro_acesso' } : undefined,
+    })
     toast.success('Senha definida com sucesso')
 
     if (profile) {

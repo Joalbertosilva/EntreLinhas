@@ -3,7 +3,12 @@ import { createFileRoute } from '@tanstack/react-router'
 import { useQuery } from '@tanstack/react-query'
 import { Search } from 'lucide-react'
 import type { StatusLeitura } from '@tcc-sistema/types'
-import { calcularProgressoAluno, faixaDoNivel, rotuloFaixaNivel } from '@/features/app/alunoProgress'
+import {
+  calcularProgressoAluno,
+  faixaDoNivel,
+  progressoJornadaAdmin,
+  rotuloFaixaNivel,
+} from '@/features/app/alunoProgress'
 import { supabase } from '@/lib/supabase'
 import { PageHeader } from '@/components/layout/PageHeader'
 import { Avatar } from '@/components/ui/Avatar'
@@ -29,8 +34,12 @@ interface EvolucaoAluno {
   percentual_progresso: number
   ultima_interacao: string
   nivel: number
+  xp: number
   faixaNome: string
   faixaCor: string
+  percentualJornada: number
+  progressoNaFaixaPct: number
+  rotuloProximoMarco: string
 }
 
 export const Route = createFileRoute('/admin/alunos')({
@@ -63,11 +72,25 @@ function AlunosPage() {
       return (evolucao ?? []).map((row) => {
         const progress = calcularProgressoAluno(leiturasPorAluno.get(row.usuario_id as string) ?? [])
         const faixa = faixaDoNivel(progress.nivel)
+        const jornada = progressoJornadaAdmin(progress.nivel)
         return {
-          ...(row as Omit<EvolucaoAluno, 'nivel' | 'faixaNome' | 'faixaCor'>),
+          ...(row as Omit<
+            EvolucaoAluno,
+            | 'nivel'
+            | 'xp'
+            | 'faixaNome'
+            | 'faixaCor'
+            | 'percentualJornada'
+            | 'progressoNaFaixaPct'
+            | 'rotuloProximoMarco'
+          >),
           nivel: progress.nivel,
+          xp: progress.xp,
           faixaNome: faixa.nome,
           faixaCor: faixa.cor,
+          percentualJornada: jornada.percentualJornada,
+          progressoNaFaixaPct: jornada.progressoNaFaixaPct,
+          rotuloProximoMarco: jornada.rotuloProximoMarco,
         }
       }) as EvolucaoAluno[]
     },
@@ -117,7 +140,7 @@ function AlunosPage() {
                 <TableHead>Aluno</TableHead>
                 <TableHead className="hidden sm:table-cell">Leituras</TableHead>
                 <TableHead>Nível</TableHead>
-                <TableHead className="hidden md:table-cell">Progresso</TableHead>
+                <TableHead className="hidden md:table-cell">Jornada (nv. 50)</TableHead>
                 <TableHead className="hidden lg:table-cell">Última atividade</TableHead>
               </TableRow>
             </TableHeader>
@@ -147,32 +170,62 @@ function AlunosPage() {
                       {a.quantidade_concluida}
                     </TableCell>
                     <TableCell>
-                      <span
-                        className="inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-xs font-semibold"
-                        style={{
-                          backgroundColor: `${a.faixaCor}18`,
-                          color: a.faixaCor,
-                        }}
-                        title={rotuloFaixaNivel(a.nivel)}
-                      >
-                        Nv. {a.nivel}
-                        <span className="font-normal opacity-80">· {a.faixaNome}</span>
-                      </span>
+                      <div className="space-y-1.5">
+                        <span
+                          className="inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-xs font-semibold"
+                          style={{
+                            backgroundColor: `${a.faixaCor}18`,
+                            color: a.faixaCor,
+                          }}
+                          title={`${rotuloFaixaNivel(a.nivel)} · ${a.xp} XP`}
+                        >
+                          Nv. {a.nivel}/{50}
+                          <span className="font-normal opacity-80">· {a.faixaNome}</span>
+                        </span>
+                        <div className="flex items-center gap-2 md:hidden">
+                          <div
+                            className="h-1.5 min-w-[4.5rem] flex-1 overflow-hidden rounded-full bg-primary-light"
+                            title={a.rotuloProximoMarco}
+                          >
+                            <div
+                              className="h-full rounded-full transition-all"
+                              style={{
+                                width: `${a.percentualJornada}%`,
+                                backgroundColor: a.faixaCor,
+                              }}
+                            />
+                          </div>
+                          <span className="text-xs tabular-nums text-text-muted">
+                            {a.percentualJornada}%
+                          </span>
+                        </div>
+                      </div>
                     </TableCell>
                     <TableCell className="hidden md:table-cell">
-                      <div className="flex items-center gap-2">
-                        <div className="h-2 w-20 overflow-hidden rounded-full bg-primary-light">
+                      <div className="min-w-[10rem] space-y-1">
+                        <div className="flex items-center gap-2">
                           <div
-                            className="h-full rounded-full transition-all"
-                            style={{
-                              width: `${Math.min(a.percentual_progresso, 100)}%`,
-                              backgroundColor: a.faixaCor,
-                            }}
-                          />
+                            className="h-2 w-24 overflow-hidden rounded-full bg-primary-light"
+                            title={`${a.percentualJornada}% da jornada até o nível 50`}
+                          >
+                            <div
+                              className="h-full rounded-full transition-all"
+                              style={{
+                                width: `${a.percentualJornada}%`,
+                                backgroundColor: a.faixaCor,
+                              }}
+                            />
+                          </div>
+                          <span className="text-sm font-medium tabular-nums text-text">
+                            {a.percentualJornada}%
+                          </span>
                         </div>
-                        <span className="text-sm tabular-nums text-text-muted">
-                          {a.percentual_progresso}%
-                        </span>
+                        <p className="text-xs leading-snug text-text-muted" title={a.rotuloProximoMarco}>
+                          {a.rotuloProximoMarco}
+                        </p>
+                        <p className="text-[0.6875rem] text-text-muted/80">
+                          Faixa atual: {a.progressoNaFaixaPct}% · {a.xp} XP
+                        </p>
                       </div>
                     </TableCell>
                     <TableCell className="hidden lg:table-cell text-sm text-text-muted">

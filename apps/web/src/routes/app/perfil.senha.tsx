@@ -6,6 +6,7 @@ import { ArrowLeft, Lock } from 'lucide-react'
 import { changePasswordSchema, nomeUsuarioToAuthEmail, type ChangePasswordInput } from '@tcc-sistema/schemas'
 import { ScrollReveal } from '@/features/app'
 import { useAuth } from '@/features/auth/AuthProvider'
+import { logAudit } from '@/lib/audit'
 import { supabase } from '@/lib/supabase'
 import { Button } from '@/components/ui/Button'
 import { Card, CardContent } from '@/components/ui/Card'
@@ -49,6 +50,12 @@ function AlterarSenhaPage() {
       toast.error('Não foi possível alterar a senha. Tente novamente.')
       return
     }
+    void logAudit({
+      acao: 'senha.alterar',
+      entidade: 'profiles',
+      entidade_id: profile.id,
+      detalhes: { nome_usuario: profile.nome_usuario, origem: 'perfil' },
+    })
     toast.success('Senha atualizada')
     reset()
   }

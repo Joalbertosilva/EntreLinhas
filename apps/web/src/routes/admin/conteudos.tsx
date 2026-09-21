@@ -17,7 +17,6 @@ import { toast } from 'sonner'
 import type { Conteudo, TipoConteudo } from '@tcc-sistema/types'
 import { TIPOS_CONTEUDO } from '@tcc-sistema/types'
 import { supabase } from '@/lib/supabase'
-import { deleteCoverByUrl } from '@/lib/storage'
 import { logAudit } from '@/lib/audit'
 import { invalidateConteudoCaches } from '@/lib/conteudoQueries'
 import { ContentFormDialog } from '@/features/conteudos/ContentFormDialog'
@@ -79,19 +78,21 @@ function ConteudosPage() {
 
   const deleteContent = useMutation({
     mutationFn: async (item: Conteudo) => {
-      await deleteCoverByUrl(item.capa_url)
-      const { error } = await supabase.from('conteudos').delete().eq('id', item.id)
+      const { error } = await supabase
+        .from('conteudos')
+        .update({ status: false })
+        .eq('id', item.id)
       if (error) throw error
       return item
     },
     onSuccess: (item) => {
       void logAudit({
-        acao: 'conteudo.excluir',
+        acao: 'conteudo.desativar',
         entidade: 'conteudos',
         entidade_id: item.id,
         detalhes: { titulo: item.titulo },
       })
-      toast.success('Conteúdo excluído')
+      toast.success('Conteúdo desativado')
       setDeleting(null)
       invalidateConteudoCaches(queryClient, item.id)
     },

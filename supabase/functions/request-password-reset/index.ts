@@ -42,11 +42,29 @@ Deno.serve(async (req) => {
         .maybeSingle();
 
       if (!pending) {
-        await adminClient.from("password_reset_requests").insert({
-          profile_id: profile.id,
-          nome_usuario: profile.nome_usuario,
-          status: "pendente",
-        });
+        const { data: created } = await adminClient
+          .from("password_reset_requests")
+          .insert({
+            profile_id: profile.id,
+            nome_usuario: profile.nome_usuario,
+            status: "pendente",
+          })
+          .select("id")
+          .single();
+
+        if (created?.id) {
+          await adminClient.from("audit_logs").insert({
+            usuario_id: null,
+            acao: "senha.solicitacao",
+            entidade: "password_reset_requests",
+            entidade_id: created.id,
+            detalhes: {
+              profile_id: profile.id,
+              nome_usuario: profile.nome_usuario,
+              origem: "esqueci_senha",
+            },
+          });
+        }
       }
     }
 

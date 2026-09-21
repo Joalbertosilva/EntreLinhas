@@ -15,7 +15,6 @@ import { toast } from 'sonner'
 import type { Conteudo, MaterialComplementar, Tema } from '@tcc-sistema/types'
 import { supabase } from '@/lib/supabase'
 import { logAudit } from '@/lib/audit'
-import { deleteCoverByUrl } from '@/lib/storage'
 import { invalidateConteudoCaches } from '@/lib/conteudoQueries'
 import { ContentFormDialog } from '@/features/conteudos/ContentFormDialog'
 import { MaterialFormDialog } from '@/features/conteudos/MaterialFormDialog'
@@ -90,11 +89,13 @@ function ConteudoDetailPage() {
       if (!deleteTarget || !conteudo) return null
 
       if (deleteTarget.type === 'conteudo') {
-        await deleteCoverByUrl(conteudo.capa_url)
-        const { error } = await supabase.from('conteudos').delete().eq('id', conteudo.id)
+        const { error } = await supabase
+          .from('conteudos')
+          .update({ status: false })
+          .eq('id', conteudo.id)
         if (error) throw error
         return {
-          acao: 'conteudo.excluir',
+          acao: 'conteudo.desativar',
           entidade: 'conteudos',
           entidade_id: conteudo.id,
           detalhes: { titulo: conteudo.titulo },
@@ -103,10 +104,13 @@ function ConteudoDetailPage() {
       }
 
       if (deleteTarget.type === 'tema') {
-        const { error } = await supabase.from('temas').delete().eq('id', deleteTarget.item.id)
+        const { error } = await supabase
+          .from('temas')
+          .update({ status: false })
+          .eq('id', deleteTarget.item.id)
         if (error) throw error
         return {
-          acao: 'tema.excluir',
+          acao: 'tema.desativar',
           entidade: 'temas',
           entidade_id: deleteTarget.item.id,
           detalhes: { conteudo_id: conteudoId, tema: deleteTarget.item.tema },
@@ -116,11 +120,11 @@ function ConteudoDetailPage() {
 
       const { error } = await supabase
         .from('materiais_complementares')
-        .delete()
+        .update({ status: false })
         .eq('id', deleteTarget.item.id)
       if (error) throw error
       return {
-        acao: 'material.excluir',
+        acao: 'material.desativar',
         entidade: 'materiais_complementares',
         entidade_id: deleteTarget.item.id,
         detalhes: { conteudo_id: conteudoId, titulo: deleteTarget.item.titulo },
@@ -329,12 +333,12 @@ function ConteudoDetailPage() {
                     </Badge>
                   </div>
                   {frase && (
-                    <p className="mt-2 text-sm leading-relaxed text-brand-navy">
+                    <p className="mt-2 text-base leading-relaxed text-brand-navy">
                       &ldquo;{frase}&rdquo;
                     </p>
                   )}
                   {reflexao && (
-                    <p className="mt-2 text-sm leading-relaxed text-text-muted line-clamp-3">
+                    <p className="mt-2 text-base leading-relaxed text-text-muted line-clamp-3">
                       Reflexão: {reflexao}
                     </p>
                   )}
