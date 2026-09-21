@@ -20,6 +20,7 @@
     "web:dev": "pnpm --filter web dev",
     "web:build": "pnpm --filter web build",
     "mobile:dev": "node scripts/mobile-start.mjs",
+    "mobile:dev:lan": "node scripts/mobile-start.mjs --lan",
     "mobile:login": "node node_modules/expo/bin/cli login",
     "mobile:whoami": "node node_modules/expo/bin/cli whoami",
     "premobile:dev": "node scripts/verify-deps.mjs",
