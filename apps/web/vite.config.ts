@@ -14,6 +14,11 @@ export default defineConfig({
     alias: {
       '@': path.resolve(__dirname, './src'),
     },
+    // Monorepo (web + mobile): evita duas cópias do React no dev server.
+    dedupe: ['react', 'react-dom'],
+  },
+  optimizeDeps: {
+    include: ['react', 'react-dom', '@tanstack/react-query', '@tanstack/react-router'],
   },
   server: {
     port: 5173,
