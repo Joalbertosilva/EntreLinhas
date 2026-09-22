@@ -1,5 +1,7 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import type { StatusLeitura } from '@tcc-sistema/types'
+import { celebrateReadingProgressChange } from '@/features/progress/progressCelebration'
+import type { AlunoProgressStats } from '@/lib/alunoProgress'
 import { supabase } from '@/lib/supabase'
 
 export function useLeiturasMap(userId: string | undefined) {
@@ -41,11 +43,14 @@ export function useAtualizarLeituraUsuario(userId: string | undefined) {
       if (error) throw error
       return input
     },
-    onSuccess: ({ conteudoId }) => {
+    onSuccess: async ({ conteudoId, status_leitura }) => {
+      const prevProgress = queryClient.getQueryData<AlunoProgressStats>(['aluno-progress', userId])
       queryClient.invalidateQueries({ queryKey: ['leituras-map', userId] })
       queryClient.invalidateQueries({ queryKey: ['minhas-leituras', userId] })
+      queryClient.invalidateQueries({ queryKey: ['home-continue-reading', userId] })
       queryClient.invalidateQueries({ queryKey: ['app-leitura', conteudoId, userId] })
       queryClient.invalidateQueries({ queryKey: ['aluno-progress', userId] })
+      await celebrateReadingProgressChange(queryClient, userId!, status_leitura, prevProgress)
     },
   })
 }

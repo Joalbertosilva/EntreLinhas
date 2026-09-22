@@ -15,6 +15,7 @@ import {
 import { GlobalAccessibilityLayer } from '@/components/layout/GlobalAccessibilityLayer'
 import { AccessibilityProvider } from '@/features/accessibility/AccessibilityProvider'
 import { SpeechProvider } from '@/features/accessibility/SpeechProvider'
+import { ProgressCelebrationProvider } from '@/features/progress/ProgressCelebrationProvider'
 import { AuthProvider } from '@/providers/AuthProvider'
 import { QueryProvider } from '@/providers/QueryProvider'
 
@@ -43,10 +44,12 @@ export default function RootLayout() {
           <SpeechProvider>
             <QueryProvider>
               <AuthProvider>
-                <View style={{ flex: 1 }}>
-                  <Stack screenOptions={{ headerShown: false, animation: 'fade' }} />
-                  <GlobalAccessibilityLayer />
-                </View>
+                <ProgressCelebrationProvider>
+                  <View style={{ flex: 1 }}>
+                    <Stack screenOptions={{ headerShown: false, animation: 'fade' }} />
+                    <GlobalAccessibilityLayer />
+                  </View>
+                </ProgressCelebrationProvider>
               </AuthProvider>
             </QueryProvider>
           </SpeechProvider>
