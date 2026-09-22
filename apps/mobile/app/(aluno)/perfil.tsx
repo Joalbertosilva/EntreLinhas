@@ -1,7 +1,7 @@
-import { Pressable, ScrollView, Text, View } from 'react-native'
+import { Alert, Linking, Pressable, ScrollView, Text, View } from 'react-native'
 import { LinearGradient } from 'expo-linear-gradient'
 import { useRouter } from 'expo-router'
-import { BookOpen, ChevronRight, Lock, PenLine, Sparkles, Type } from 'lucide-react-native'
+import { BookOpen, ChevronRight, ExternalLink, Lock, PenLine, Sparkles, Type } from 'lucide-react-native'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
 import { A11yScreen } from '@/components/layout/A11yScreen'
 import { ProfileMenuItem } from '@/components/ui/ProfileMenuItem'
@@ -11,6 +11,8 @@ import { useAlunoProgress } from '@/features/progress/useAlunoProgress'
 import { useMinhasLeituras } from '@/features/leituras/useMinhasLeituras'
 import { faixaDoNivel, tituloJornada } from '@/lib/alunoProgress'
 import { SCREEN_HORIZONTAL_PADDING } from '@/lib/layout'
+import { isStaffPerfil, PERFIL_LABELS } from '@/lib/perfilLabels'
+import { getAdminWebUrl } from '@/lib/webAppUrl'
 import { useAuth } from '@/providers/AuthProvider'
 
 export default function PerfilScreen() {
@@ -27,9 +29,26 @@ export default function PerfilScreen() {
     (leituras?.na_lista.length ?? 0) +
     (leituras?.concluido.length ?? 0)
 
+  const isStaff = isStaffPerfil(profile?.perfil)
+  const perfilLabel = profile?.perfil ? PERFIL_LABELS[profile.perfil] : 'Usuário'
+
   const handleSignOut = async () => {
     await signOut()
     router.replace('/(auth)/login')
+  }
+
+  const openAdminPanel = async () => {
+    const url = getAdminWebUrl()
+    try {
+      const supported = await Linking.canOpenURL(url)
+      if (!supported) {
+        Alert.alert('Gerenciador web', `Abra no navegador: ${url}`)
+        return
+      }
+      await Linking.openURL(url)
+    } catch {
+      Alert.alert('Gerenciador web', `Não foi possível abrir o link. Acesse: ${url}`)
+    }
   }
 
   const faixa = progress ? faixaDoNivel(progress.nivel) : faixaDoNivel(1)
@@ -67,7 +86,9 @@ export default function PerfilScreen() {
                 <Text className="mt-4 text-center font-sans-bold text-lg text-white">{profile?.nome}</Text>
                 <Text className="mt-1 font-sans text-sm text-white/85">@{profile?.nome_usuario}</Text>
                 <View className="mt-3 rounded-full bg-white/20 px-3 py-1">
-                  <Text className="font-sans-semibold text-[10px] uppercase tracking-wide text-white">Aluno</Text>
+                  <Text className="font-sans-semibold text-[10px] uppercase tracking-wide text-white">
+                    {perfilLabel}
+                  </Text>
                 </View>
               </View>
             </LinearGradient>
@@ -155,6 +176,17 @@ export default function PerfilScreen() {
             hint="Texto maior e preferências de áudio"
             onPress={() => setModeEnabled(true)}
           />
+
+          {isStaff ? (
+            <ProfileMenuItem
+              icon={ExternalLink}
+              label="Painel administrativo"
+              hint="Gerenciar usuários, conteúdos e alunos na web"
+              onPress={() => void openAdminPanel()}
+              color="#1c756a"
+              bg="#e8f7f4"
+            />
+          ) : null}
 
           <Button variant="outline" label="Sair da conta" onPress={() => void handleSignOut()} className="mt-6" />
         </ScrollView>

@@ -1,4 +1,5 @@
 import type { Perfil } from '@tcc-sistema/types'
+import { canUseMobileApp } from '@/lib/perfilLabels'
 import { supabase } from '@/lib/supabase'
 
 export interface AuthProfile {
@@ -24,6 +25,6 @@ export async function fetchAuthProfile(userId: string): Promise<AuthProfile | nu
 export async function resolvePostLoginRoute(profile: AuthProfile): Promise<string> {
   if (!profile.status) return '/(auth)/login'
   if (profile.deve_trocar_senha) return '/(auth)/trocar-senha'
-  if (profile.perfil !== 'aluno') return '/(auth)/nao-aluno'
+  if (!canUseMobileApp(profile.perfil)) return '/(auth)/login'
   return '/(aluno)'
 }

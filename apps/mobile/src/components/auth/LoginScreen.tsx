@@ -1,4 +1,5 @@
 import { Controller } from 'react-hook-form'
+import { useRouter } from 'expo-router'
 import { KeyboardAvoidingView, Platform, Pressable, ScrollView, Text, View } from 'react-native'
 import { LinearGradient } from 'expo-linear-gradient'
 import { Lock, User } from 'lucide-react-native'
@@ -13,6 +14,7 @@ import { useAccessibility } from '@/features/accessibility/AccessibilityProvider
 import { useLogin } from '@/features/auth/useLogin'
 
 export function LoginScreen() {
+  const router = useRouter()
   const insets = useSafeAreaInsets()
   const { fontMultiplier } = useAccessibility()
   const { control, errors, isSubmitting, authError, submit } = useLogin()
@@ -97,7 +99,11 @@ export function LoginScreen() {
                   className="mt-1"
                 />
 
-                <Pressable accessibilityRole="button" className="items-center py-1">
+                <Pressable
+                  accessibilityRole="button"
+                  className="items-center py-1"
+                  onPress={() => router.push('/(auth)/esqueci-senha')}
+                >
                   <Text className="font-sans-medium text-sm text-primary">Esqueci minha senha</Text>
                 </Pressable>
               </View>

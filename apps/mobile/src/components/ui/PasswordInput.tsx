@@ -1,21 +1,28 @@
 import { useState } from 'react'
-import { Pressable, TextInput, View, type TextInputProps } from 'react-native'
+import { Platform, Pressable, TextInput, View, type TextInputProps } from 'react-native'
 import type { LucideIcon } from 'lucide-react-native'
 import { Eye, EyeOff } from 'lucide-react-native'
 import { cn } from '@/lib/cn'
+
+const INPUT_TEXT_STYLE = {
+  paddingVertical: Platform.OS === 'ios' ? 14 : 12,
+  fontSize: 16,
+  lineHeight: 22,
+  ...(Platform.OS === 'android' ? { includeFontPadding: false as const, textAlignVertical: 'center' as const } : {}),
+}
 
 interface PasswordInputProps extends TextInputProps {
   icon?: LucideIcon
   className?: string
 }
 
-export function PasswordInput({ icon: Icon, className, ...props }: PasswordInputProps) {
+export function PasswordInput({ icon: Icon, className, style, ...props }: PasswordInputProps) {
   const [visible, setVisible] = useState(false)
 
   return (
     <View
       className={cn(
-        'min-h-12 flex-row items-center rounded-xl border-2 border-border bg-surface px-4',
+        'min-h-[52px] flex-row items-center rounded-xl border-2 border-border bg-surface px-4',
         className,
       )}
     >
@@ -25,6 +32,7 @@ export function PasswordInput({ icon: Icon, className, ...props }: PasswordInput
         secureTextEntry={!visible}
         autoCapitalize="none"
         className={cn('flex-1 font-sans text-base text-text', Icon ? 'ml-3' : undefined)}
+        style={[INPUT_TEXT_STYLE, style]}
         {...props}
       />
       <Pressable

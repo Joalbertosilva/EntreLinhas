@@ -3,6 +3,7 @@ import { BookOpen, Home, Library, User } from 'lucide-react-native'
 import { Platform } from 'react-native'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
 import { useAccessibility } from '@/features/accessibility/AccessibilityProvider'
+import { canUseMobileApp } from '@/lib/perfilLabels'
 import { useAuth } from '@/providers/AuthProvider'
 
 export default function AlunoLayout() {
@@ -15,7 +16,7 @@ export default function AlunoLayout() {
 
   if (isLoading) return null
 
-  if (!session || !profile?.status || profile.perfil !== 'aluno') {
+  if (!session || !profile?.status || !canUseMobileApp(profile.perfil)) {
     return <Redirect href="/(auth)/login" />
   }
 
