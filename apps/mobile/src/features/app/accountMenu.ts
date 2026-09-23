@@ -42,7 +42,7 @@ export const ACCOUNT_MENU_ITEMS: AccountMenuItem[] = [
     icon: Sparkles,
   },
   {
-    href: '/(aluno)/leituras',
+    href: '/(aluno)/(tabs)/leituras',
     label: 'Minhas leituras',
     hint: 'Em andamento, lista e concluídas',
     icon: BookOpen,
@@ -84,17 +84,17 @@ export const ADMIN_ACCOUNT_ITEM: AccountMenuItem = {
 }
 
 export const DRAWER_MAIN_LINKS: DrawerNavItem[] = [
-  { href: '/(aluno)', label: 'Início', hint: 'Destaques e sua jornada', icon: Home },
-  { href: '/(aluno)/explorar', label: 'Explorar', hint: 'Catálogo completo', icon: Library },
-  { href: '/(aluno)/leituras', label: 'Minhas leituras', hint: 'Em andamento e concluídas', icon: BookOpen },
-  { href: '/(aluno)/pesquisa', label: 'Pesquisar', hint: 'Buscar títulos e autores', icon: Search },
+  { href: '/(aluno)/(tabs)', label: 'Início', hint: 'Destaques e sua jornada', icon: Home },
+  { href: '/(aluno)/(tabs)/explorar', label: 'Explorar', hint: 'Catálogo completo', icon: Library },
+  { href: '/(aluno)/(tabs)/leituras', label: 'Minhas leituras', hint: 'Em andamento e concluídas', icon: BookOpen },
+  { href: '/(aluno)/(tabs)/pesquisa', label: 'Pesquisar', hint: 'Buscar títulos e autores', icon: Search },
 ]
 
 export const DRAWER_CONTENT_LINKS: DrawerNavItem[] = [
-  { href: '/(aluno)/explorar?tipo=livro', label: 'Livros', icon: BookOpen },
-  { href: '/(aluno)/explorar?tipo=cronica', label: 'Crônicas', icon: BookOpen },
-  { href: '/(aluno)/explorar?tipo=musica', label: 'Músicas', icon: BookOpen },
-  { href: '/(aluno)/explorar?tipo=poema', label: 'Poemas', icon: BookOpen },
+  { href: '/(aluno)/(tabs)/explorar?tipo=livro', label: 'Livros', icon: BookOpen },
+  { href: '/(aluno)/(tabs)/explorar?tipo=cronica', label: 'Crônicas', icon: BookOpen },
+  { href: '/(aluno)/(tabs)/explorar?tipo=musica', label: 'Músicas', icon: BookOpen },
+  { href: '/(aluno)/(tabs)/explorar?tipo=poema', label: 'Poemas', icon: BookOpen },
 ]
 
 export const DRAWER_ACCOUNT_LINKS: DrawerNavItem[] = [

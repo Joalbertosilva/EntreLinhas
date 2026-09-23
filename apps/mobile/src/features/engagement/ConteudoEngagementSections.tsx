@@ -1,21 +1,34 @@
 import type { InteracaoComAutor, Tema } from '@tcc-sistema/types'
-import { Heart, Lock, MessageCircle, Volume2, VolumeX } from 'lucide-react-native'
-import { useEffect, useState } from 'react'
-import { ActivityIndicator, Alert, Pressable, Text, TextInput, View } from 'react-native'
+import { Heart, Lock, Volume2, VolumeX } from 'lucide-react-native'
+import { useEffect, useRef, useState } from 'react'
+import {
+  ActivityIndicator,
+  Alert,
+  Platform,
+  Pressable,
+  Text,
+  TextInput,
+  View,
+} from 'react-native'
 import { A11yText, useA11yFontSize } from '@/components/ui/A11yText'
-import { Avatar } from '@/components/ui/Avatar'
+import { CommentComposerBox } from '@/components/ui/CommentComposerBox'
+import {
+  PublicCommentBubble,
+  PublicCommentsEmptyState,
+  PublicCommentsSectionShell,
+} from '@/features/engagement/PublicCommentsUI'
 import { useAccessibility } from '@/features/accessibility/AccessibilityProvider'
 import { useSpeechContext } from '@/features/accessibility/SpeechProvider'
 import { SCREEN_HORIZONTAL_PADDING } from '@/lib/layout'
 import {
   useComentariosPublicos,
+  useExcluirInteracao,
   useMinhaCurtida,
   useMinhasInteracoes,
   useSalvarInteracao,
   useToggleCurtida,
 } from '@/features/engagement/useConteudoEngagement'
 import { getReflexaoDisplay } from '@/lib/conteudoReflexao'
-import { formatRelativeTime } from '@/lib/formatRelativeTime'
 
 interface ConteudoEngagementSectionsProps {
   conteudoId: string
@@ -58,7 +71,10 @@ export function ConteudoReflexoesSection({
   conteudoId,
   usuarioId,
   temas,
-}: Pick<ConteudoEngagementSectionsProps, 'conteudoId' | 'usuarioId' | 'temas'>) {
+  scrollFieldIntoView,
+}: Pick<ConteudoEngagementSectionsProps, 'conteudoId' | 'usuarioId' | 'temas'> & {
+  scrollFieldIntoView?: (inputRef: View | null) => void
+}) {
   const temasComFrase = temas.filter((t) => t.questionamento?.trim())
   if (!temasComFrase.length) return null
 
@@ -78,7 +94,13 @@ export function ConteudoReflexoesSection({
         </View>
       </View>
       {temasComFrase.map((tema) => (
-        <ReflexaoCard key={tema.id} conteudoId={conteudoId} usuarioId={usuarioId} tema={tema} />
+        <ReflexaoCard
+          key={tema.id}
+          conteudoId={conteudoId}
+          usuarioId={usuarioId}
+          tema={tema}
+          scrollFieldIntoView={scrollFieldIntoView}
+        />
       ))}
     </View>
   )
@@ -88,13 +110,17 @@ function ReflexaoCard({
   conteudoId,
   usuarioId,
   tema,
+  scrollFieldIntoView,
 }: {
   conteudoId: string
   usuarioId: string | undefined
   tema: Tema
+  scrollFieldIntoView?: (inputRef: View | null) => void
 }) {
   const { data: minhas = [] } = useMinhasInteracoes(conteudoId, usuarioId)
   const salvar = useSalvarInteracao(conteudoId, usuarioId)
+  const excluir = useExcluirInteracao(conteudoId, usuarioId)
+  const inputWrapRef = useRef<View>(null)
   const existente = minhas.find((i) => i.tipo_interacao === 'reflexao_orientada' && i.tema_id === tema.id)
   const [texto, setTexto] = useState('')
 
@@ -133,6 +159,32 @@ function ReflexaoCard({
     } catch {
       Alert.alert('Erro', 'Não foi possível salvar sua reflexão.')
     }
+  }
+
+  const handleExcluir = () => {
+    if (!existente?.id) return
+    Alert.alert('Excluir reflexão', 'Sua resposta privada será removida. Deseja continuar?', [
+      { text: 'Cancelar', style: 'cancel' },
+      {
+        text: 'Excluir',
+        style: 'destructive',
+        onPress: () => {
+          void (async () => {
+            try {
+              await excluir.mutateAsync(existente.id)
+              setTexto('')
+              Alert.alert('Removida', 'Sua reflexão foi excluída.')
+            } catch {
+              Alert.alert('Erro', 'Não foi possível excluir sua reflexão.')
+            }
+          })()
+        },
+      },
+    ])
+  }
+
+  const handleInputFocus = () => {
+    scrollFieldIntoView?.(inputWrapRef.current)
   }
 
   return (
@@ -190,38 +242,61 @@ function ReflexaoCard({
           </View>
         ) : null}
 
-        <View className="w-full border-t border-border/50 pt-4">
+        <View ref={inputWrapRef} collapsable={false} className="w-full border-t border-border/50 pt-4">
           <A11yText size={14} className="mb-2 font-sans-medium text-text">
             Sua resposta
           </A11yText>
           <TextInput
             value={texto}
             onChangeText={setTexto}
+            onFocus={handleInputFocus}
             placeholder="Escreva aqui o que você pensa e sente..."
             placeholderTextColor="#5a7282"
             multiline
             textAlignVertical="top"
-            style={{ fontSize: inputFontSize, lineHeight: Math.round(inputFontSize * 1.5) }}
-            className="min-h-[100px] w-full rounded-xl border border-border bg-surface px-4 py-3 font-sans text-text"
+            style={{
+              fontSize: inputFontSize,
+              lineHeight: Math.round(inputFontSize * 1.5),
+              paddingVertical: Platform.OS === 'ios' ? 12 : 10,
+              minHeight: 100,
+            }}
+            className="w-full rounded-xl border border-border bg-surface px-4 py-3 font-sans text-text"
           />
           <A11yText size={12} className="mt-2 font-sans text-text-muted">
             Não existe resposta certa ou errada — o importante é o que a leitura significa para você.
           </A11yText>
         </View>
 
-        <Pressable
-          onPress={() => void handleSave()}
-          disabled={salvar.isPending}
-          className="self-start rounded-full bg-primary px-4 py-2 active:opacity-90"
-        >
-          {salvar.isPending ? (
-            <ActivityIndicator color="#fff" size="small" />
-          ) : (
-            <A11yText size={14} className="font-sans-semibold text-white">
-              {existente ? 'Atualizar resposta' : 'Salvar resposta'}
-            </A11yText>
-          )}
-        </Pressable>
+        <View className="flex-row flex-wrap items-center gap-2">
+          <Pressable
+            onPress={() => void handleSave()}
+            disabled={salvar.isPending || excluir.isPending}
+            className="rounded-full bg-primary px-4 py-2 active:opacity-90"
+          >
+            {salvar.isPending ? (
+              <ActivityIndicator color="#fff" size="small" />
+            ) : (
+              <A11yText size={14} className="font-sans-semibold text-white">
+                {existente ? 'Atualizar resposta' : 'Salvar resposta'}
+              </A11yText>
+            )}
+          </Pressable>
+          {existente ? (
+            <Pressable
+              onPress={handleExcluir}
+              disabled={salvar.isPending || excluir.isPending}
+              className="rounded-full border border-error/30 bg-white px-4 py-2 active:bg-red-50"
+            >
+              {excluir.isPending ? (
+                <ActivityIndicator color="#dc2626" size="small" />
+              ) : (
+                <A11yText size={14} className="font-sans-semibold text-error">
+                  Excluir
+                </A11yText>
+              )}
+            </Pressable>
+          ) : null}
+        </View>
       </View>
     </View>
   )
@@ -230,23 +305,16 @@ function ReflexaoCard({
 export function ConteudoComentariosSection({
   conteudoId,
   usuarioId,
-}: Pick<ConteudoEngagementSectionsProps, 'conteudoId' | 'usuarioId'>) {
+  scrollToEnd,
+}: Pick<ConteudoEngagementSectionsProps, 'conteudoId' | 'usuarioId'> & {
+  scrollToEnd?: () => void
+}) {
   const { data: comentarios = [], isLoading } = useComentariosPublicos(conteudoId)
   const salvar = useSalvarInteracao(conteudoId, usuarioId)
+  const excluir = useExcluirInteracao(conteudoId, usuarioId)
   const [novoTexto, setNovoTexto] = useState('')
   const [editandoId, setEditandoId] = useState<string | null>(null)
   const [editTexto, setEditTexto] = useState('')
-
-  const comentariosOrdenados = [...comentarios].sort(
-    (a, b) => new Date(a.created_at).getTime() - new Date(b.created_at).getTime(),
-  )
-
-  const totalLabel =
-    comentarios.length === 0
-      ? 'Nenhum comentário ainda'
-      : comentarios.length === 1
-        ? '1 comentário'
-        : `${comentarios.length} comentários`
 
   const handlePublicar = async () => {
     if (!novoTexto.trim()) {
@@ -261,6 +329,17 @@ export function ConteudoComentariosSection({
     }
   }
 
+  const comentariosOrdenados = [...comentarios].sort(
+    (a, b) => new Date(a.created_at).getTime() - new Date(b.created_at).getTime(),
+  )
+
+  const totalLabel =
+    comentarios.length === 0
+      ? 'Nenhum comentário ainda'
+      : comentarios.length === 1
+        ? '1 comentário'
+        : `${comentarios.length} comentários`
+
   const iniciarEdicao = (comentario: InteracaoComAutor) => {
     setEditandoId(comentario.id)
     setEditTexto(comentario.texto)
@@ -269,6 +348,26 @@ export function ConteudoComentariosSection({
   const cancelarEdicao = () => {
     setEditandoId(null)
     setEditTexto('')
+  }
+
+  const handleExcluirComentario = (comentario: InteracaoComAutor) => {
+    Alert.alert('Excluir comentário', 'Seu comentário público será removido. Deseja continuar?', [
+      { text: 'Cancelar', style: 'cancel' },
+      {
+        text: 'Excluir',
+        style: 'destructive',
+        onPress: () => {
+          void (async () => {
+            try {
+              await excluir.mutateAsync(comentario.id)
+              if (editandoId === comentario.id) cancelarEdicao()
+            } catch {
+              Alert.alert('Erro', 'Não foi possível excluir o comentário.')
+            }
+          })()
+        },
+      },
+    ])
   }
 
   const handleSalvarEdicao = async () => {
@@ -289,27 +388,27 @@ export function ConteudoComentariosSection({
   }
 
   return (
-    <View style={{ marginHorizontal: SCREEN_HORIZONTAL_PADDING }} className="mt-8">
-      <View className="mb-4 flex-row items-start gap-3">
-        <View className="rounded-xl bg-primary-light p-2.5">
-          <MessageCircle color="#1c756a" size={20} strokeWidth={1.75} />
-        </View>
-        <View className="flex-1">
-          <Text className="font-sans-bold text-lg text-brand-navy">Comentários</Text>
-          <Text className="mt-0.5 font-sans text-sm text-text-muted">{totalLabel}</Text>
-          <Text className="mt-1 font-sans text-xs leading-relaxed text-text-muted">
-            Espaço público — todos os alunos veem. Diferente da sua reflexão, que é privada.
-          </Text>
-        </View>
-      </View>
-
-      {isLoading ? (
-        <Text className="font-sans text-sm text-text-muted">Carregando comentários...</Text>
-      ) : comentariosOrdenados.length > 0 ? (
-        <View className="overflow-hidden rounded-2xl border border-border bg-surface">
-          {comentariosOrdenados.map((c, index) => (
-            <View key={c.id} className={index > 0 ? 'border-t border-border' : ''}>
+    <View style={{ marginHorizontal: SCREEN_HORIZONTAL_PADDING }} className="pb-2">
+      <PublicCommentsSectionShell
+        totalLabel={totalLabel}
+        isLoading={isLoading}
+        composer={
+          usuarioId ? (
+            <CommentComposerBox
+              value={novoTexto}
+              onChangeText={setNovoTexto}
+              onFocus={scrollToEnd}
+              onSubmit={() => void handlePublicar()}
+              submitting={salvar.isPending}
+            />
+          ) : undefined
+        }
+      >
+        {comentariosOrdenados.length > 0 ? (
+          <View className="gap-4">
+            {comentariosOrdenados.map((c) => (
               <ComentarioPublicoCard
+                key={c.id}
                 comentario={c}
                 isMine={c.usuario_id === usuarioId}
                 editando={editandoId === c.id}
@@ -318,41 +417,17 @@ export function ConteudoComentariosSection({
                 onIniciarEdicao={() => iniciarEdicao(c)}
                 onCancelarEdicao={cancelarEdicao}
                 onSalvarEdicao={() => void handleSalvarEdicao()}
+                onExcluir={() => handleExcluirComentario(c)}
+                excluindo={excluir.isPending}
                 salvando={salvar.isPending}
+                onInputFocus={scrollToEnd}
               />
-            </View>
-          ))}
-        </View>
-      ) : (
-        <Text className="py-4 text-center font-sans text-sm text-text-muted">
-          Ninguém comentou ainda. Seja o primeiro!
-        </Text>
-      )}
-
-      {usuarioId ? (
-        <View className="mt-4 border-t border-border pt-4">
-          <TextInput
-            value={novoTexto}
-            onChangeText={setNovoTexto}
-            placeholder="Escreva um comentário..."
-            placeholderTextColor="#5a7282"
-            multiline
-            textAlignVertical="top"
-            className="min-h-[72px] rounded-xl border border-border bg-white px-4 py-3 font-sans text-base text-text"
-          />
-          <Pressable
-            onPress={() => void handlePublicar()}
-            disabled={salvar.isPending || !novoTexto.trim()}
-            className="mt-3 self-end rounded-full bg-primary px-5 py-2.5 disabled:opacity-50"
-          >
-            {salvar.isPending ? (
-              <ActivityIndicator color="#fff" size="small" />
-            ) : (
-              <Text className="font-sans-semibold text-sm text-white">Publicar</Text>
-            )}
-          </Pressable>
-        </View>
-      ) : null}
+            ))}
+          </View>
+        ) : (
+          <PublicCommentsEmptyState />
+        )}
+      </PublicCommentsSectionShell>
     </View>
   )
 }
@@ -366,7 +441,10 @@ function ComentarioPublicoCard({
   onIniciarEdicao,
   onCancelarEdicao,
   onSalvarEdicao,
+  onExcluir,
+  excluindo = false,
   salvando = false,
+  onInputFocus,
 }: {
   comentario: InteracaoComAutor
   isMine?: boolean
@@ -376,63 +454,41 @@ function ComentarioPublicoCard({
   onIniciarEdicao?: () => void
   onCancelarEdicao?: () => void
   onSalvarEdicao?: () => void
+  onExcluir?: () => void
+  excluindo?: boolean
   salvando?: boolean
+  onInputFocus?: () => void
 }) {
   const nomeCompleto = comentario.profiles?.nome ?? 'Aluno'
-  const nome = nomeCompleto.split(' ')[0]
+
+  if (editando) {
+    return (
+      <View>
+        <CommentComposerBox
+          value={editTexto ?? ''}
+          onChangeText={(t) => onEditTexto?.(t)}
+          onFocus={onInputFocus}
+          onSubmit={() => onSalvarEdicao?.()}
+          submitting={salvando}
+          placeholder="Edite seu comentário"
+          compact
+        />
+        <Pressable onPress={onCancelarEdicao} disabled={salvando} className="mt-2 self-start px-1 py-1">
+          <Text className="font-sans-semibold text-xs text-text-muted">Cancelar edição</Text>
+        </Pressable>
+      </View>
+    )
+  }
 
   return (
-    <View className="px-4 py-4">
-      <View className="flex-row gap-3">
-        <Avatar name={nomeCompleto} size={32} />
-        <View className="min-w-0 flex-1">
-          <View className="flex-row flex-wrap items-baseline gap-x-2">
-            <Text className="font-sans-semibold text-sm text-text">{nome}</Text>
-            <Text className="font-sans text-xs text-text-muted">
-              {formatRelativeTime(comentario.created_at)}
-            </Text>
-          </View>
-
-          {editando ? (
-            <View className="mt-2">
-              <TextInput
-                value={editTexto}
-                onChangeText={onEditTexto}
-                multiline
-                textAlignVertical="top"
-                className="min-h-[72px] rounded-xl border border-border bg-white px-3 py-2 font-sans text-base text-text"
-              />
-              <View className="mt-2 flex-row gap-2">
-                <Pressable
-                  onPress={onSalvarEdicao}
-                  disabled={salvando}
-                  className="rounded-full bg-primary px-4 py-2"
-                >
-                  <Text className="font-sans-semibold text-sm text-white">
-                    {salvando ? 'Salvando...' : 'Salvar'}
-                  </Text>
-                </Pressable>
-                <Pressable
-                  onPress={onCancelarEdicao}
-                  disabled={salvando}
-                  className="rounded-full border border-border px-4 py-2"
-                >
-                  <Text className="font-sans-semibold text-sm text-text-muted">Cancelar</Text>
-                </Pressable>
-              </View>
-            </View>
-          ) : (
-            <>
-              <Text className="mt-1 font-sans text-base leading-relaxed text-text">{comentario.texto}</Text>
-              {isMine ? (
-                <Pressable onPress={onIniciarEdicao} className="mt-2 self-start">
-                  <Text className="font-sans-semibold text-xs text-text-muted">Editar</Text>
-                </Pressable>
-              ) : null}
-            </>
-          )}
-        </View>
-      </View>
-    </View>
+    <PublicCommentBubble
+      nomeCompleto={nomeCompleto}
+      texto={comentario.texto}
+      createdAt={comentario.created_at}
+      isMine={isMine}
+      onEdit={isMine ? onIniciarEdicao : undefined}
+      onDelete={isMine ? onExcluir : undefined}
+      deleting={excluindo}
+    />
   )
 }

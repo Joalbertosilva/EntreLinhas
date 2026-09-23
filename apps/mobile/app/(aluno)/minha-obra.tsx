@@ -1,9 +1,8 @@
-import { Stack, useRouter } from 'expo-router'
+import { Stack } from 'expo-router'
 import { Image } from 'expo-image'
 import * as ImagePicker from 'expo-image-picker'
 import type { CategoriaObra, TipoObra } from '@tcc-sistema/types'
 import {
-  ArrowLeft,
   BookMarked,
   BookOpen,
   FileText,
@@ -26,6 +25,7 @@ import {
   View,
 } from 'react-native'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
+import { ScreenBackHeader } from '@/components/layout/ScreenBackHeader'
 import { Input } from '@/components/ui/Input'
 import {
   countPalavras,
@@ -67,7 +67,6 @@ const TIPOS: Array<{ id: TipoObra; icon: typeof BookOpen }> = [
 ]
 
 export default function MinhaObraScreen() {
-  const router = useRouter()
   const insets = useSafeAreaInsets()
   const { profile } = useAuth()
   const firstName = profile?.nome.split(' ')[0] ?? 'Leitor'
@@ -284,29 +283,25 @@ export default function MinhaObraScreen() {
 
   return (
     <>
-      <Stack.Screen options={{ headerShown: false }} />
+      <Stack.Screen options={{ headerShown: false, gestureEnabled: true, fullScreenGestureEnabled: true }} />
       <LoadingOverlay visible={uploadingCapa} label="Gerando capa conceitual…" />
       <View className="flex-1 bg-surface" style={{ paddingTop: insets.top }}>
-        <View className="flex-row items-center gap-3 border-b border-border px-4 py-3">
-          <Pressable onPress={() => router.back()} className="rounded-full p-2 active:bg-primary-light">
-            <ArrowLeft color="#1a3342" size={22} strokeWidth={1.75} />
-          </Pressable>
-          <View className="min-w-0 flex-1">
-            <Text className="font-sans-bold text-lg text-brand-navy">Minha obra</Text>
-            <Text className="font-sans text-xs text-text-muted">{TIPO_OBRA_HINT[tipoObra]}</Text>
-          </View>
-          {isPublicada ? (
-            <Pressable
-              onPress={() => void despublicar.mutateAsync(obra!.id)}
-              disabled={despublicar.isPending}
-              className="rounded-full border border-border px-3 py-1.5"
-            >
-              <Text className="font-sans-semibold text-xs text-text-muted">Despublicar</Text>
-            </Pressable>
-          ) : (
-            <Pressable
-              onPress={() => void handlePublicar()}
-              disabled={publicar.isPending || dirty || salvar.isPending}
+        <ScreenBackHeader
+          title="Minha obra"
+          subtitle={TIPO_OBRA_HINT[tipoObra]}
+          rightSlot={
+            isPublicada ? (
+              <Pressable
+                onPress={() => void despublicar.mutateAsync(obra!.id)}
+                disabled={despublicar.isPending}
+                className="rounded-full border border-border px-3 py-1.5"
+              >
+                <Text className="font-sans-semibold text-xs text-text-muted">Despublicar</Text>
+              </Pressable>
+            ) : (
+              <Pressable
+                onPress={() => void handlePublicar()}
+                disabled={publicar.isPending || dirty || salvar.isPending}
               className="flex-row items-center gap-1 rounded-full bg-primary px-3 py-1.5"
             >
               {publicar.isPending ? (
@@ -316,8 +311,9 @@ export default function MinhaObraScreen() {
               )}
               <Text className="font-sans-semibold text-xs text-white">Publicar</Text>
             </Pressable>
-          )}
-        </View>
+            )
+          }
+        />
 
         {isLoading ? (
           <View className="flex-1 items-center justify-center">

@@ -5,7 +5,7 @@ import { AnimatedSplash } from '@/components/splash/AnimatedSplash'
 import { fetchAuthProfile, resolvePostLoginRoute } from '@/lib/authSession'
 import { supabase } from '@/lib/supabase'
 
-const MIN_SPLASH_MS = 2800
+const MIN_SPLASH_MS = 3000
 
 async function resolveInitialRoute(): Promise<string> {
   const { data } = await supabase.auth.getSession()

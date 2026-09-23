@@ -44,7 +44,7 @@ export default function TrocarSenhaScreen() {
     }
 
     await refreshProfile()
-    router.replace('/(aluno)')
+    router.replace('/(aluno)/(tabs)')
   }
 
   return (

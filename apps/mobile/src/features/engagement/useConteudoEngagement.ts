@@ -138,3 +138,23 @@ export function useSalvarInteracao(conteudoId: string, usuarioId: string | undef
     },
   })
 }
+
+export function useExcluirInteracao(conteudoId: string, usuarioId: string | undefined) {
+  const queryClient = useQueryClient()
+
+  return useMutation({
+    mutationFn: async (interacaoId: string) => {
+      if (!usuarioId) throw new Error('Sessão inválida')
+      const { error } = await supabase
+        .from('interacoes')
+        .delete()
+        .eq('id', interacaoId)
+        .eq('usuario_id', usuarioId)
+      if (error) throw error
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['app-minhas-interacoes', conteudoId, usuarioId] })
+      queryClient.invalidateQueries({ queryKey: ['app-comentarios-publicos', conteudoId] })
+    },
+  })
+}

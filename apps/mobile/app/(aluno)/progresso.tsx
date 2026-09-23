@@ -1,9 +1,10 @@
-import { Stack, useRouter } from 'expo-router'
+import { Stack } from 'expo-router'
 import { LinearGradient } from 'expo-linear-gradient'
-import { ArrowLeft, BookOpen, Sparkles, Trophy } from 'lucide-react-native'
-import { ActivityIndicator, Pressable, ScrollView, Text, View } from 'react-native'
+import { BookOpen, Sparkles, Trophy } from 'lucide-react-native'
+import { ActivityIndicator, ScrollView, Text, View } from 'react-native'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
 import { A11yScreen } from '@/components/layout/A11yScreen'
+import { ScreenBackHeader } from '@/components/layout/ScreenBackHeader'
 import { useAlunoProgress } from '@/features/progress/useAlunoProgress'
 import {
   FAIXAS_NIVEL,
@@ -17,7 +18,6 @@ import { SCREEN_HORIZONTAL_PADDING } from '@/lib/layout'
 import { useAuth } from '@/providers/AuthProvider'
 
 export default function ProgressoScreen() {
-  const router = useRouter()
   const insets = useSafeAreaInsets()
   const { profile } = useAuth()
   const { data: progress, isLoading } = useAlunoProgress(profile?.id)
@@ -26,21 +26,10 @@ export default function ProgressoScreen() {
 
   return (
     <>
-      <Stack.Screen options={{ headerShown: false }} />
+      <Stack.Screen options={{ headerShown: false, gestureEnabled: true, fullScreenGestureEnabled: true }} />
       <A11yScreen>
         <View className="flex-1 bg-surface" style={{ paddingTop: insets.top }}>
-          <View
-            className="flex-row items-center gap-3 border-b border-border py-3"
-            style={{ paddingHorizontal: SCREEN_HORIZONTAL_PADDING, paddingRight: 56 }}
-          >
-            <Pressable onPress={() => router.back()} className="rounded-full p-2 active:bg-primary-light">
-              <ArrowLeft color="#1a3342" size={22} strokeWidth={1.75} />
-            </Pressable>
-            <View className="min-w-0 flex-1">
-              <Text className="font-sans-bold text-lg text-brand-navy">Minha jornada</Text>
-              <Text className="font-sans text-xs text-text-muted">Sua leitura, no seu tempo</Text>
-            </View>
-          </View>
+          <ScreenBackHeader title="Minha jornada" subtitle="Sua leitura, no seu tempo" />
 
           {isLoading ? (
             <View className="flex-1 items-center justify-center">

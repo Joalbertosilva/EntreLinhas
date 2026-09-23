@@ -1,10 +1,12 @@
 import { zodResolver } from '@hookform/resolvers/zod'
-import { Stack, useRouter } from 'expo-router'
+import { Stack } from 'expo-router'
 import { Controller, useForm } from 'react-hook-form'
 import { KeyboardAvoidingView, Platform, Pressable, ScrollView, Text, View } from 'react-native'
-import { ArrowLeft, Lock } from 'lucide-react-native'
+import { Lock } from 'lucide-react-native'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
 import { changePasswordSchema, nomeUsuarioToAuthEmail, type ChangePasswordInput } from '@tcc-sistema/schemas'
+import { ScreenBackHeader } from '@/components/layout/ScreenBackHeader'
+import { useGoBack } from '@/lib/useGoBack'
 import { AuthField } from '@/components/ui/AuthField'
 import { Button } from '@/components/ui/Button'
 import { PasswordInput } from '@/components/ui/PasswordInput'
@@ -12,7 +14,7 @@ import { supabase } from '@/lib/supabase'
 import { useAuth } from '@/providers/AuthProvider'
 
 export default function AlterarSenhaScreen() {
-  const router = useRouter()
+  const goBack = useGoBack()
   const insets = useSafeAreaInsets()
   const { profile } = useAuth()
 
@@ -49,19 +51,14 @@ export default function AlterarSenhaScreen() {
     }
 
     reset()
-    router.back()
+    goBack()
   }
 
   return (
     <>
-      <Stack.Screen options={{ headerShown: false }} />
+      <Stack.Screen options={{ headerShown: false, gestureEnabled: true, fullScreenGestureEnabled: true }} />
       <View className="flex-1 bg-surface" style={{ paddingTop: insets.top }}>
-        <View className="flex-row items-center gap-3 border-b border-border px-4 py-3">
-          <Pressable onPress={() => router.back()} className="rounded-full p-2 active:bg-primary-light">
-            <ArrowLeft color="#1a3342" size={22} strokeWidth={1.75} />
-          </Pressable>
-          <Text className="font-sans-semibold text-base text-brand-navy">Alterar senha</Text>
-        </View>
+        <ScreenBackHeader title="Alterar senha" />
 
         <KeyboardAvoidingView behavior={Platform.OS === 'ios' ? 'padding' : undefined} className="flex-1">
           <ScrollView contentContainerStyle={{ padding: 24, paddingBottom: insets.bottom + 24 }}>

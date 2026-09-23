@@ -3,9 +3,15 @@ import { Text, View } from 'react-native'
 interface AvatarProps {
   name: string
   size?: number
+  tone?: 'primary' | 'navy'
 }
 
-export function Avatar({ name, size = 32 }: AvatarProps) {
+const TONE_BG = {
+  primary: '#1c756a',
+  navy: '#1a3342',
+} as const
+
+export function Avatar({ name, size = 32, tone = 'primary' }: AvatarProps) {
   const initials = name
     .split(' ')
     .slice(0, 2)
@@ -16,8 +22,8 @@ export function Avatar({ name, size = 32 }: AvatarProps) {
 
   return (
     <View
-      className="items-center justify-center rounded-full bg-primary"
-      style={{ width: size, height: size }}
+      className="items-center justify-center rounded-full"
+      style={{ width: size, height: size, backgroundColor: TONE_BG[tone] }}
     >
       <Text className="font-sans-bold text-white" style={{ fontSize }}>
         {initials || '?'}

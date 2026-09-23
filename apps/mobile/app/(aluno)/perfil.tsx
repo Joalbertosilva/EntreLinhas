@@ -1,8 +1,9 @@
 import { Alert, Linking, Pressable, ScrollView, Text, View } from 'react-native'
-import { useRouter } from 'expo-router'
+import { Stack, useRouter } from 'expo-router'
 import { BookOpen, ChevronRight, ExternalLink, Lock, PenLine, Sparkles, Type } from 'lucide-react-native'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
 import { A11yScreen } from '@/components/layout/A11yScreen'
+import { ScreenBackHeader } from '@/components/layout/ScreenBackHeader'
 import { ProfileMenuItem } from '@/components/ui/ProfileMenuItem'
 import { Avatar } from '@/components/ui/Avatar'
 import { useAccessibility } from '@/features/accessibility/AccessibilityProvider'
@@ -21,7 +22,7 @@ export default function PerfilScreen() {
   const { data: progress, isLoading } = useAlunoProgress(profile?.id)
   const { data: leituras } = useMinhasLeituras(profile?.id)
   const { setModeEnabled } = useAccessibility()
-  const tabPadding = 72 + Math.max(insets.bottom, 12)
+  const bottomPadding = insets.bottom + 32
 
   const totalLeituras =
     (leituras?.em_andamento.length ?? 0) +
@@ -53,18 +54,19 @@ export default function PerfilScreen() {
   const faixa = progress ? faixaDoNivel(progress.nivel) : faixaDoNivel(1)
 
   return (
-    <A11yScreen>
-      <View className="flex-1 bg-[#f4f8f7]">
-        <ScrollView
-          contentContainerStyle={{
-            paddingTop: insets.top + 12,
-            paddingBottom: tabPadding,
-            paddingHorizontal: SCREEN_HORIZONTAL_PADDING,
-            paddingRight: SCREEN_HORIZONTAL_PADDING,
-          }}
-        >
-          <Text className="font-sans-bold text-2xl text-brand-navy">Minha conta</Text>
-          <Text className="mt-1 font-sans text-sm text-text-muted">Seus dados, leituras e preferências.</Text>
+    <>
+      <Stack.Screen options={{ headerShown: false, gestureEnabled: true, fullScreenGestureEnabled: true }} />
+      <A11yScreen>
+        <View className="flex-1 bg-[#f4f8f7]" style={{ paddingTop: insets.top }}>
+          <ScreenBackHeader title="Minha conta" subtitle="Seus dados, leituras e preferências" />
+          <ScrollView
+            contentContainerStyle={{
+              paddingTop: 12,
+              paddingBottom: bottomPadding,
+              paddingHorizontal: SCREEN_HORIZONTAL_PADDING,
+              paddingRight: SCREEN_HORIZONTAL_PADDING,
+            }}
+          >
 
           <View className="mt-5 flex-row items-center gap-3.5">
             <Avatar name={profile?.nome ?? '?'} size={56} />
@@ -141,7 +143,7 @@ export default function PerfilScreen() {
               icon={BookOpen}
               label="Minhas leituras"
               hint={`${totalLeituras} ${totalLeituras === 1 ? 'título' : 'títulos'} na biblioteca`}
-              onPress={() => router.push('/(aluno)/leituras')}
+              onPress={() => router.push('/(aluno)/(tabs)/leituras')}
               color="#155a52"
               bg="#d4f0ea"
             />
@@ -189,9 +191,10 @@ export default function PerfilScreen() {
           >
             <Text className="font-sans-semibold text-sm text-text-muted">Sair da conta</Text>
           </Pressable>
-        </ScrollView>
-      </View>
-    </A11yScreen>
+          </ScrollView>
+        </View>
+      </A11yScreen>
+    </>
   )
 }
 

@@ -1,15 +1,19 @@
 import { useEffect } from 'react'
-import { Text, View, type ViewStyle } from 'react-native'
+import { Text, View, useWindowDimensions, type ViewStyle } from 'react-native'
 import Animated, {
   Easing,
+  runOnJS,
   useAnimatedStyle,
   useSharedValue,
   withDelay,
   withRepeat,
   withSequence,
   withTiming,
+  cancelAnimation,
 } from 'react-native-reanimated'
 import { BRAND } from '@/lib/brandTheme'
+
+type BookPhase = 'loading' | 'opening'
 
 interface BookPageLoaderProps {
   size?: number
@@ -17,6 +21,8 @@ interface BookPageLoaderProps {
   style?: ViewStyle
   /** Cor da capa do livrinho */
   coverColor?: string
+  phase?: BookPhase
+  onOpeningComplete?: () => void
 }
 
 export function BookPageLoader({
@@ -24,53 +30,138 @@ export function BookPageLoader({
   label,
   style,
   coverColor = BRAND.navy,
+  phase = 'loading',
+  onOpeningComplete,
 }: BookPageLoaderProps) {
+  const { width: screenW, height: screenH } = useWindowDimensions()
   const pageTurn = useSharedValue(0)
   const bob = useSharedValue(0)
+  const breathe = useSharedValue(1)
+  const expand = useSharedValue(0.72)
+  const introOpacity = useSharedValue(0)
+  const bookFade = useSharedValue(1)
+  const glow = useSharedValue(0.35)
 
   const bookW = size
   const bookH = size * 1.28
   const pageW = bookW * 0.88
+  const fillScale = (Math.max(screenW, screenH) / size) * 0.55
 
   useEffect(() => {
+    if (phase === 'opening') {
+      cancelAnimation(pageTurn)
+      cancelAnimation(bob)
+      cancelAnimation(breathe)
+
+      bob.value = withTiming(0, { duration: 120 })
+      breathe.value = withTiming(1, { duration: 120 })
+
+      pageTurn.value = withSequence(
+        withTiming(0.35, { duration: 180, easing: Easing.out(Easing.cubic) }),
+        withTiming(1, { duration: 420, easing: Easing.inOut(Easing.cubic) }),
+      )
+
+      expand.value = withSequence(
+        withTiming(1.08, { duration: 260, easing: Easing.out(Easing.back(1.8)) }),
+        withTiming(fillScale, { duration: 620, easing: Easing.in(Easing.cubic) }),
+      )
+
+      glow.value = withSequence(
+        withTiming(0.85, { duration: 280 }),
+        withTiming(0, { duration: 520 }),
+      )
+
+      bookFade.value = withDelay(
+        420,
+        withTiming(0, { duration: 420, easing: Easing.in(Easing.quad) }, (finished) => {
+          if (finished && onOpeningComplete) runOnJS(onOpeningComplete)()
+        }),
+      )
+      return
+    }
+
+    introOpacity.value = withTiming(1, { duration: 500, easing: Easing.out(Easing.cubic) })
+    expand.value = withTiming(1, { duration: 700, easing: Easing.out(Easing.back(1.4)) })
+
     pageTurn.value = withRepeat(
       withSequence(
-        withTiming(1, { duration: 520, easing: Easing.inOut(Easing.cubic) }),
-        withDelay(180, withTiming(0, { duration: 480, easing: Easing.inOut(Easing.cubic) })),
-        withDelay(220, withTiming(0, { duration: 0 })),
+        withTiming(1, { duration: 480, easing: Easing.inOut(Easing.cubic) }),
+        withDelay(140, withTiming(0, { duration: 440, easing: Easing.inOut(Easing.cubic) })),
+        withDelay(260, withTiming(0, { duration: 0 })),
       ),
       -1,
       false,
     )
+
     bob.value = withRepeat(
       withSequence(
-        withTiming(-3, { duration: 700, easing: Easing.inOut(Easing.sin) }),
-        withTiming(0, { duration: 700, easing: Easing.inOut(Easing.sin) }),
+        withTiming(-5, { duration: 820, easing: Easing.inOut(Easing.sin) }),
+        withTiming(2, { duration: 820, easing: Easing.inOut(Easing.sin) }),
       ),
       -1,
       true,
     )
-  }, [bob, pageTurn])
+
+    breathe.value = withRepeat(
+      withSequence(
+        withTiming(1.04, { duration: 900, easing: Easing.inOut(Easing.sin) }),
+        withTiming(1, { duration: 900, easing: Easing.inOut(Easing.sin) }),
+      ),
+      -1,
+      true,
+    )
+
+    glow.value = withRepeat(
+      withSequence(
+        withTiming(0.65, { duration: 1100, easing: Easing.inOut(Easing.sin) }),
+        withTiming(0.3, { duration: 1100, easing: Easing.inOut(Easing.sin) }),
+      ),
+      -1,
+      true,
+    )
+  }, [bob, bookFade, breathe, expand, fillScale, glow, introOpacity, onOpeningComplete, pageTurn, phase])
 
   const bookStyle = useAnimatedStyle(() => ({
-    transform: [{ translateY: bob.value }],
+    opacity: introOpacity.value * bookFade.value,
+    transform: [
+      { translateY: bob.value },
+      { scale: expand.value * breathe.value },
+    ],
   }))
 
   const pageStyle = useAnimatedStyle(() => {
-    const rotate = `${-pageTurn.value * 78}deg`
+    const rotate = `${-pageTurn.value * 88}deg`
     return {
-      transform: [{ perspective: 600 }, { rotateY: rotate }],
-      opacity: 0.92 + pageTurn.value * 0.08,
+      transform: [{ perspective: 800 }, { rotateY: rotate }],
+      opacity: 0.9 + pageTurn.value * 0.1,
     }
   })
 
   const shadowPageStyle = useAnimatedStyle(() => ({
-    opacity: 0.15 + pageTurn.value * 0.35,
-    transform: [{ scaleX: 0.85 + pageTurn.value * 0.12 }],
+    opacity: 0.12 + pageTurn.value * 0.4,
+    transform: [{ scaleX: 0.82 + pageTurn.value * 0.18 }],
+  }))
+
+  const glowStyle = useAnimatedStyle(() => ({
+    opacity: glow.value * introOpacity.value * bookFade.value,
+    transform: [{ scale: expand.value * 1.35 }],
   }))
 
   return (
-    <View style={[{ alignItems: 'center' }, style]}>
+    <View style={[{ alignItems: 'center', width: '100%' }, style]}>
+      <Animated.View
+        style={[
+          glowStyle,
+          {
+            position: 'absolute',
+            width: size * 2.2,
+            height: size * 2.2,
+            borderRadius: size * 1.1,
+            backgroundColor: coverColor,
+          },
+        ]}
+      />
+
       <Animated.View style={[{ alignItems: 'center' }, bookStyle]}>
         <View
           style={{
@@ -80,7 +171,12 @@ export function BookPageLoader({
             backgroundColor: coverColor,
             overflow: 'hidden',
             borderWidth: 1,
-            borderColor: 'rgba(255,255,255,0.2)',
+            borderColor: 'rgba(255,255,255,0.25)',
+            shadowColor: coverColor,
+            shadowOffset: { width: 0, height: 8 },
+            shadowOpacity: 0.28,
+            shadowRadius: 14,
+            elevation: 6,
           }}
         >
           <View
@@ -94,7 +190,7 @@ export function BookPageLoader({
               backgroundColor: '#f8fafc',
             }}
           />
-          {[0.22, 0.38, 0.54].map((t) => (
+          {[0.22, 0.38, 0.54, 0.7].map((t) => (
             <View
               key={t}
               style={{
@@ -150,6 +246,17 @@ export function BookPageLoader({
               backgroundColor: 'rgba(0,0,0,0.15)',
             }}
           />
+          <View
+            style={{
+              position: 'absolute',
+              right: bookW * 0.06,
+              top: bookH * 0.14,
+              width: 2,
+              height: bookH * 0.72,
+              borderRadius: 1,
+              backgroundColor: 'rgba(255,255,255,0.15)',
+            }}
+          />
         </View>
       </Animated.View>
 
@@ -161,6 +268,8 @@ export function BookPageLoader({
             fontSize: 14,
             color: BRAND.navy,
             textAlign: 'center',
+            width: '100%',
+            paddingHorizontal: 8,
           }}
         >
           {label}

@@ -26,5 +26,5 @@ export async function resolvePostLoginRoute(profile: AuthProfile): Promise<strin
   if (!profile.status) return '/(auth)/login'
   if (profile.deve_trocar_senha) return '/(auth)/trocar-senha'
   if (!canUseMobileApp(profile.perfil)) return '/(auth)/login'
-  return '/(aluno)'
+  return '/(aluno)/(tabs)'
 }
