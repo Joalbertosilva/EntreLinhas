@@ -1,16 +1,20 @@
 import { LinearGradient } from 'expo-linear-gradient'
-import { BookOpen, Sparkles, X } from 'lucide-react-native'
+import { Sparkles, TrendingUp, X } from 'lucide-react-native'
 import { useEffect } from 'react'
 import { Modal, Pressable, Text, View } from 'react-native'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
 import type { PageTurnDetail } from '@/features/progress/progressCelebration'
 import { playLevelUpSound, playPageTurnSound } from '@/features/progress/playProgressSounds'
+import { tituloJornada } from '@/lib/alunoProgress'
 import { paletaLivroCinematico } from '@/lib/progressCopy'
 
 interface PageTurnCelebrationModalProps {
   detail: PageTurnDetail | null
   onClose: () => void
 }
+
+const TEXT_WHITE = '#ffffff'
+const TEXT_WHITE_SOFT = 'rgba(255,255,255,0.92)'
 
 export function PageTurnCelebrationModal({ detail, onClose }: PageTurnCelebrationModalProps) {
   const insets = useSafeAreaInsets()
@@ -28,17 +32,21 @@ export function PageTurnCelebrationModal({ detail, onClose }: PageTurnCelebratio
 
   const paleta = paletaLivroCinematico(detail.nivel, detail.leveledUp ? 100 : 72)
 
+  const jornadaTitulo = tituloJornada(detail.nivel)
+
   const title = detail.leveledUp
-    ? `Capítulo ${detail.nivel}`
+    ? `Nível ${detail.nivel}`
     : detail.status === 'concluido'
-      ? 'Obra concluída'
+      ? 'Leitura concluída'
       : 'Leitura iniciada'
 
   const subtitle = detail.leveledUp
-    ? 'Novo capítulo desbloqueado'
+    ? jornadaTitulo
     : detail.status === 'concluido'
-      ? 'Mais uma obra na jornada'
-      : 'Bom começo'
+      ? 'Mais uma obra na sua jornada'
+      : 'Bom começo de leitura'
+
+  const kicker = detail.leveledUp ? 'Parabéns!' : null
 
   return (
     <Modal visible transparent animationType="fade" onRequestClose={onClose}>
@@ -63,24 +71,46 @@ export function PageTurnCelebrationModal({ detail, onClose }: PageTurnCelebratio
             accessibilityLabel="Fechar"
             className="absolute right-3 top-3 z-10 rounded-full p-1.5"
           >
-            <X color="rgba(255,255,255,0.9)" size={16} />
+            <X color={TEXT_WHITE} size={16} />
           </Pressable>
 
           <View className="flex-row items-center gap-4 pr-6">
             <View className="h-16 w-16 items-center justify-center rounded-2xl border border-white/25 bg-white/15">
               {detail.leveledUp ? (
-                <Sparkles color="#ffffff" size={28} strokeWidth={1.75} />
+                <Sparkles color={TEXT_WHITE} size={28} strokeWidth={1.75} />
               ) : (
-                <BookOpen color="#ffffff" size={28} strokeWidth={1.75} />
+                <TrendingUp color={TEXT_WHITE} size={28} strokeWidth={1.75} />
               )}
             </View>
 
             <View className="min-w-0 flex-1">
-              <Text className="font-sans-bold text-base text-white">{title}</Text>
-              <Text className="mt-1 font-sans text-sm text-white/88">{subtitle}</Text>
+              {kicker ? (
+                <Text className="font-sans-semibold text-xs uppercase tracking-wide" style={{ color: TEXT_WHITE_SOFT }}>
+                  {kicker}
+                </Text>
+              ) : null}
+              <Text
+                className={`font-sans-bold ${detail.leveledUp ? 'text-2xl' : 'text-base'}`}
+                style={{ color: TEXT_WHITE, marginTop: kicker ? 4 : 0 }}
+              >
+                {title}
+              </Text>
+              <Text
+                className={`font-sans-semibold ${detail.leveledUp ? 'text-base' : 'text-sm'} mt-1`}
+                style={{ color: TEXT_WHITE }}
+              >
+                {subtitle}
+              </Text>
+              {detail.leveledUp ? (
+                <Text className="mt-1.5 font-sans text-sm" style={{ color: TEXT_WHITE_SOFT }}>
+                  Continue lendo para evoluir na jornada.
+                </Text>
+              ) : null}
               {detail.xpGained > 0 ? (
-                <View className="mt-2 self-start rounded-full border border-white/35 bg-white/20 px-2.5 py-1">
-                  <Text className="font-sans-semibold text-xs text-white">+{detail.xpGained} XP</Text>
+                <View className="mt-2.5 self-start rounded-full border border-white/35 bg-white/20 px-3 py-1">
+                  <Text className="font-sans-bold text-xs" style={{ color: TEXT_WHITE }}>
+                    +{detail.xpGained} XP
+                  </Text>
                 </View>
               ) : null}
             </View>
