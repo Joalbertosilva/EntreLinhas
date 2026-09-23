@@ -53,10 +53,10 @@ export function GlobalAccessibilityLayer() {
         pointerEvents="box-none"
         style={{
           position: 'absolute',
-          top: insets.top + 8,
+          bottom: Math.max(insets.bottom, 12) + 68,
           right: 16,
-          zIndex: 50,
-          elevation: 50,
+          zIndex: 40,
+          elevation: 40,
         }}
       >
         <AccessibilityTrigger />

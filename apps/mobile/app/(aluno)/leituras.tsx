@@ -1,8 +1,10 @@
 import { ActivityIndicator, ScrollView, Text, View } from 'react-native'
 import { LinearGradient } from 'expo-linear-gradient'
+import { PLATFORM_GRADIENT, PLATFORM_GRADIENT_LOCATIONS } from '@/lib/brandTheme'
 import { BookOpen, Bookmark, CheckCircle2 } from 'lucide-react-native'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
 import { A11yScreen } from '@/components/layout/A11yScreen'
+import { TabScreenShell } from '@/components/layout/TabScreenShell'
 import { LeituraRow } from '@/features/leituras/LeituraRow'
 import type { MinhasLeiturasAgrupadas } from '@/features/leituras/useMinhasLeituras'
 import { useMinhasLeituras } from '@/features/leituras/useMinhasLeituras'
@@ -66,16 +68,21 @@ export default function LeiturasScreen() {
 
   return (
     <A11yScreen>
-      <LinearGradient colors={['#f7fdfc', '#ffffff']} style={{ flex: 1 }}>
-        <ScrollView
-          contentContainerStyle={{ paddingTop: insets.top + 12, paddingBottom: tabPadding }}
-          showsVerticalScrollIndicator={false}
+      <TabScreenShell>
+        <LinearGradient
+          colors={[...PLATFORM_GRADIENT]}
+          locations={[...PLATFORM_GRADIENT_LOCATIONS]}
+          style={{ flex: 1 }}
         >
-          <View
-            style={{ marginHorizontal: SCREEN_HORIZONTAL_PADDING, paddingRight: 32 }}
-            className="mb-6 overflow-hidden rounded-2xl border border-primary/15 bg-primary-light/40 p-5"
+          <ScrollView
+            contentContainerStyle={{ paddingTop: 12, paddingBottom: tabPadding }}
+            showsVerticalScrollIndicator={false}
           >
-            <Text className="font-sans-semibold text-xs uppercase tracking-wider text-primary">
+            <View
+              style={{ marginHorizontal: SCREEN_HORIZONTAL_PADDING }}
+              className="mb-6 overflow-hidden rounded-2xl border border-sky-mid bg-white/90 p-5"
+            >
+            <Text className="font-sans-semibold text-xs uppercase tracking-wider text-text-muted">
               Sua biblioteca
             </Text>
             <Text className="mt-1 font-sans-bold text-2xl text-brand-navy">Minhas leituras</Text>
@@ -153,8 +160,9 @@ export default function LeiturasScreen() {
               )
             })
           )}
-        </ScrollView>
-      </LinearGradient>
+          </ScrollView>
+        </LinearGradient>
+      </TabScreenShell>
     </A11yScreen>
   )
 }

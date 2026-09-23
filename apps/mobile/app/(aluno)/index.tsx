@@ -1,9 +1,10 @@
-import { ScrollView, Text, View } from 'react-native'
+import { ScrollView, Text } from 'react-native'
 import { Speakable } from '@/features/accessibility/Speakable'
 import { LinearGradient } from 'expo-linear-gradient'
+import { PLATFORM_GRADIENT, PLATFORM_GRADIENT_LOCATIONS } from '@/lib/brandTheme'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
 import { A11yScreen } from '@/components/layout/A11yScreen'
-import { BrandLogo } from '@/components/auth/BrandLogo'
+import { TabScreenShell } from '@/components/layout/TabScreenShell'
 import { ContentSectionRail } from '@/features/conteudos/ContentSectionRail'
 import { HOME_SECTIONS } from '@/features/conteudos/homeSections'
 import { ContinueReadingSection } from '@/features/home/ContinueReadingSection'
@@ -32,34 +33,31 @@ export default function HomeScreen() {
 
   return (
     <A11yScreen>
-      <LinearGradient colors={['#fafefc', '#e5f7f3', '#ffffff']} style={{ flex: 1 }}>
-        <ScrollView
-          contentContainerStyle={{
-            paddingTop: insets.top + 12,
-            paddingBottom: tabPadding,
-          }}
-          showsVerticalScrollIndicator={false}
+      <TabScreenShell>
+        <LinearGradient
+          colors={[...PLATFORM_GRADIENT]}
+          locations={[...PLATFORM_GRADIENT_LOCATIONS]}
+          style={{ flex: 1 }}
         >
-          <Speakable
-            label={greetingLabel}
-            style={{ paddingHorizontal: SCREEN_HORIZONTAL_PADDING, paddingRight: 56 }}
-            className="mb-5"
+          <ScrollView
+            contentContainerStyle={{
+              paddingTop: 12,
+              paddingBottom: tabPadding,
+            }}
+            showsVerticalScrollIndicator={false}
           >
-            <View className="flex-row items-center gap-3">
-              <BrandLogo variant="mark" showTagline={false} />
-              <View className="min-w-0 flex-1">
-                <Text className="font-sans-semibold text-xs uppercase tracking-wider text-primary">
-                  EntreLinhas
-                </Text>
-                <Text className="font-sans-bold text-xl text-brand-navy">
-                  {getTimeGreeting()}, {firstName}
-                </Text>
-              </View>
-            </View>
-            <Text className="mt-3 rounded-2xl bg-white/80 px-4 py-3.5 font-sans text-sm leading-relaxed text-text-muted">
-              {subtitulo}
-            </Text>
-          </Speakable>
+            <Speakable
+              label={greetingLabel}
+              style={{ paddingHorizontal: SCREEN_HORIZONTAL_PADDING }}
+              className="mb-5"
+            >
+              <Text className="font-sans-bold text-2xl text-brand-navy">
+                {getTimeGreeting()}, {firstName}
+              </Text>
+              <Text className="mt-3 rounded-2xl bg-white/80 px-4 py-3.5 font-sans text-sm leading-relaxed text-text-muted">
+                {subtitulo}
+              </Text>
+            </Speakable>
 
           <HomeProgressCard userId={profile?.id} />
           <ContinueReadingSection userId={profile?.id} />
@@ -70,8 +68,9 @@ export default function HomeScreen() {
           {CATALOG_SECTIONS.map((section) => (
             <ContentSectionRail key={section.id} section={section} />
           ))}
-        </ScrollView>
-      </LinearGradient>
+          </ScrollView>
+        </LinearGradient>
+      </TabScreenShell>
     </A11yScreen>
   )
 }

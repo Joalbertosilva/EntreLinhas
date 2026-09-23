@@ -1,11 +1,10 @@
 import { Alert, Linking, Pressable, ScrollView, Text, View } from 'react-native'
-import { LinearGradient } from 'expo-linear-gradient'
 import { useRouter } from 'expo-router'
 import { BookOpen, ChevronRight, ExternalLink, Lock, PenLine, Sparkles, Type } from 'lucide-react-native'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
 import { A11yScreen } from '@/components/layout/A11yScreen'
 import { ProfileMenuItem } from '@/components/ui/ProfileMenuItem'
-import { Button } from '@/components/ui/Button'
+import { Avatar } from '@/components/ui/Avatar'
 import { useAccessibility } from '@/features/accessibility/AccessibilityProvider'
 import { useAlunoProgress } from '@/features/progress/useAlunoProgress'
 import { useMinhasLeituras } from '@/features/leituras/useMinhasLeituras'
@@ -52,46 +51,36 @@ export default function PerfilScreen() {
   }
 
   const faixa = progress ? faixaDoNivel(progress.nivel) : faixaDoNivel(1)
-  const initials = profile?.nome
-    ?.split(' ')
-    .slice(0, 2)
-    .map((p) => p[0]?.toUpperCase())
-    .join('') ?? '?'
 
   return (
     <A11yScreen>
-      <LinearGradient colors={['#f7fdfc', '#ffffff']} style={{ flex: 1 }}>
+      <View className="flex-1 bg-[#f4f8f7]">
         <ScrollView
           contentContainerStyle={{
             paddingTop: insets.top + 12,
             paddingBottom: tabPadding,
             paddingHorizontal: SCREEN_HORIZONTAL_PADDING,
-            paddingRight: 56,
+            paddingRight: SCREEN_HORIZONTAL_PADDING,
           }}
         >
           <Text className="font-sans-bold text-2xl text-brand-navy">Minha conta</Text>
           <Text className="mt-1 font-sans text-sm text-text-muted">Seus dados, leituras e preferências.</Text>
 
-          <View className="mt-6 overflow-hidden rounded-3xl border border-primary/10 bg-white shadow-sm">
-            <LinearGradient
-              colors={[faixa.cor, `${faixa.cor}ee`]}
-              start={{ x: 0, y: 0 }}
-              end={{ x: 1, y: 1 }}
-              style={{ paddingHorizontal: 20, paddingTop: 20, paddingBottom: 24 }}
-            >
-              <View className="items-center">
-                <View className="h-20 w-20 items-center justify-center rounded-2xl border-2 border-white/30 bg-white/20">
-                  <Text className="font-sans-bold text-2xl text-white">{initials}</Text>
-                </View>
-                <Text className="mt-4 text-center font-sans-bold text-lg text-white">{profile?.nome}</Text>
-                <Text className="mt-1 font-sans text-sm text-white/85">@{profile?.nome_usuario}</Text>
-                <View className="mt-3 rounded-full bg-white/20 px-3 py-1">
-                  <Text className="font-sans-semibold text-[10px] uppercase tracking-wide text-white">
-                    {perfilLabel}
-                  </Text>
-                </View>
+          <View className="mt-5 flex-row items-center gap-3.5">
+            <Avatar name={profile?.nome ?? '?'} size={56} />
+            <View className="min-w-0 flex-1">
+              <Text className="font-sans-bold text-lg text-brand-navy" numberOfLines={2}>
+                {profile?.nome}
+              </Text>
+              <Text className="mt-0.5 font-sans text-sm text-primary" numberOfLines={1}>
+                @{profile?.nome_usuario}
+              </Text>
+              <View className="mt-2 self-start rounded-full bg-primary-light px-2.5 py-0.5">
+                <Text className="font-sans-semibold text-[10px] uppercase tracking-wide text-primary">
+                  {perfilLabel}
+                </Text>
               </View>
-            </LinearGradient>
+            </View>
           </View>
 
           <View className="mt-4 flex-row gap-3">
@@ -105,7 +94,7 @@ export default function PerfilScreen() {
               onPress={() => router.push('/(aluno)/progresso')}
               accessibilityRole="button"
               accessibilityLabel="Ver minha jornada de leitura"
-              className="mt-3 flex-row items-center gap-3 rounded-xl border border-border bg-white px-3.5 py-3 active:bg-primary-light/20"
+              className="mt-3 flex-row items-center gap-3 rounded-2xl border border-border/80 bg-white px-3.5 py-3 active:bg-primary-light/20"
             >
               <View
                 className="h-9 w-9 items-center justify-center rounded-lg"
@@ -135,69 +124,80 @@ export default function PerfilScreen() {
             </Pressable>
           ) : null}
 
-          <View className="mb-3 mt-8">
-            <Text className="font-sans-bold text-lg text-brand-navy">Explore sua conta</Text>
-            <Text className="mt-1 font-sans text-sm text-text-muted">
-              Leitura, escrita e configurações em um só lugar.
-            </Text>
+          <Text className="mb-2 mt-8 font-sans-semibold text-xs uppercase tracking-wider text-text-muted">
+            Configurações
+          </Text>
+
+          <View className="overflow-hidden rounded-2xl border border-border/80 bg-white">
+            <ProfileMenuItem
+              variant="list"
+              icon={Sparkles}
+              label="Minha jornada"
+              hint="XP, níveis e faixas de leitura"
+              onPress={() => router.push('/(aluno)/progresso')}
+            />
+            <ProfileMenuItem
+              variant="list"
+              icon={BookOpen}
+              label="Minhas leituras"
+              hint={`${totalLeituras} ${totalLeituras === 1 ? 'título' : 'títulos'} na biblioteca`}
+              onPress={() => router.push('/(aluno)/leituras')}
+              color="#155a52"
+              bg="#d4f0ea"
+            />
+            <ProfileMenuItem
+              variant="list"
+              icon={PenLine}
+              label="Minha obra"
+              hint="Escrever e publicar na comunidade"
+              onPress={() => router.push('/(aluno)/minha-obra')}
+              color="#b45309"
+              bg="#fef6e4"
+            />
+            <ProfileMenuItem
+              variant="list"
+              icon={Lock}
+              label="Alterar senha"
+              hint="Atualize sua senha de acesso"
+              onPress={() => router.push('/(aluno)/alterar-senha')}
+            />
+            <ProfileMenuItem
+              variant="list"
+              icon={Type}
+              label="Acessibilidade"
+              hint="Texto maior e preferências de áudio"
+              onPress={() => setModeEnabled(true)}
+              isLast={!isStaff}
+            />
+            {isStaff ? (
+              <ProfileMenuItem
+                variant="list"
+                icon={ExternalLink}
+                label="Painel administrativo"
+                hint="Gerenciar usuários, conteúdos e alunos na web"
+                onPress={() => void openAdminPanel()}
+                color="#1c756a"
+                bg="#e8f7f4"
+                isLast
+              />
+            ) : null}
           </View>
 
-          <ProfileMenuItem
-            icon={Sparkles}
-            label="Minha jornada"
-            hint="XP, níveis e faixas de leitura"
-            onPress={() => router.push('/(aluno)/progresso')}
-          />
-          <ProfileMenuItem
-            icon={BookOpen}
-            label="Minhas leituras"
-            hint={`${totalLeituras} ${totalLeituras === 1 ? 'título' : 'títulos'} na biblioteca`}
-            onPress={() => router.push('/(aluno)/leituras')}
-            color="#155a52"
-            bg="#d4f0ea"
-          />
-          <ProfileMenuItem
-            icon={PenLine}
-            label="Minha obra"
-            hint="Escrever e publicar na comunidade"
-            onPress={() => router.push('/(aluno)/minha-obra')}
-            color="#b45309"
-            bg="#fef6e4"
-          />
-          <ProfileMenuItem
-            icon={Lock}
-            label="Alterar senha"
-            hint="Atualize sua senha de acesso"
-            onPress={() => router.push('/(aluno)/alterar-senha')}
-          />
-          <ProfileMenuItem
-            icon={Type}
-            label="Acessibilidade"
-            hint="Texto maior e preferências de áudio"
-            onPress={() => setModeEnabled(true)}
-          />
-
-          {isStaff ? (
-            <ProfileMenuItem
-              icon={ExternalLink}
-              label="Painel administrativo"
-              hint="Gerenciar usuários, conteúdos e alunos na web"
-              onPress={() => void openAdminPanel()}
-              color="#1c756a"
-              bg="#e8f7f4"
-            />
-          ) : null}
-
-          <Button variant="outline" label="Sair da conta" onPress={() => void handleSignOut()} className="mt-6" />
+          <Pressable
+            onPress={() => void handleSignOut()}
+            className="mt-4 items-center rounded-2xl border border-border/80 bg-white py-3.5 active:bg-primary-light/15"
+          >
+            <Text className="font-sans-semibold text-sm text-text-muted">Sair da conta</Text>
+          </Pressable>
         </ScrollView>
-      </LinearGradient>
+      </View>
     </A11yScreen>
   )
 }
 
 function MiniStat({ label, value }: { label: string; value: number }) {
   return (
-    <View className="min-w-0 flex-1 items-center rounded-2xl border border-border bg-white py-3.5">
+    <View className="min-w-0 flex-1 items-center rounded-2xl border border-border/80 bg-white py-3.5">
       <Text className="font-sans-bold text-lg text-brand-navy">{value}</Text>
       <Text className="font-sans-medium text-[10px] uppercase tracking-wide text-text-muted">{label}</Text>
     </View>

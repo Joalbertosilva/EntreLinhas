@@ -1,10 +1,13 @@
-import { useMemo, useState } from 'react'
+import { useLocalSearchParams } from 'expo-router'
+import { useEffect, useMemo, useState } from 'react'
 import { ActivityIndicator, Pressable, ScrollView, Text, View } from 'react-native'
 import { LinearGradient } from 'expo-linear-gradient'
+import { PLATFORM_GRADIENT, PLATFORM_GRADIENT_LOCATIONS } from '@/lib/brandTheme'
 import { Search } from 'lucide-react-native'
 import type { TipoConteudo } from '@tcc-sistema/types'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
 import { A11yScreen } from '@/components/layout/A11yScreen'
+import { TabScreenShell } from '@/components/layout/TabScreenShell'
 import { Input } from '@/components/ui/Input'
 import { ContentGrid } from '@/features/conteudos/ContentGrid'
 import { HOME_SECTIONS } from '@/features/conteudos/homeSections'
@@ -23,11 +26,20 @@ const FILTROS: Array<{ id: FiltroExplorar; label: string }> = [
   })),
 ]
 
+const TIPOS_VALIDOS = new Set<TipoConteudo>(['livro', 'cronica', 'musica', 'poema'])
+
 export default function ExplorarScreen() {
   const insets = useSafeAreaInsets()
+  const { tipo } = useLocalSearchParams<{ tipo?: string }>()
   const [filtro, setFiltro] = useState<FiltroExplorar>('todos')
   const [busca, setBusca] = useState('')
   const tabPadding = 72 + Math.max(insets.bottom, 12)
+
+  useEffect(() => {
+    if (tipo && TIPOS_VALIDOS.has(tipo as TipoConteudo)) {
+      setFiltro(tipo as TipoConteudo)
+    }
+  }, [tipo])
 
   const todosQuery = useAllConteudos(48)
   const livrosQuery = useConteudosByTipo('livro')
@@ -61,16 +73,18 @@ export default function ExplorarScreen() {
 
   return (
     <A11yScreen>
-      <LinearGradient colors={['#fafefc', '#ffffff']} style={{ flex: 1 }}>
-        <ScrollView
-          contentContainerStyle={{ paddingTop: insets.top + 12, paddingBottom: tabPadding }}
-          showsVerticalScrollIndicator={false}
+      <TabScreenShell>
+        <LinearGradient
+          colors={[...PLATFORM_GRADIENT]}
+          locations={[...PLATFORM_GRADIENT_LOCATIONS]}
+          style={{ flex: 1 }}
         >
-          <View
-            style={{ paddingHorizontal: SCREEN_HORIZONTAL_PADDING, paddingRight: 56 }}
-            className="mb-5"
+          <ScrollView
+            contentContainerStyle={{ paddingTop: 12, paddingBottom: tabPadding }}
+            showsVerticalScrollIndicator={false}
           >
-            <Text className="font-sans-semibold text-xs uppercase tracking-wider text-primary">
+            <View style={{ paddingHorizontal: SCREEN_HORIZONTAL_PADDING }} className="mb-5">
+            <Text className="font-sans-semibold text-xs uppercase tracking-wider text-text-muted">
               Explorar
             </Text>
             <Text className="mt-1 font-sans-bold text-2xl text-brand-navy">Catálogo</Text>
@@ -142,8 +156,9 @@ export default function ExplorarScreen() {
               <ObrasSectionRail />
             </View>
           )}
-        </ScrollView>
-      </LinearGradient>
+          </ScrollView>
+        </LinearGradient>
+      </TabScreenShell>
     </A11yScreen>
   )
 }
