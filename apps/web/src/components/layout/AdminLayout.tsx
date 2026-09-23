@@ -193,7 +193,7 @@ export function AdminLayout() {
             <UserAccountMenu
               profile={profile}
               onSignOut={handleSignOut}
-              accountPath="/app/perfil"
+              isStaff
               compact
             />
             <Link

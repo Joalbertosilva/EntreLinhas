@@ -75,7 +75,7 @@ export function AppLayout() {
             <UserAccountMenu
               profile={profile}
               onSignOut={handleSignOut}
-              accountPath="/app/perfil"
+              isStaff={isStaff}
               compact
               className="lg:[&_button]:gap-2"
             />

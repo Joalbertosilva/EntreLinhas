@@ -1,10 +1,6 @@
-import {
-  APP_NAV_ACCOUNT,
-  APP_NAV_HEADER,
-  APP_NAV_SECTIONS,
-  type AppNavItem,
-} from '@/features/app/appNavigation'
-import { Link } from '@tanstack/react-router'
+import { ACCOUNT_MENU_ITEMS, type AccountMenuItem } from '@/features/app/accountMenu'
+import { APP_NAV_HEADER, APP_NAV_SECTIONS, type AppNavItem } from '@/features/app/appNavigation'
+import { Link, useRouterState } from '@tanstack/react-router'
 import { LayoutDashboard, LogOut } from 'lucide-react'
 import { SectionIcon } from '@/features/app/SectionIcon'
 import { cn } from '@/lib/utils'
@@ -24,6 +20,8 @@ export function AppNavLinks({
   onSignOut,
   compact = false,
 }: AppNavLinksProps) {
+  const pathname = useRouterState({ select: (s) => s.location.pathname })
+
   return (
     <>
       <nav className="flex-1 overflow-y-auto p-3 scrollbar-thin" aria-label="Seções">
@@ -61,12 +59,15 @@ export function AppNavLinks({
           Conta
         </p>
         <ul className="space-y-0.5">
-          <NavLinkItem
-            item={APP_NAV_ACCOUNT}
-            active={activeId === 'perfil'}
-            onNavigate={onNavigate}
-            compact={compact}
-          />
+          {ACCOUNT_MENU_ITEMS.map((item) => (
+            <AccountLinkItem
+              key={item.to}
+              item={item}
+              active={pathname === item.to || pathname.startsWith(`${item.to}/`)}
+              onNavigate={onNavigate}
+              compact={compact}
+            />
+          ))}
         </ul>
       </nav>
 
@@ -139,6 +140,51 @@ function NavLinkItem({
           {!compact && (
             <span className="block truncate text-[11px] text-text-muted">{item.description}</span>
           )}
+        </span>
+      </Link>
+    </li>
+  )
+}
+
+function AccountLinkItem({
+  item,
+  active,
+  onNavigate,
+  compact,
+}: {
+  item: AccountMenuItem
+  active: boolean
+  onNavigate?: () => void
+  compact?: boolean
+}) {
+  return (
+    <li>
+      <Link
+        to={item.to}
+        onClick={onNavigate}
+        className={cn(
+          'group flex items-center gap-3 rounded-xl px-3 py-2.5 transition-all duration-200',
+          active
+            ? 'bg-primary-light text-primary shadow-[var(--shadow-soft)] ring-1 ring-primary/10'
+            : 'text-text-muted hover:bg-primary-light/40 hover:text-text',
+          compact && 'py-2',
+        )}
+      >
+        <span
+          className={cn(
+            'flex h-8 w-8 shrink-0 items-center justify-center rounded-lg',
+            active ? 'bg-white/80 text-primary' : 'bg-primary-light/60 text-primary',
+          )}
+        >
+          <item.icon className="h-[18px] w-[18px]" strokeWidth={1.75} aria-hidden />
+        </span>
+        <span className="min-w-0">
+          <span className={cn('block text-sm', active ? 'font-semibold' : 'font-medium')}>
+            {item.label}
+          </span>
+          {!compact && item.description ? (
+            <span className="block truncate text-[11px] text-text-muted">{item.description}</span>
+          ) : null}
         </span>
       </Link>
     </li>
