@@ -1,8 +1,8 @@
 #!/usr/bin/env node
 /**
  * Sobe o Metro para Expo Go.
- * Padrão: --tunnel (funciona mesmo com firewall / isolamento do Wi‑Fi).
- * LAN local: pnpm mobile:dev:lan
+ * Padrão: LAN (estável na mesma Wi‑Fi — evita quedas do ngrok/tunnel).
+ * Tunnel: pnpm mobile:dev:tunnel (outra rede / firewall).
  */
 import { spawnSync, spawn, execSync } from 'node:child_process'
 import { existsSync } from 'node:fs'
@@ -61,18 +61,18 @@ if (whoami.status !== 0 || !username || username === 'Not logged in') {
   process.exit(1)
 }
 
-const useLan = process.argv.includes('--lan')
-const extraArgs = process.argv.slice(2).filter((arg) => arg !== '--lan')
+const useTunnel = process.argv.includes('--tunnel')
+const extraArgs = process.argv.slice(2).filter((arg) => arg !== '--tunnel' && arg !== '--lan')
 
-const hostArgs = useLan ? ['--lan'] : ['--tunnel']
+const hostArgs = useTunnel ? ['--tunnel'] : ['--lan']
 
 console.log(`\n📱 EntreLinhas mobile — Expo SDK 57 — conta: ${username}`)
-if (useLan) {
-  console.log('   Modo: LAN (iPhone e PC na mesma rede Wi‑Fi)\n')
+if (useTunnel) {
+  console.log('   Modo: TUNNEL (ngrok — use se iPhone estiver em outra rede)\n')
+  console.log('   Se o tunnel cair, reinicie ou use LAN: pnpm mobile:dev\n')
 } else {
-  console.log('   Modo: TUNNEL (recomendado — evita timeout no iPhone)\n')
-  console.log('   Escaneie o QR code ou abra o link exp:// no Expo Go.\n')
-  console.log('   LAN local: pnpm mobile:dev:lan\n')
+  console.log('   Modo: LAN (iPhone e PC na mesma Wi‑Fi — recomendado)\n')
+  console.log('   Outra rede? pnpm mobile:dev:tunnel\n')
 }
 
 freePort8081()
