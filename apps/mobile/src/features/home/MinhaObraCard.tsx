@@ -4,6 +4,7 @@ import { LinearGradient } from 'expo-linear-gradient'
 import { ChevronRight, PenLine } from 'lucide-react-native'
 import { Pressable, Text, View } from 'react-native'
 import type { MinhaObraResumo } from '@/features/obras/useMinhaObra'
+import { capaImageUri } from '@/lib/imageUrl'
 import { SCREEN_HORIZONTAL_PADDING } from '@/lib/layout'
 
 interface MinhaObraCardProps {
@@ -18,7 +19,7 @@ export function MinhaObraCard({ obra, isLoading }: MinhaObraCardProps) {
     return (
       <View
         style={{ marginHorizontal: SCREEN_HORIZONTAL_PADDING }}
-        className="mb-5 h-28 rounded-3xl bg-primary/10"
+        className="mb-5 h-28 rounded-3xl bg-sky-mid"
       />
     )
   }
@@ -44,9 +45,14 @@ export function MinhaObraCard({ obra, isLoading }: MinhaObraCardProps) {
         className="border border-accent/20 p-4"
       >
         <View className="flex-row gap-3">
-          <View className="h-[76px] w-14 overflow-hidden rounded-xl border border-primary/10 bg-white shadow-sm">
+          <View className="h-[76px] w-14 overflow-hidden rounded-xl border border-sky-mid bg-white shadow-sm">
             {obra?.capa_url ? (
-              <Image source={{ uri: obra.capa_url }} style={{ width: 56, height: 76 }} contentFit="cover" />
+              <Image
+                source={{ uri: capaImageUri(obra.capa_url, obra.updated_at) }}
+                style={{ width: 56, height: 76 }}
+                contentFit="cover"
+                recyclingKey={capaImageUri(obra.capa_url, obra.updated_at)}
+              />
             ) : (
               <View className="flex-1 items-center justify-center bg-accent-light/50">
                 <PenLine color="#b45309" size={20} />

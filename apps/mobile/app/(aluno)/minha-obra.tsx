@@ -22,6 +22,7 @@ import {
   ScrollView,
   Text,
   TextInput,
+  useWindowDimensions,
   View,
 } from 'react-native'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
@@ -48,7 +49,14 @@ import {
   TIPO_OBRA_HINT,
   TIPO_OBRA_LABEL,
 } from '@/lib/obraLabels'
-import { uploadObraCoverFromUri } from '@/lib/storage'
+import { LoadingOverlay } from '@/components/ui/LoadingOverlay'
+import { captureObraCoverArt } from '@/features/obras/generateObraCoverImage'
+import {
+  OBRA_COVER_BASE_WIDTH,
+  ObraCoverArtView,
+} from '@/features/obras/ObraCoverArtView'
+import { capaImageUri } from '@/lib/imageUrl'
+import { uploadObraCoverFromBase64 } from '@/lib/storage'
 import { cn } from '@/lib/cn'
 import { useAuth } from '@/providers/AuthProvider'
 
@@ -81,11 +89,19 @@ export default function MinhaObraScreen() {
   const [texto, setTexto] = useState('')
   const [dirty, setDirty] = useState(false)
   const [capaUrl, setCapaUrl] = useState<string | null>(null)
+  const [capaPreviewUri, setCapaPreviewUri] = useState<string | null>(null)
+  const [capaPreviewMeta, setCapaPreviewMeta] = useState<{
+    mimeType: string
+    fileSize?: number
+  } | null>(null)
   const [uploadingCapa, setUploadingCapa] = useState(false)
 
   const salvarRef = useRef(salvar)
   salvarRef.current = salvar
   const obraIdRef = useRef<string | null>(null)
+  const coverCaptureRef = useRef<View>(null)
+  const { width: screenWidth } = useWindowDimensions()
+  const coverPreviewWidth = Math.min(screenWidth - 40, 300)
 
   const isLivro = tipoObra === 'livro'
   const isPublicada = obra?.publicado ?? false
@@ -100,7 +116,7 @@ export default function MinhaObraScreen() {
     setDescricao(obra.descricao ?? '')
     setTipoObra(obra.tipo)
     setCategoriaObra(obra.categoria ?? 'outro')
-    if (obraMudou) setCapaUrl(obra.capa_url)
+    if (!capaPreviewUri) setCapaUrl(obra.capa_url)
 
     if (!capituloAtivoId && obra.capitulos[0]) {
       const cap = obra.capitulos[0]
@@ -108,7 +124,7 @@ export default function MinhaObraScreen() {
       setTituloCapitulo(cap.titulo)
       setTexto(cap.texto)
     }
-  }, [obra?.id, isLoading, capituloAtivoId, obra])
+  }, [obra?.id, obra?.capa_url, isLoading, capituloAtivoId, obra, capaPreviewUri])
 
   useEffect(() => {
     if (!dirty || !obra || !capituloAtivoId || isLoading) return
@@ -194,32 +210,52 @@ export default function MinhaObraScreen() {
     const result = await ImagePicker.launchImageLibraryAsync({
       mediaTypes: ['images'],
       quality: 0.85,
+      allowsEditing: true,
+      aspect: [3, 4],
     })
     if (result.canceled || !result.assets[0]) return
 
     const asset = result.assets[0]
+    setCapaPreviewUri(asset.uri)
+    setCapaPreviewMeta({
+      mimeType: asset.mimeType ?? 'image/jpeg',
+      fileSize: asset.fileSize,
+    })
+  }
+
+  const handleCancelarCapa = () => {
+    setCapaPreviewUri(null)
+    setCapaPreviewMeta(null)
+  }
+
+  const handleSalvarCapa = async () => {
+    if (!obra || !profile || !capaPreviewUri || !capaPreviewMeta) return
+
     setUploadingCapa(true)
     try {
-      const url = await uploadObraCoverFromUri(
-        asset.uri,
-        profile.id,
-        obra.id,
-        asset.mimeType ?? 'image/jpeg',
-        asset.fileSize,
-      )
+      await new Promise((resolve) => setTimeout(resolve, 400))
+      const artBase64 = await captureObraCoverArt(coverCaptureRef)
+      const url = await uploadObraCoverFromBase64(artBase64, profile.id, obra.id)
       await salvarMeta.mutateAsync({
         obraId: obra.id,
         titulo: tituloObra.trim() || defaultTitle,
         descricao: descricao.trim() || null,
-        capa_url: url.split('?')[0] ?? url,
+        capa_url: url,
       })
       setCapaUrl(url)
+      setCapaPreviewUri(null)
+      setCapaPreviewMeta(null)
+      Alert.alert('Capa salva', 'Capa conceitual criada com o tema da sua obra.')
     } catch (e) {
-      Alert.alert('Erro', e instanceof Error ? e.message : 'Não foi possível enviar a capa.')
+      Alert.alert('Erro', e instanceof Error ? e.message : 'Não foi possível gerar a capa.')
     } finally {
       setUploadingCapa(false)
     }
   }
+
+  const capaSalvaUri = capaImageUri(capaUrl, obra?.updated_at)
+  const capaPendente = Boolean(capaPreviewUri)
+  const tituloCapa = tituloObra.trim() || defaultTitle
 
   const handlePublicar = async () => {
     if (!obra) return
@@ -249,6 +285,7 @@ export default function MinhaObraScreen() {
   return (
     <>
       <Stack.Screen options={{ headerShown: false }} />
+      <LoadingOverlay visible={uploadingCapa} label="Gerando capa conceitual…" />
       <View className="flex-1 bg-surface" style={{ paddingTop: insets.top }}>
         <View className="flex-row items-center gap-3 border-b border-border px-4 py-3">
           <Pressable onPress={() => router.back()} className="rounded-full p-2 active:bg-primary-light">
@@ -351,27 +388,103 @@ export default function MinhaObraScreen() {
               </View>
             </View>
 
-            <Pressable
-              onPress={() => void handleEscolherCapa()}
-              disabled={uploadingCapa}
-              className="mx-5 mt-5 overflow-hidden rounded-2xl border border-primary/15 bg-primary-light/30"
-            >
-              <View className="h-40 items-center justify-center">
-                {capaUrl ? (
-                  <Image source={{ uri: capaUrl }} style={{ width: '100%', height: 160 }} contentFit="cover" />
+            {capaPreviewUri ? (
+              <View
+                pointerEvents="none"
+                style={{ position: 'absolute', left: -OBRA_COVER_BASE_WIDTH * 2, top: 0, opacity: 0 }}
+              >
+                <ObraCoverArtView
+                  ref={coverCaptureRef}
+                  photoUri={capaPreviewUri}
+                  categoria={categoriaObra}
+                  titulo={tituloCapa}
+                  autorNome={profile?.nome}
+                  width={OBRA_COVER_BASE_WIDTH}
+                />
+              </View>
+            ) : null}
+
+            <View className="mx-5 mt-5 overflow-hidden rounded-2xl border border-primary/15 bg-primary-light/30">
+              <Text className="border-b border-primary/10 bg-white/80 px-4 py-2 font-sans-semibold text-xs uppercase tracking-wide text-primary">
+                Capa conceitual
+              </Text>
+
+              <Pressable
+                onPress={() => void handleEscolherCapa()}
+                disabled={uploadingCapa}
+                className="items-center py-4"
+              >
+                {capaPendente && capaPreviewUri ? (
+                  <View
+                    className="overflow-hidden rounded-xl border border-primary/15 shadow-sm"
+                    style={{
+                      width: coverPreviewWidth,
+                      height: coverPreviewWidth * 1.5,
+                    }}
+                  >
+                    <ObraCoverArtView
+                      photoUri={capaPreviewUri}
+                      categoria={categoriaObra}
+                      titulo={tituloCapa}
+                      autorNome={profile?.nome}
+                      width={coverPreviewWidth}
+                    />
+                  </View>
+                ) : capaSalvaUri ? (
+                  <Image
+                    source={{ uri: capaSalvaUri }}
+                    style={{ width: coverPreviewWidth, height: coverPreviewWidth * 1.5, borderRadius: 12 }}
+                    contentFit="cover"
+                    recyclingKey={capaSalvaUri}
+                  />
                 ) : (
-                  <View className="items-center gap-2">
+                  <View
+                    className="items-center justify-center rounded-xl border border-dashed border-primary/25 bg-white/70"
+                    style={{ width: coverPreviewWidth, height: coverPreviewWidth * 1.5 }}
+                  >
                     <ImagePlus color="#1c756a" size={28} />
-                    <Text className="font-sans-semibold text-sm text-primary">Enviar capa da obra</Text>
+                    <Text className="mt-2 px-4 text-center font-sans-semibold text-sm text-primary">
+                      Enviar foto · capa conceitual
+                    </Text>
+                    <Text className="mt-1 px-6 text-center font-sans text-xs text-text-muted">
+                      Sua foto entra no layout do tema escolhido
+                    </Text>
                   </View>
                 )}
-                {uploadingCapa ? (
-                  <View className="absolute inset-0 items-center justify-center bg-black/30">
-                    <Loader2 color="#fff" size={24} />
-                  </View>
-                ) : null}
-              </View>
-            </Pressable>
+
+              </Pressable>
+
+              {capaPendente ? (
+                <View className="flex-row gap-2 border-t border-primary/10 bg-white/90 p-3">
+                  <Pressable
+                    onPress={handleCancelarCapa}
+                    disabled={uploadingCapa}
+                    className="flex-1 items-center rounded-xl border border-border py-2.5 active:bg-primary-light/20"
+                  >
+                    <Text className="font-sans-semibold text-sm text-text-muted">Cancelar</Text>
+                  </Pressable>
+                  <Pressable
+                    onPress={() => void handleSalvarCapa()}
+                    disabled={uploadingCapa}
+                    className="flex-1 items-center rounded-xl bg-primary py-2.5 active:opacity-90"
+                  >
+                    <Text className="font-sans-semibold text-sm text-white">
+                      {uploadingCapa ? 'Gerando…' : 'Salvar capa'}
+                    </Text>
+                  </Pressable>
+                </View>
+              ) : capaUrl ? (
+                <Pressable
+                  onPress={() => void handleEscolherCapa()}
+                  disabled={uploadingCapa}
+                  className="border-t border-primary/10 bg-white/90 py-2.5 active:bg-primary-light/20"
+                >
+                  <Text className="text-center font-sans-semibold text-sm text-primary">
+                    Trocar foto · capa conceitual
+                  </Text>
+                </Pressable>
+              ) : null}
+            </View>
 
             <View className="mx-5 mt-5 gap-3">
               <View>

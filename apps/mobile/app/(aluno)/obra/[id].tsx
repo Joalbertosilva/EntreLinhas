@@ -9,6 +9,7 @@ import { useAuth } from '@/providers/AuthProvider'
 import { BookPaginatedReader } from '@/features/reader/BookPaginatedReader'
 import { buildObraBookPages, getObraPageStorageKey } from '@/features/reader/bookPagination'
 import { A11yScreen } from '@/components/layout/A11yScreen'
+import { capaImageUri } from '@/lib/imageUrl'
 import { DETAIL_COVER_HEIGHT, SCREEN_HORIZONTAL_PADDING } from '@/lib/layout'
 import { TIPO_OBRA_LABEL } from '@/lib/obraLabels'
 
@@ -72,9 +73,10 @@ export default function ObraDetailScreen() {
               <View className="overflow-hidden rounded-xl border border-primary/10 bg-white shadow-sm">
                 {data.capa_url ? (
                   <Image
-                    source={{ uri: data.capa_url }}
+                    source={{ uri: capaImageUri(data.capa_url, data.updated_at) }}
                     style={{ width: 120, height: DETAIL_COVER_HEIGHT }}
                     contentFit="cover"
+                    recyclingKey={capaImageUri(data.capa_url, data.updated_at)}
                   />
                 ) : (
                   <View

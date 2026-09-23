@@ -18,6 +18,7 @@ export interface ObraPublicaDetail {
   categoria: CategoriaObra
   curtidas_count: number
   autorNome: string | null
+  updated_at: string
   capitulos: ObraCapitulo[]
 }
 
@@ -28,7 +29,7 @@ export function useObraPublica(obraId: string | undefined) {
     queryFn: async (): Promise<ObraPublicaDetail | null> => {
       const { data: obra, error } = await supabase
         .from('obras')
-        .select('id, titulo, descricao, capa_url, tipo, categoria, curtidas_count, profiles(nome)')
+        .select('id, titulo, descricao, capa_url, tipo, categoria, curtidas_count, updated_at, profiles(nome)')
         .eq('id', obraId!)
         .eq('publicado', true)
         .eq('status', true)
@@ -69,6 +70,7 @@ export function useObraPublica(obraId: string | undefined) {
         categoria: (obra.categoria as CategoriaObra) ?? 'outro',
         curtidas_count: (obra.curtidas_count as number) ?? 0,
         autorNome: (profile?.nome as string | undefined) ?? null,
+        updated_at: obra.updated_at as string,
         capitulos,
       }
     },

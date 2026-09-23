@@ -2,6 +2,7 @@ import { Image } from 'expo-image'
 import { PenLine } from 'lucide-react-native'
 import { Pressable, Text, View } from 'react-native'
 import type { ObraPublicaCard } from '@/features/obras/useObrasPublicas'
+import { capaImageUri } from '@/lib/imageUrl'
 import { OBRA_CARD_WIDTH, OBRA_COVER_HEIGHT } from '@/lib/layout'
 
 import { useRouter } from 'expo-router'
@@ -26,9 +27,10 @@ export function ObraCard({ obra }: ObraCardProps) {
       >
         {obra.capa_url ? (
           <Image
-            source={{ uri: obra.capa_url }}
+            source={{ uri: capaImageUri(obra.capa_url, obra.updated_at) }}
             style={{ width: '100%', height: '100%' }}
             contentFit="cover"
+            recyclingKey={capaImageUri(obra.capa_url, obra.updated_at)}
           />
         ) : (
           <View className="flex-1 items-start justify-end p-2.5">

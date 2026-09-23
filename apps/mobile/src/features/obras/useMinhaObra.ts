@@ -19,6 +19,7 @@ export interface MinhaObraResumo {
   tipo: TipoObra
   categoria: CategoriaObra
   publicado: boolean
+  updated_at: string
   ultimaProducao: { id: string; titulo: string; tipo: TipoProducao } | null
 }
 
@@ -184,6 +185,7 @@ export function useMinhaObra(userId: string | undefined) {
         tipo: obra.tipo as TipoObra,
         categoria: (obra.categoria as CategoriaObra) ?? 'outro',
         publicado: obra.publicado as boolean,
+        updated_at: obra.updated_at as string,
         ultimaProducao: await fetchUltimaProducao(obra.id as string),
       }
     },
@@ -240,9 +242,13 @@ export function useSalvarObraMeta(userId: string | undefined) {
 
       if (error) throw error
     },
-    onSuccess: () => {
+    onSuccess: (_data, variables) => {
       queryClient.invalidateQueries({ queryKey: ['minha-obra', userId] })
       queryClient.invalidateQueries({ queryKey: ['minha-obra-editor', userId] })
+      if (variables.capa_url !== undefined) {
+        queryClient.invalidateQueries({ queryKey: ['obras-publicas'] })
+        queryClient.invalidateQueries({ queryKey: ['obra-publica', variables.obraId] })
+      }
     },
   })
 }

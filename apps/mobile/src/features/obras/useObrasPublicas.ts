@@ -10,6 +10,7 @@ export interface ObraPublicaCard {
   tipo: TipoObra
   categoria: CategoriaObra
   autorNome: string | null
+  updated_at: string
 }
 
 export function useObrasPublicas(limit = 8) {
@@ -18,7 +19,7 @@ export function useObrasPublicas(limit = 8) {
     queryFn: async (): Promise<ObraPublicaCard[]> => {
       const { data, error } = await supabase
         .from('obras')
-        .select('id, titulo, descricao, capa_url, tipo, categoria, profiles(nome, nome_usuario)')
+        .select('id, titulo, descricao, capa_url, tipo, categoria, updated_at, profiles(nome, nome_usuario)')
         .eq('publicado', true)
         .eq('status', true)
         .order('publicado_em', { ascending: false })
@@ -36,6 +37,7 @@ export function useObrasPublicas(limit = 8) {
           tipo: row.tipo as TipoObra,
           categoria: (row.categoria as CategoriaObra) ?? 'outro',
           autorNome: (profile?.nome as string | undefined) ?? null,
+          updated_at: row.updated_at as string,
         }
       })
     },
