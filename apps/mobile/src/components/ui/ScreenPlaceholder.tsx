@@ -1,5 +1,6 @@
 import { Text, View } from 'react-native'
 import { LinearGradient } from 'expo-linear-gradient'
+import { PLATFORM_GRADIENT, PLATFORM_GRADIENT_LOCATIONS } from '@/lib/brandTheme'
 
 interface ScreenPlaceholderProps {
   title: string
@@ -9,7 +10,8 @@ interface ScreenPlaceholderProps {
 export function ScreenPlaceholder({ title, description }: ScreenPlaceholderProps) {
   return (
     <LinearGradient
-      colors={['#ffffff', '#f7fdfc']}
+      colors={[...PLATFORM_GRADIENT]}
+      locations={[...PLATFORM_GRADIENT_LOCATIONS]}
       style={{ flex: 1 }}
       className="px-6 py-8"
     >

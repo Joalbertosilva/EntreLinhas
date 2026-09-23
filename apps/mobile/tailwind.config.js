@@ -26,9 +26,15 @@ module.exports = {
           DEFAULT: '#ffffff',
           warm: '#f7fdfc',
         },
-        border: '#d4ebe6',
+        border: '#cdd9e3',
+        sky: {
+          DEFAULT: '#eef3f9',
+          light: '#f4f8fc',
+          mid: '#e4edf6',
+        },
         brand: {
           navy: '#1a3342',
+          'navy-mid': '#243d4d',
           gold: '#efb034',
         },
         error: '#dc2626',

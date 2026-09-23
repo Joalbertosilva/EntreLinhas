@@ -2,6 +2,7 @@ import { Controller } from 'react-hook-form'
 import { useRouter } from 'expo-router'
 import { KeyboardAvoidingView, Platform, Pressable, ScrollView, Text, View } from 'react-native'
 import { LinearGradient } from 'expo-linear-gradient'
+import { SPLASH_GRADIENT, SPLASH_GRADIENT_LOCATIONS } from '@/lib/brandTheme'
 import { Lock, User } from 'lucide-react-native'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
 import { A11yScreen } from '@/components/layout/A11yScreen'
@@ -24,8 +25,8 @@ export function LoginScreen() {
   return (
     <A11yScreen>
       <LinearGradient
-        colors={['#fafefc', '#e5f7f3', '#e8f7f4', '#ffffff']}
-        locations={[0, 0.35, 0.7, 1]}
+        colors={[...SPLASH_GRADIENT]}
+        locations={[...SPLASH_GRADIENT_LOCATIONS]}
         style={{ flex: 1, paddingTop: insets.top, paddingBottom: insets.bottom }}
       >
         <KeyboardAvoidingView

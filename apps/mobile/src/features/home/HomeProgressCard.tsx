@@ -20,7 +20,7 @@ export function HomeProgressCard({ userId }: HomeProgressCardProps) {
     return (
       <View
         style={{ marginHorizontal: SCREEN_HORIZONTAL_PADDING }}
-        className="mb-5 h-28 rounded-2xl bg-primary/10"
+        className="mb-5 h-28 rounded-2xl bg-sky-mid"
       />
     )
   }

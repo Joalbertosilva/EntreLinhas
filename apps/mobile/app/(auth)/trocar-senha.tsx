@@ -2,6 +2,7 @@ import { zodResolver } from '@hookform/resolvers/zod'
 import { Controller, useForm } from 'react-hook-form'
 import { KeyboardAvoidingView, Platform, ScrollView, Text, View } from 'react-native'
 import { LinearGradient } from 'expo-linear-gradient'
+import { PLATFORM_GRADIENT, PLATFORM_GRADIENT_LOCATIONS } from '@/lib/brandTheme'
 import { useRouter } from 'expo-router'
 import { KeyRound } from 'lucide-react-native'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
@@ -47,7 +48,11 @@ export default function TrocarSenhaScreen() {
   }
 
   return (
-    <LinearGradient colors={['#fafefc', '#ffffff']} style={{ flex: 1, paddingTop: insets.top }}>
+    <LinearGradient
+      colors={[...PLATFORM_GRADIENT]}
+      locations={[...PLATFORM_GRADIENT_LOCATIONS]}
+      style={{ flex: 1, paddingTop: insets.top }}
+    >
       <KeyboardAvoidingView behavior={Platform.OS === 'ios' ? 'padding' : undefined} className="flex-1">
         <ScrollView contentContainerClassName="flex-grow justify-center px-6 py-10" keyboardShouldPersistTaps="handled">
           <BrandLogo className="mb-8" />
