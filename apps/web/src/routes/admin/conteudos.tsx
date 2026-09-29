@@ -12,10 +12,11 @@ import {
   Settings2,
   Sparkles,
   Trash2,
+  Video,
 } from 'lucide-react'
 import { toast } from 'sonner'
 import type { Conteudo, TipoConteudo } from '@tcc-sistema/types'
-import { TIPOS_CONTEUDO } from '@tcc-sistema/types'
+import { CONTEUDO_TIPOS_PLATAFORMA } from '@tcc-sistema/types'
 import { supabase } from '@/lib/supabase'
 import { logAudit } from '@/lib/audit'
 import { invalidateConteudoCaches } from '@/lib/conteudoQueries'
@@ -39,6 +40,7 @@ const TIPO_ICONS: Record<TipoConteudo, typeof BookOpen> = {
   cronica: PenLine,
   poema: Quote,
   musica: Music,
+  video: Video,
   frase: Sparkles,
   outro: BookMarked,
 }
@@ -50,6 +52,7 @@ function ConteudosPage() {
   const [deleting, setDeleting] = useState<Conteudo | null>(null)
   const [search, setSearch] = useState('')
   const [filterTipo, setFilterTipo] = useState<TipoConteudo | 'all'>('all')
+  const [createTipo, setCreateTipo] = useState<TipoConteudo | undefined>()
 
   const { data: conteudos, isLoading } = useQuery({
     queryKey: ['conteudos'],
@@ -119,8 +122,9 @@ function ConteudosPage() {
     onError: () => toast.error('Não foi possível atualizar o status'),
   })
 
-  const openCreate = () => {
+  const openCreate = (tipo?: TipoConteudo) => {
     setEditing(null)
+    setCreateTipo(tipo ?? (filterTipo !== 'all' ? filterTipo : undefined))
     setDialogOpen(true)
   }
 
@@ -135,7 +139,7 @@ function ConteudosPage() {
         title="Conteúdos"
         description="Livros, crônicas, poemas e demais materiais para os alunos."
         actions={
-          <Button variant="secondary" onClick={openCreate}>
+          <Button variant="secondary" onClick={() => openCreate()}>
             <Plus className="h-4 w-4" />
             Novo conteúdo
           </Button>
@@ -160,7 +164,7 @@ function ConteudosPage() {
           >
             Todos
           </Button>
-          {TIPOS_CONTEUDO.map((t) => (
+          {CONTEUDO_TIPOS_PLATAFORMA.map((t) => (
             <Button
               key={t}
               variant={filterTipo === t ? 'primary' : 'outline'}
@@ -197,7 +201,7 @@ function ConteudosPage() {
               : 'Comece adicionando o primeiro material literário da plataforma'}
           </p>
           {!search && filterTipo === 'all' && (
-            <Button className="mt-6" onClick={openCreate}>
+            <Button className="mt-6" onClick={() => openCreate()}>
               <Plus className="h-4 w-4" />
               Cadastrar conteúdo
             </Button>
@@ -318,6 +322,7 @@ function ConteudosPage() {
         open={dialogOpen}
         onOpenChange={setDialogOpen}
         conteudo={editing}
+        defaultTipo={createTipo}
       />
 
       <ConfirmDialog

@@ -41,7 +41,7 @@ export function HomeProgressCard({ userId }: HomeProgressCardProps) {
 
   return (
     <div className="home-progress-wrap">
-      <p className="home-hero-section-label mb-2">Nível de leitor</p>
+      <p className="home-sidebar__title mb-2">Nível de leitor</p>
       <Link
         to="/app/progresso"
         className={cn(

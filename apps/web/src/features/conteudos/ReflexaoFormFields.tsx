@@ -1,12 +1,16 @@
 import { Label } from '@/components/ui/Label'
 import { Input } from '@/components/ui/Input'
 import { Textarea } from '@/components/ui/Textarea'
+import type { ReflexaoFormVariant } from '@/features/conteudos/contentFormConfig'
+import { REFLEXAO_LABELS } from '@/features/conteudos/contentFormConfig'
 import type { UseFormRegister, FieldValues, Path } from 'react-hook-form'
 
 interface ReflexaoFormFieldsProps<T extends FieldValues> {
   register: UseFormRegister<T>
   /** Prefixo dos campos no formulário de conteúdo (reflexao_*) ou vazio para temas */
   mode: 'conteudo' | 'tema'
+  /** Rótulos adaptados ao tipo de conteúdo (somente mode conteudo) */
+  variant?: ReflexaoFormVariant
 }
 
 const FIELDS = {
@@ -38,8 +42,10 @@ function StepBadge({ n, label }: { n: number; label: string }) {
 export function ReflexaoFormFields<T extends FieldValues>({
   register,
   mode,
+  variant = 'livro',
 }: ReflexaoFormFieldsProps<T>) {
   const names = FIELDS[mode]
+  const labels = mode === 'conteudo' ? REFLEXAO_LABELS[variant] : null
 
   return (
     <div className="space-y-4">
@@ -53,11 +59,14 @@ export function ReflexaoFormFields<T extends FieldValues>({
       </div>
 
       <div className="space-y-2 rounded-lg border border-primary/15 bg-white/70 p-3">
-        <StepBadge n={1} label="Frase do livro" />
+        <StepBadge n={1} label={labels?.trecho ?? 'Trecho ou frase'} />
         <Textarea
           id={names.frase}
           rows={2}
-          placeholder='Só a citação. Ex.: "Foi o tempo que você passou com sua rosa..."'
+          placeholder={
+            labels?.trechoPlaceholder ??
+            'Só a citação. Ex.: "Foi o tempo que você passou com sua rosa..."'
+          }
           className="mt-2 bg-white"
           {...register(names.frase as Path<T>)}
         />
@@ -66,7 +75,8 @@ export function ReflexaoFormFields<T extends FieldValues>({
       <div className="space-y-2 rounded-lg border border-accent/30 bg-accent-light/20 p-3">
         <StepBadge n={2} label="Reflexão (orientação para o aluno)" />
         <p className="text-xs leading-relaxed text-text-muted">
-          Texto curto que ajuda quem ainda não consegue refletir só com a frase.
+          {labels?.orientacaoHint ??
+            'Texto curto que ajuda quem ainda não consegue refletir só com a frase.'}
         </p>
         <Textarea
           id={names.texto}
@@ -82,7 +92,10 @@ export function ReflexaoFormFields<T extends FieldValues>({
         <Textarea
           id={names.pergunta}
           rows={2}
-          placeholder="Ex.: Quem é uma pessoa importante para você? O que vocês viveram juntos?"
+          placeholder={
+            labels?.perguntaPlaceholder ??
+            'Ex.: Quem é uma pessoa importante para você? O que vocês viveram juntos?'
+          }
           className="mt-2 bg-white"
           {...register(names.pergunta as Path<T>)}
         />

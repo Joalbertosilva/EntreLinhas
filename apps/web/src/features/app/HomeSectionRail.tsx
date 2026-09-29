@@ -8,9 +8,11 @@ import { cn } from '@/lib/utils'
 
 interface HomeSectionRailProps {
   activeSection?: AppSectionId | null
+  /** Usuário está numa faixa de vídeos entre seções */
+  videosZone?: boolean
 }
 
-export function HomeSectionRail({ activeSection = null }: HomeSectionRailProps) {
+export function HomeSectionRail({ activeSection = null, videosZone = false }: HomeSectionRailProps) {
   const [hoveredId, setHoveredId] = useState<AppSectionId | null>(null)
 
   const highlightedId = hoveredId ?? activeSection
@@ -26,6 +28,8 @@ export function HomeSectionRail({ activeSection = null }: HomeSectionRailProps) 
 
         {APP_NAV_SECTIONS.map((item) => {
           const highlighted = highlightedId === item.id
+          const isVideosItem = item.id === 'videos'
+          const videosActive = isVideosItem && (activeSection === 'videos' || videosZone)
 
           return (
             <Link
@@ -38,6 +42,7 @@ export function HomeSectionRail({ activeSection = null }: HomeSectionRailProps) 
                   'flex items-center justify-center gap-1.5 rounded-full px-2 py-1.5 text-[0.8125rem] font-semibold sm:px-2.5 sm:py-2 sm:text-sm',
                 highlighted && 'is-emphasis',
                 activeSection === item.id && 'is-active',
+                videosActive && 'is-videos-zone-active',
               )}
             >
               <SectionIcon section={item.id} size="sm" active={highlighted} flat />

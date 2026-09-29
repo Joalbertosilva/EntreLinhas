@@ -1,27 +1,35 @@
 import { useEffect, useState } from 'react'
 import type { AppSectionId } from '@/features/app/appNavigation'
 
-const CATALOG_SECTIONS: AppSectionId[] = ['livros', 'cronicas', 'musicas', 'poemas']
+/** Ordem de leitura na home — inclui faixas de vídeo entre seções */
+const SCROLL_MARKERS: Array<{ id: string; nav: AppSectionId }> = [
+  { id: 'section-livros', nav: 'livros' },
+  { id: 'section-videos-livros', nav: 'videos' },
+  { id: 'section-cronicas', nav: 'cronicas' },
+  { id: 'section-videos-cronicas', nav: 'videos' },
+  { id: 'section-musicas', nav: 'musicas' },
+  { id: 'section-videos-musicas', nav: 'videos' },
+  { id: 'section-poemas', nav: 'poemas' },
+  { id: 'section-videos-poemas', nav: 'videos' },
+]
 
-/** Linha de referência abaixo do menu sticky — só uma seção ativa por vez */
 const ANCHOR_VIEWPORT_RATIO = 0.34
 
 function resolveVisibleSection(): AppSectionId {
   const anchorY = window.innerHeight * ANCHOR_VIEWPORT_RATIO
-  let current: AppSectionId = CATALOG_SECTIONS[0]
+  let current: AppSectionId = 'livros'
 
-  for (const id of CATALOG_SECTIONS) {
-    const el = document.getElementById(`section-${id}`)
+  for (const marker of SCROLL_MARKERS) {
+    const el = document.getElementById(marker.id)
     if (!el) continue
     if (el.getBoundingClientRect().top <= anchorY) {
-      current = id
+      current = marker.nav
     }
   }
 
   return current
 }
 
-/** Destaca o pill conforme a seção de catálogo visível na viewport. */
 export function useHomeCatalogSpy(enabled: boolean) {
   const [activeId, setActiveId] = useState<AppSectionId | null>(null)
 
@@ -44,4 +52,22 @@ export function useHomeCatalogSpy(enabled: boolean) {
   }, [enabled])
 
   return activeId
+}
+
+/** True quando o usuário está numa faixa de vídeos (não na seção principal de tipo). */
+export function isVideosZoneActive(activeId: AppSectionId | null): boolean {
+  if (activeId !== 'videos') return false
+  const anchorY = window.innerHeight * ANCHOR_VIEWPORT_RATIO
+
+  for (const marker of SCROLL_MARKERS) {
+    if (!marker.id.startsWith('section-videos-')) continue
+    const el = document.getElementById(marker.id)
+    if (!el) continue
+    const rect = el.getBoundingClientRect()
+    if (rect.top <= anchorY && rect.bottom > anchorY * 0.5) {
+      return true
+    }
+  }
+
+  return false
 }

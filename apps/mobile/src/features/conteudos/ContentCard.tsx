@@ -1,7 +1,7 @@
 import { useRouter } from 'expo-router'
 import { Image } from 'expo-image'
 import type { TipoConteudo } from '@tcc-sistema/types'
-import { BookMarked, FileText, Music, Quote, Sparkles } from 'lucide-react-native'
+import { BookMarked, FileText, Music, Quote, Sparkles, Video } from 'lucide-react-native'
 import { Pressable, Text, View } from 'react-native'
 import { Speakable } from '@/features/accessibility/Speakable'
 import type { ConteudoCardData } from '@/features/conteudos/useConteudos'
@@ -18,6 +18,7 @@ const TIPO_META: Record<TipoConteudo, { icon: typeof BookMarked; bgClass: string
   cronica: { icon: FileText, bgClass: 'bg-accent-light' },
   poema: { icon: Quote, bgClass: 'bg-primary-light/70' },
   musica: { icon: Music, bgClass: 'bg-accent-light' },
+  video: { icon: Video, bgClass: 'bg-rose-50' },
   frase: { icon: Quote, bgClass: 'bg-primary-light/60' },
   outro: { icon: Sparkles, bgClass: 'bg-surface' },
 }

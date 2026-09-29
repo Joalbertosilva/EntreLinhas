@@ -373,31 +373,36 @@ export function useDespublicarObra(userId: string | undefined) {
   })
 }
 
-export function useObrasPublicas(limit = 12) {
+async function fetchObrasPublicas(limit: number) {
+  const { data, error } = await supabase
+    .from('obras')
+    .select('id, titulo, descricao, capa_url, tipo, categoria, publicado_em, profiles(nome, nome_usuario)')
+    .eq('publicado', true)
+    .eq('status', true)
+    .order('publicado_em', { ascending: false })
+    .limit(limit)
+
+  if (error) throw error
+
+  return (data ?? []).map((row) => ({
+    id: row.id as string,
+    titulo: row.titulo as string,
+    descricao: row.descricao as string | null,
+    capa_url: row.capa_url as string | null,
+    tipo: row.tipo as TipoObra,
+    categoria: (row.categoria as CategoriaObra) ?? 'outro',
+    publicado_em: row.publicado_em as string | null,
+    autor: Array.isArray(row.profiles) ? row.profiles[0] ?? null : row.profiles,
+  }))
+}
+
+export type ObraPublicaCard = Awaited<ReturnType<typeof fetchObrasPublicas>>[number]
+
+export function useObrasPublicas(limit = 12, options?: { enabled?: boolean }) {
   return useQuery({
     queryKey: ['obras-publicas', limit],
-    queryFn: async () => {
-      const { data, error } = await supabase
-        .from('obras')
-        .select('id, titulo, descricao, capa_url, tipo, categoria, publicado_em, profiles(nome, nome_usuario)')
-        .eq('publicado', true)
-        .eq('status', true)
-        .order('publicado_em', { ascending: false })
-        .limit(limit)
-
-      if (error) throw error
-
-      return (data ?? []).map((row) => ({
-        id: row.id as string,
-        titulo: row.titulo as string,
-        descricao: row.descricao as string | null,
-        capa_url: row.capa_url as string | null,
-        tipo: row.tipo as TipoObra,
-        categoria: (row.categoria as CategoriaObra) ?? 'outro',
-        publicado_em: row.publicado_em as string | null,
-        autor: Array.isArray(row.profiles) ? row.profiles[0] ?? null : row.profiles,
-      }))
-    },
+    enabled: options?.enabled !== false,
+    queryFn: () => fetchObrasPublicas(limit),
   })
 }
 

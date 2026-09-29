@@ -2,6 +2,7 @@ import { z } from 'zod';
 import {
   PERFIS,
   TIPOS_CONTEUDO,
+  CATALOG_ANCHORS,
   TIPOS_INTERACAO,
   TIPOS_MATERIAL,
   TIPOS_PRODUCAO,
@@ -10,6 +11,7 @@ import {
 
 export const perfilSchema = z.enum(PERFIS);
 export const tipoConteudoSchema = z.enum(TIPOS_CONTEUDO);
+export const catalogAnchorSchema = z.enum(CATALOG_ANCHORS);
 export const tipoMaterialSchema = z.enum(TIPOS_MATERIAL);
 export const tipoInteracaoSchema = z.enum(TIPOS_INTERACAO);
 export const statusLeituraSchema = z.enum(STATUS_LEITURA);
@@ -73,6 +75,9 @@ export const conteudoSchema = z.object({
   curiosidades: z.string().optional().nullable(),
   conteudo_textual: z.string().optional().nullable(),
   capa_url: z.string().url().optional().nullable(),
+  video_url: z.string().url().optional().nullable(),
+  catalog_anchor: catalogAnchorSchema.optional().nullable(),
+  video_categoria: z.string().max(120).optional().nullable(),
   status: z.boolean().default(true),
 });
 
@@ -83,6 +88,9 @@ export const conteudoFormSchema = conteudoSchema
   .omit({ status: true, capa_url: true })
   .extend({
     capa_url: z.union([z.string().url('URL inválida'), z.literal('')]).optional().nullable(),
+    video_url: z.union([z.string().url('URL inválida'), z.literal('')]).optional().nullable(),
+    catalog_anchor: z.union([catalogAnchorSchema, z.literal('')]).optional().nullable(),
+    video_categoria: z.string().max(120).optional().nullable(),
     status: z.boolean(),
   reflexao_tema: z.string().max(200).optional().nullable(),
   reflexao_frase: z.string().max(1000).optional().nullable(),

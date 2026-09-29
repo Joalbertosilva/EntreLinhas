@@ -28,9 +28,8 @@ const SECTION_ICON: Partial<Record<string, AppSectionId>> = {
   cronicas: 'cronicas',
   musicas: 'musicas',
   poemas: 'poemas',
+  videos: 'videos',
 }
-
-const SCROLL_STEP = 300
 
 export function ContentCarousel({
   section,
@@ -44,7 +43,9 @@ export function ContentCarousel({
   const { data: fetchedConteudos = [], isLoading, isError } = useSectionConteudos(section, {
     enabled: !overrideConteudos,
   })
-  const conteudos = overrideConteudos ?? fetchedConteudos
+  const conteudos = (overrideConteudos ?? fetchedConteudos).filter(
+    (item) => !isDestaques || item.tipo !== 'video',
+  )
   const hasRealContent = conteudos.length > 0
 
   const placeholderCount = useMemo(
@@ -99,11 +100,18 @@ export function ContentCarousel({
   }, [contentKey, updateScrollState])
 
   const scrollByStep = (direction: 'left' | 'right') => {
-    trackRef.current?.scrollBy({
-      left: direction === 'left' ? -SCROLL_STEP : SCROLL_STEP,
+    const el = trackRef.current
+    if (!el) return
+    const step = Math.max(el.clientWidth * 0.72, 240)
+    el.scrollBy({
+      left: direction === 'left' ? -step : step,
       behavior: 'smooth',
     })
   }
+
+  const carouselDensityClass = isHero || isDestaques
+    ? 'content-carousel--destaques'
+    : 'content-carousel--section'
 
   return (
     <section
@@ -147,8 +155,8 @@ export function ContentCarousel({
 
       {!isHero && !isLoading && !isError && !hasRealContent && section.id === 'destaques' && (
         <p className="text-sm text-text-muted">
-          Os destaques mostram os conteúdos mais curtidos pelos alunos. Cadastre materiais e,
-          conforme os alunos curtirem, eles aparecerão aqui.
+          Os destaques mostram livros, crônicas, poemas e músicas mais curtidos. Vídeos ficam no
+          carrossel principal e nas faixas abaixo de cada seção, conforme o admin definir.
         </p>
       )}
 
@@ -161,6 +169,7 @@ export function ContentCarousel({
       <div
         className={cn(
           'content-carousel relative',
+          carouselDensityClass,
           fadeTone === 'hero' && 'content-carousel-fade-hero',
           fadeTone === 'catalog' && 'content-carousel-fade-catalog',
           canScrollRight && fadeTone === 'default' && 'content-carousel-fade-right',
@@ -218,7 +227,7 @@ function CarouselArrow({
         'border border-primary/15 bg-white/95 text-primary shadow-[var(--shadow-card)]',
         'transition-all duration-200 hover:border-primary/25 hover:bg-white hover:shadow-[var(--shadow-card)]',
         'focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary',
-        isRight ? 'right-0 sm:right-1' : 'left-0 sm:left-1',
+        isRight ? 'carousel-arrow--next' : 'carousel-arrow--prev',
         isRight ? 'carousel-arrow-right' : 'carousel-arrow-left',
       )}
     >

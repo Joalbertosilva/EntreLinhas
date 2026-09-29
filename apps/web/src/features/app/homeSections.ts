@@ -14,7 +14,7 @@ export const HOME_SECTIONS: HomeSectionConfig[] = [
   {
     id: 'destaques',
     title: 'Destaques',
-    subtitle: 'Mais curtidos pelos alunos',
+    subtitle: 'Livros, crônicas, poemas e músicas mais curtidos',
     tipo: 'livro',
     placeholderCount: 6,
   },
@@ -31,7 +31,7 @@ export const HOME_SECTIONS: HomeSectionConfig[] = [
     title: 'Crônicas',
     subtitle: 'Textos curtos para ler no seu ritmo',
     tipo: 'cronica',
-    placeholderCount: 7,
+    placeholderCount: 8,
     route: '/app/cronicas',
   },
   {
@@ -39,7 +39,7 @@ export const HOME_SECTIONS: HomeSectionConfig[] = [
     title: 'Músicas',
     subtitle: 'Letras e materiais sonoros',
     tipo: 'musica',
-    placeholderCount: 6,
+    placeholderCount: 8,
     route: '/app/musicas',
   },
   {
@@ -47,7 +47,15 @@ export const HOME_SECTIONS: HomeSectionConfig[] = [
     title: 'Poemas',
     subtitle: 'Versos e reflexões',
     tipo: 'poema',
-    placeholderCount: 7,
+    placeholderCount: 8,
     route: '/app/poemas',
+  },
+  {
+    id: 'videos',
+    title: 'Vídeos',
+    subtitle: 'Palestras, entrevistas e reflexões em vídeo',
+    tipo: 'video',
+    placeholderCount: 8,
+    route: '/app/videos',
   },
 ]

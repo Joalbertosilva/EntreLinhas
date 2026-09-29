@@ -35,6 +35,7 @@ import { Route as AppMusicasRouteImport } from './routes/app/musicas'
 import { Route as AppPerfilRouteImport } from './routes/app/perfil'
 import { Route as AppPoemasRouteImport } from './routes/app/poemas'
 import { Route as AppProgressoRouteImport } from './routes/app/progresso'
+import { Route as AppVideosRouteImport } from './routes/app/videos'
 import { Route as AdminConteudosConteudoIdRouteImport } from './routes/admin/conteudos.$conteudoId'
 import { Route as AppConteudosConteudoIdRouteImport } from './routes/app/conteudos.$conteudoId'
 import { Route as AppObrasObraIdRouteImport } from './routes/app/obras.$obraId'
@@ -170,6 +171,11 @@ const AppProgressoRoute = AppProgressoRouteImport.update({
   path: '/progresso',
   getParentRoute: () => AppRouteRoute,
 } as any)
+const AppVideosRoute = AppVideosRouteImport.update({
+  id: '/videos',
+  path: '/videos',
+  getParentRoute: () => AppRouteRoute,
+} as any)
 const AdminConteudosConteudoIdRoute =
   AdminConteudosConteudoIdRouteImport.update({
     id: '/$conteudoId',
@@ -217,6 +223,7 @@ export interface FileRoutesByFullPath {
   '/app/perfil': typeof AppPerfilRouteWithChildren
   '/app/poemas': typeof AppPoemasRoute
   '/app/progresso': typeof AppProgressoRoute
+  '/app/videos': typeof AppVideosRoute
   '/admin/': typeof AdminIndexRoute
   '/app/': typeof AppIndexRoute
   '/admin/conteudos/$conteudoId': typeof AdminConteudosConteudoIdRoute
@@ -247,6 +254,7 @@ export interface FileRoutesByTo {
   '/app/perfil': typeof AppPerfilRouteWithChildren
   '/app/poemas': typeof AppPoemasRoute
   '/app/progresso': typeof AppProgressoRoute
+  '/app/videos': typeof AppVideosRoute
   '/admin': typeof AdminIndexRoute
   '/app': typeof AppIndexRoute
   '/admin/conteudos/$conteudoId': typeof AdminConteudosConteudoIdRoute
@@ -280,6 +288,7 @@ export interface FileRoutesById {
   '/app/perfil': typeof AppPerfilRouteWithChildren
   '/app/poemas': typeof AppPoemasRoute
   '/app/progresso': typeof AppProgressoRoute
+  '/app/videos': typeof AppVideosRoute
   '/admin/': typeof AdminIndexRoute
   '/app/': typeof AppIndexRoute
   '/admin/conteudos/$conteudoId': typeof AdminConteudosConteudoIdRoute
@@ -314,6 +323,7 @@ export interface FileRouteTypes {
     | '/app/perfil'
     | '/app/poemas'
     | '/app/progresso'
+    | '/app/videos'
     | '/admin/'
     | '/app/'
     | '/admin/conteudos/$conteudoId'
@@ -344,6 +354,7 @@ export interface FileRouteTypes {
     | '/app/perfil'
     | '/app/poemas'
     | '/app/progresso'
+    | '/app/videos'
     | '/admin'
     | '/app'
     | '/admin/conteudos/$conteudoId'
@@ -376,6 +387,7 @@ export interface FileRouteTypes {
     | '/app/perfil'
     | '/app/poemas'
     | '/app/progresso'
+    | '/app/videos'
     | '/admin/'
     | '/app/'
     | '/admin/conteudos/$conteudoId'
@@ -579,6 +591,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AppProgressoRouteImport
       parentRoute: typeof AppRouteRoute
     }
+    '/app/videos': {
+      id: '/app/videos'
+      path: '/videos'
+      fullPath: '/app/videos'
+      preLoaderRoute: typeof AppVideosRouteImport
+      parentRoute: typeof AppRouteRoute
+    }
     '/admin/conteudos/$conteudoId': {
       id: '/admin/conteudos/$conteudoId'
       path: '/$conteudoId'
@@ -670,6 +689,7 @@ interface AppRouteRouteChildren {
   AppPerfilRoute: typeof AppPerfilRouteWithChildren
   AppPoemasRoute: typeof AppPoemasRoute
   AppProgressoRoute: typeof AppProgressoRoute
+  AppVideosRoute: typeof AppVideosRoute
   AppIndexRoute: typeof AppIndexRoute
   AppConteudosConteudoIdRoute: typeof AppConteudosConteudoIdRoute
   AppObrasObraIdRoute: typeof AppObrasObraIdRoute
@@ -685,6 +705,7 @@ const AppRouteRouteChildren: AppRouteRouteChildren = {
   AppPerfilRoute: AppPerfilRouteWithChildren,
   AppPoemasRoute: AppPoemasRoute,
   AppProgressoRoute: AppProgressoRoute,
+  AppVideosRoute: AppVideosRoute,
   AppIndexRoute: AppIndexRoute,
   AppConteudosConteudoIdRoute: AppConteudosConteudoIdRoute,
   AppObrasObraIdRoute: AppObrasObraIdRoute,

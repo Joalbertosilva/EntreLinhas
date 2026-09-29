@@ -5,6 +5,7 @@ export const TIPO_CONTEUDO_LABEL: Record<TipoConteudo, string> = {
   cronica: 'Crônica',
   poema: 'Poema',
   musica: 'Música',
+  video: 'Vídeo',
   frase: 'Frase',
   outro: 'Outro',
 }

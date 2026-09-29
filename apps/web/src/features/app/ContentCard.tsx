@@ -1,6 +1,7 @@
 import { useNavigate } from '@tanstack/react-router'
 import type { TipoConteudo } from '@tcc-sistema/types'
-import { BookMarked, FileText, Music, Quote, Sparkles } from 'lucide-react'
+import { BookMarked, FileText, Music, Play, Quote, Sparkles, Video } from 'lucide-react'
+import { resolveConteudoCoverUrl } from '@/lib/conteudoCover'
 import { ContentCardLeituraMenu } from '@/features/app/ContentCardLeituraMenu'
 import { useLeiturasMap } from '@/features/app/useLeiturasMap'
 import { useAuth } from '@/features/auth/AuthProvider'
@@ -16,6 +17,7 @@ const TIPO_META: Record<
   cronica: { icon: FileText, tint: 'from-accent-light/80 to-white' },
   poema: { icon: Quote, tint: 'from-primary-light/70 to-accent-light/40' },
   musica: { icon: Music, tint: 'from-accent-light/90 to-primary-light/50' },
+  video: { icon: Video, tint: 'from-rose-50 to-white' },
   frase: { icon: Quote, tint: 'from-primary-light/60 to-white' },
   outro: { icon: Sparkles, tint: 'from-surface to-white' },
 }
@@ -31,6 +33,8 @@ export function ContentCard({ conteudo, showTipo = false }: ContentCardProps) {
   const { data: leiturasMap } = useLeiturasMap(profile?.id)
   const meta = TIPO_META[conteudo.tipo]
   const Icon = meta.icon
+  const coverUrl = resolveConteudoCoverUrl(conteudo)
+  const isVideo = conteudo.tipo === 'video'
   const showMenu = conteudo.tipo === 'livro' && Boolean(profile)
   const leituraStatus = leiturasMap?.[conteudo.id] ?? null
 
@@ -43,7 +47,7 @@ export function ContentCard({ conteudo, showTipo = false }: ContentCardProps) {
       role="listitem"
       className={cn(
         'group content-card card-lift snap-start shrink-0',
-        'relative z-[2] flex w-[140px] flex-col sm:w-[152px]',
+        'relative z-[2] flex w-[8.75rem] flex-col sm:w-[9.5rem]',
       )}
     >
       <button
@@ -61,12 +65,12 @@ export function ContentCard({ conteudo, showTipo = false }: ContentCardProps) {
           className={cn(
             'relative aspect-[3/4] overflow-hidden rounded-xl border border-primary/10',
             'bg-gradient-to-br shadow-[var(--shadow-soft)]',
-            !conteudo.capa_url && meta.tint,
+            !coverUrl && meta.tint,
           )}
         >
-          {conteudo.capa_url ? (
+          {coverUrl ? (
             <img
-              src={conteudo.capa_url}
+              src={coverUrl}
               alt=""
               className="h-full w-full object-cover transition-transform duration-300 group-hover:scale-[1.02]"
               loading="lazy"
@@ -81,6 +85,14 @@ export function ContentCard({ conteudo, showTipo = false }: ContentCardProps) {
                 </div>
               </div>
             </>
+          )}
+
+          {isVideo && (
+            <span className="absolute inset-0 flex items-center justify-center bg-brand-navy/15">
+              <span className="flex h-10 w-10 items-center justify-center rounded-full bg-white/90 text-primary shadow-sm">
+                <Play className="ml-0.5 h-4 w-4 fill-current" aria-hidden />
+              </span>
+            </span>
           )}
 
           {leituraStatus === 'em_andamento' && (

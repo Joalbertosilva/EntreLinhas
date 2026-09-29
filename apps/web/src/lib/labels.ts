@@ -1,10 +1,14 @@
 import type { TipoConteudo, TipoMaterial } from '@tcc-sistema/types'
+import { CONTEUDO_TIPOS_PLATAFORMA } from '@tcc-sistema/types'
+
+export { CONTEUDO_TIPOS_PLATAFORMA }
 
 export const TIPO_CONTEUDO_LABEL: Record<TipoConteudo, string> = {
   livro: 'Livro',
   cronica: 'Crônica',
   poema: 'Poema',
   musica: 'Música',
+  video: 'Vídeo',
   frase: 'Frase',
   outro: 'Outro',
 }
@@ -14,6 +18,7 @@ export const TIPO_CONTEUDO_ICON_COLOR: Record<TipoConteudo, string> = {
   cronica: 'bg-accent-light text-[#5c4800]',
   poema: 'bg-violet-50 text-violet-600',
   musica: 'bg-pink-50 text-pink-600',
+  video: 'bg-rose-50 text-rose-700',
   frase: 'bg-teal-50 text-teal-600',
   outro: 'bg-slate-100 text-slate-600',
 }

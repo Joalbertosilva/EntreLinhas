@@ -7,6 +7,7 @@ import {
   Library,
   Music2,
   ScrollText,
+  Video,
 } from 'lucide-react'
 import type { AppSectionId } from '@/features/app/appNavigation'
 import { cn } from '@/lib/utils'
@@ -24,6 +25,7 @@ const SECTION_SHELL: Record<AppSectionId | 'admin', string> = {
   cronicas: 'bg-white/95 text-brand-navy ring-brand-navy/10',
   musicas: 'bg-white/95 text-primary ring-primary/12',
   poemas: 'bg-white/95 text-brand-navy ring-brand-navy/10',
+  videos: 'bg-white/95 text-primary ring-primary/12',
   perfil: 'bg-white/95 text-primary ring-primary/12',
   admin: 'bg-white/95 text-primary ring-primary/12',
 }
@@ -35,6 +37,7 @@ const SECTION_ACTIVE_SHELL: Record<AppSectionId | 'admin', string> = {
   cronicas: 'bg-white text-primary ring-primary/28 shadow-[var(--shadow-soft)]',
   musicas: 'bg-white text-primary ring-primary/28 shadow-[var(--shadow-soft)]',
   poemas: 'bg-white text-primary ring-primary/28 shadow-[var(--shadow-soft)]',
+  videos: 'bg-white text-primary ring-primary/28 shadow-[var(--shadow-soft)]',
   perfil: 'bg-white text-primary ring-primary/28 shadow-[var(--shadow-soft)]',
   admin: 'bg-white text-primary ring-primary/28 shadow-[var(--shadow-soft)]',
 }
@@ -77,6 +80,7 @@ export function SectionIcon({
       {section === 'cronicas' && <ScrollText strokeWidth={STROKE} />}
       {section === 'musicas' && <Music2 strokeWidth={STROKE} />}
       {section === 'poemas' && <Feather strokeWidth={STROKE} />}
+      {section === 'videos' && <Video strokeWidth={STROKE} />}
       {section === 'perfil' && <CircleUser strokeWidth={STROKE} />}
       {section === 'admin' && <LayoutDashboard strokeWidth={STROKE} />}
     </div>

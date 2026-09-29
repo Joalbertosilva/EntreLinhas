@@ -8,6 +8,7 @@ const TIPO_SECTION: Partial<Record<TipoConteudo, AppSectionId>> = {
   cronica: 'cronicas',
   musica: 'musicas',
   poema: 'poemas',
+  video: 'videos',
 }
 
 const TIPO_LABEL: Record<TipoConteudo, string> = {
@@ -15,6 +16,7 @@ const TIPO_LABEL: Record<TipoConteudo, string> = {
   cronica: 'Crônica',
   poema: 'Poema',
   musica: 'Música',
+  video: 'Vídeo',
   frase: 'Frase',
   outro: 'Conteúdo',
 }
@@ -32,7 +34,7 @@ export function ContentCardPlaceholder({ tipo, index }: ContentCardPlaceholderPr
     <article
       className={cn(
         'content-card-placeholder snap-start shrink-0',
-        'flex w-[140px] cursor-default flex-col sm:w-[152px]',
+        'flex w-[8.75rem] cursor-default flex-col sm:w-[9.5rem]',
       )}
       aria-hidden
     >

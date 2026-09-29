@@ -7,6 +7,7 @@ export type AppSectionId =
   | 'cronicas'
   | 'musicas'
   | 'poemas'
+  | 'videos'
   | 'perfil'
 
 export interface AppNavItem {
@@ -70,6 +71,14 @@ export const APP_NAV_SECTIONS: AppNavItem[] = [
     tipo: 'poema',
     placeholderCount: 9,
   },
+  {
+    id: 'videos',
+    to: '/app/videos',
+    label: 'Vídeos',
+    description: 'Palestras, entrevistas e conteúdos audiovisuais',
+    tipo: 'video',
+    placeholderCount: 6,
+  },
 ]
 
 /** Todas as seções navegáveis (drawer mobile) */
@@ -88,6 +97,7 @@ export function getAppRouteForTipo(tipo: TipoConteudo): string {
     cronica: '/app/cronicas',
     musica: '/app/musicas',
     poema: '/app/poemas',
+    video: '/app/videos',
     frase: '/app',
     outro: '/app',
   }
@@ -100,6 +110,7 @@ export function resolveSectionId(pathname: string): AppSectionId {
   if (pathname.startsWith('/app/cronicas')) return 'cronicas'
   if (pathname.startsWith('/app/musicas')) return 'musicas'
   if (pathname.startsWith('/app/poemas')) return 'poemas'
+  if (pathname.startsWith('/app/videos')) return 'videos'
   if (pathname.startsWith('/app/perfil')) return 'perfil'
   return 'home'
 }

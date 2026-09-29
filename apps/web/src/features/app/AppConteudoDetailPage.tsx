@@ -10,7 +10,9 @@ import {
 } from 'lucide-react'
 import { toast } from 'sonner'
 import type { Conteudo, StatusLeitura, TipoConteudo } from '@tcc-sistema/types'
-import { BookMarked, FileText, Music, Quote, Sparkles } from 'lucide-react'
+import { BookMarked, FileText, Music, Quote, Sparkles, Video } from 'lucide-react'
+import { YouTubeEmbed } from '@/components/media/YouTubeEmbed'
+import { isYouTubeUrl } from '@/lib/youtube'
 import { LivroDetailPage } from '@/features/app/LivroDetailPage'
 import { ConteudoCurtidasPanel } from '@/features/app/ConteudoCurtidasPanel'
 import { ConteudoPageNav, type ConteudoPageSection } from '@/features/app/ConteudoPageNav'
@@ -43,6 +45,7 @@ const TIPO_META: Record<TipoConteudo, { icon: typeof BookMarked; tint: string }>
   cronica: { icon: FileText, tint: 'from-accent-light/80 to-white' },
   poema: { icon: Quote, tint: 'from-primary-light/70 to-accent-light/40' },
   musica: { icon: Music, tint: 'from-accent-light/90 to-primary-light/50' },
+  video: { icon: Video, tint: 'from-rose-50 to-white' },
   frase: { icon: Quote, tint: 'from-primary-light/60 to-white' },
   outro: { icon: Sparkles, tint: 'from-surface to-white' },
 }
@@ -126,6 +129,12 @@ export function AppConteudoDetailPage({ conteudoId }: AppConteudoDetailPageProps
 
   const isLivro = conteudo.tipo === 'livro'
 
+  if (conteudo.tipo === 'video') {
+    return (
+      <VideoConteudoPage conteudo={conteudo} backRoute={backRoute} />
+    )
+  }
+
   if (isLivro) {
     return (
       <LivroDetailPage
@@ -158,7 +167,20 @@ export function AppConteudoDetailPage({ conteudoId }: AppConteudoDetailPageProps
       </ScrollReveal>
 
       <ScrollReveal delayMs={40}>
-        <ConteudoHero conteudo={conteudo} />
+        {conteudo.tipo === 'musica' && conteudo.video_url && isYouTubeUrl(conteudo.video_url) ? (
+          <div className="space-y-4">
+            <YouTubeEmbed url={conteudo.video_url} title={conteudo.titulo} />
+            <ConteudoHero conteudo={conteudo} compact />
+            <MusicaLinkPanel url={conteudo.video_url} />
+          </div>
+        ) : (
+          <>
+            <ConteudoHero conteudo={conteudo} />
+            {conteudo.tipo === 'musica' && conteudo.video_url && (
+              <MusicaLinkPanel url={conteudo.video_url} />
+            )}
+          </>
+        )}
       </ScrollReveal>
 
       <ScrollReveal delayMs={80}>
@@ -212,14 +234,92 @@ export function AppConteudoDetailPage({ conteudoId }: AppConteudoDetailPageProps
   )
 }
 
-function ConteudoHero({ conteudo }: { conteudo: Conteudo }) {
+function VideoConteudoPage({
+  conteudo,
+  backRoute,
+}: {
+  conteudo: Conteudo
+  backRoute: string
+}) {
+  const videoUrl = conteudo.video_url?.trim()
+
+  return (
+    <div className="mx-auto max-w-2xl space-y-8">
+      <ScrollReveal>
+        <Link
+          to={backRoute}
+          className="inline-flex items-center gap-2 text-sm font-semibold text-primary transition-colors hover:text-primary-hover"
+        >
+          <ArrowLeft className="h-4 w-4" aria-hidden />
+          Voltar
+        </Link>
+      </ScrollReveal>
+
+      <ScrollReveal delayMs={40}>
+        <Card className="border-rose-200/50 bg-white/90 backdrop-blur-sm">
+          <CardContent className="space-y-5 p-6 sm:p-8">
+            <Badge variant="accent">{TIPO_CONTEUDO_LABEL.video}</Badge>
+            <h1 className="text-2xl font-semibold tracking-tight text-brand-navy sm:text-3xl">
+              {conteudo.titulo}
+            </h1>
+            {conteudo.descricao && (
+              <p className="text-base leading-relaxed text-text-muted">{conteudo.descricao}</p>
+            )}
+            {videoUrl ? (
+              <a href={videoUrl} target="_blank" rel="noopener noreferrer">
+                <Button size="lg" className="w-full sm:w-auto">
+                  Assistir vídeo
+                  <ExternalLink className="ml-2 h-4 w-4" aria-hidden />
+                </Button>
+              </a>
+            ) : (
+              <p className="text-sm text-error">Link do vídeo não disponível.</p>
+            )}
+            <p className="text-xs text-text-muted">
+              O vídeo abrirá em uma nova aba do navegador.
+            </p>
+          </CardContent>
+        </Card>
+      </ScrollReveal>
+    </div>
+  )
+}
+
+function MusicaLinkPanel({ url }: { url: string }) {
+  return (
+    <Card className="border-primary/10 bg-white/82 backdrop-blur-sm">
+      <CardContent className="flex flex-col gap-3 p-5 sm:flex-row sm:items-center sm:justify-between sm:p-6">
+        <div className="flex items-start gap-3">
+          <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-accent-light text-primary">
+            <Music className="h-5 w-5" strokeWidth={1.75} aria-hidden />
+          </div>
+          <div>
+            <p className="font-semibold text-text">Ouvir música</p>
+            <p className="mt-0.5 text-sm text-text-muted">
+              Abra o link em outra aba para ouvir na plataforma original.
+            </p>
+          </div>
+        </div>
+        <a href={url} target="_blank" rel="noopener noreferrer" className="shrink-0">
+          <Button variant="outline" size="sm">
+            Abrir link
+            <ExternalLink className="ml-1.5 h-4 w-4" aria-hidden />
+          </Button>
+        </a>
+      </CardContent>
+    </Card>
+  )
+}
+
+function ConteudoHero({ conteudo, compact = false }: { conteudo: Conteudo; compact?: boolean }) {
   const meta = TIPO_META[conteudo.tipo]
   const Icon = meta.icon
 
   return (
     <Card className="border-primary/10 bg-white/85 backdrop-blur-sm">
-      <CardContent className="p-6 sm:p-8">
+      <CardContent className={cn('p-6 sm:p-8', compact && 'p-5 sm:p-6')}>
         <div className="flex flex-col gap-6 sm:flex-row sm:items-start">
+          {!compact && (
           <div className="mx-auto shrink-0 sm:mx-0">
             {conteudo.capa_url ? (
               <img
@@ -240,6 +340,7 @@ function ConteudoHero({ conteudo }: { conteudo: Conteudo }) {
               </div>
             )}
           </div>
+          )}
 
           <div className="min-w-0 flex-1 text-center sm:text-left">
             <Badge variant="accent">{TIPO_CONTEUDO_LABEL[conteudo.tipo]}</Badge>
@@ -483,15 +584,21 @@ function MateriaisSection({
               {material.descricao && (
                 <p className="mt-2 text-sm text-text-muted">{material.descricao}</p>
               )}
-              <a
-                href={material.link}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="mt-3 inline-flex items-center gap-1.5 text-sm font-semibold text-primary hover:underline"
-              >
-                Abrir material
-                <ExternalLink className="h-3.5 w-3.5" aria-hidden />
-              </a>
+              {material.tipo === 'video' && isYouTubeUrl(material.link) ? (
+                <div className="mt-4">
+                  <YouTubeEmbed url={material.link} title={material.titulo} />
+                </div>
+              ) : (
+                <a
+                  href={material.link}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="mt-3 inline-flex items-center gap-1.5 text-sm font-semibold text-primary hover:underline"
+                >
+                  Abrir material
+                  <ExternalLink className="h-3.5 w-3.5" aria-hidden />
+                </a>
+              )}
             </CardContent>
           </Card>
         ))}

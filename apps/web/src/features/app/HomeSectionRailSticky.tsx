@@ -2,7 +2,7 @@ import { useRouterState } from '@tanstack/react-router'
 import { useEffect, useRef, useState } from 'react'
 import { resolveSectionId } from '@/features/app/appNavigation'
 import { HomeSectionRail } from '@/features/app/HomeSectionRail'
-import { useHomeCatalogSpy } from '@/features/app/useHomeCatalogSpy'
+import { isVideosZoneActive, useHomeCatalogSpy } from '@/features/app/useHomeCatalogSpy'
 import { cn } from '@/lib/utils'
 
 /** Menu pill da home — gruda no topo quando o usuário rola a página */
@@ -29,12 +29,19 @@ export function HomeSectionRailSticky() {
   }, [])
 
   const activeSection = isHome ? scrollSection : routeSection
+  const videosZone = isHome && isVideosZoneActive(scrollSection)
 
   return (
     <>
       <div ref={sentinelRef} className="home-rail-sentinel" aria-hidden />
-      <div className={cn('home-section-rail-sticky', isPinned && 'is-pinned')}>
-        <HomeSectionRail activeSection={activeSection} />
+      <div
+        className={cn(
+          'home-section-rail-sticky',
+          isPinned && 'is-pinned',
+          videosZone && 'is-videos-zone',
+        )}
+      >
+        <HomeSectionRail activeSection={activeSection} videosZone={videosZone} />
       </div>
     </>
   )

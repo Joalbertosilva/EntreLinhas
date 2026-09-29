@@ -8,10 +8,24 @@ export const TIPOS_CONTEUDO = [
   'cronica',
   'poema',
   'musica',
+  'video',
   'frase',
   'outro',
 ] as const;
 export type TipoConteudo = (typeof TIPOS_CONTEUDO)[number];
+
+/** Tipos expostos na plataforma (catálogo + admin) */
+export const CONTEUDO_TIPOS_PLATAFORMA = [
+  'livro',
+  'cronica',
+  'poema',
+  'musica',
+  'video',
+] as const satisfies readonly TipoConteudo[];
+
+/** Seção do catálogo onde um vídeo é exibido na home (logo abaixo da seção) */
+export const CATALOG_ANCHORS = ['livros', 'cronicas', 'musicas', 'poemas'] as const;
+export type CatalogAnchor = (typeof CATALOG_ANCHORS)[number];
 
 /** Tipos de material complementar — RF006 */
 export const TIPOS_MATERIAL = ['video', 'audio', 'pagina_externa', 'outro'] as const;
@@ -99,6 +113,9 @@ export interface Conteudo {
   curiosidades: string | null;
   conteudo_textual: string | null;
   capa_url: string | null;
+  video_url: string | null;
+  catalog_anchor: CatalogAnchor | null;
+  video_categoria: string | null;
   status: boolean;
   curtidas_count?: number;
   responsavel_id: string;

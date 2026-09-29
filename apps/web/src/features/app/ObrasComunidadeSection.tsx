@@ -1,5 +1,6 @@
 import { Link } from '@tanstack/react-router'
 import { BookOpen, Loader2, Users } from 'lucide-react'
+import type { ObraPublicaCard } from '@/features/app/useMinhaObra'
 import { useObrasPublicas } from '@/features/app/useMinhaObra'
 import { TIPO_OBRA_LABEL } from '@/lib/obraLabels'
 import { CATEGORIA_OBRA_LABEL } from '@/lib/obraCategoriaLabels'
@@ -12,6 +13,9 @@ interface ObrasComunidadeSectionProps {
   hideWhenEmpty?: boolean
   /** Ao lado do card de nível na home */
   variant?: 'default' | 'inline'
+  /** Evita fetch duplicado quando o pai já carregou as obras */
+  obras?: ObraPublicaCard[]
+  isLoading?: boolean
 }
 
 export function ObrasComunidadeSection({
@@ -19,9 +23,13 @@ export function ObrasComunidadeSection({
   className,
   hideWhenEmpty = false,
   variant = 'default',
+  obras: obrasProp,
+  isLoading: isLoadingProp,
 }: ObrasComunidadeSectionProps) {
   const inline = variant === 'inline'
-  const { data: obras = [], isLoading } = useObrasPublicas(limit)
+  const query = useObrasPublicas(limit, { enabled: obrasProp === undefined })
+  const obras = obrasProp ?? query.data ?? []
+  const isLoading = isLoadingProp ?? (obrasProp === undefined ? query.isLoading : false)
 
   if (isLoading) {
     return (
@@ -40,12 +48,28 @@ export function ObrasComunidadeSection({
   if (obras.length === 0) {
     if (hideWhenEmpty) return null
     return (
-      <section className={cn('home-obras-publicas', className)} aria-labelledby="obras-comunidade-title">
-        <SectionHeader />
-        <p className="rounded-2xl border border-dashed border-primary/12 bg-white/75 px-5 py-4 text-sm text-text-muted">
-          Nenhuma obra publicada ainda. Quando os alunos publicarem textos em{' '}
-          <strong className="font-medium text-text">Minha obra</strong>, elas aparecerão aqui.
-        </p>
+      <section
+        className={cn('home-obras-publicas', inline && 'home-obras-publicas--inline', className)}
+        aria-labelledby="obras-comunidade-title"
+      >
+        {inline ? (
+          <div className="home-obras-publicas__inline-head mb-3">
+            <h2 id="obras-comunidade-title" className="home-hero-section-label mb-0">
+              Livros da comunidade
+            </h2>
+          </div>
+        ) : (
+          <SectionHeader />
+        )}
+        <div className="home-comunidade-empty">
+          <p className="text-sm leading-relaxed text-text-muted">
+            Seja o primeiro a publicar na comunidade. Escreva em{' '}
+            <Link to="/app/minha-obra" className="font-semibold text-primary hover:underline">
+              Minha obra
+            </Link>{' '}
+            e compartilhe com outros leitores.
+          </p>
+        </div>
       </section>
     )
   }
