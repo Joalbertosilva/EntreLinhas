@@ -1,18 +1,18 @@
 # Sessão atual — tcc-sistema / EntreLinhas
 
-> Última atualização: **2026-09-11**  
-> **Fase:** 2f — Passo 7 concluído → **Passo 8 (mobile)** em andamento  
-> **Deploy:** fora do escopo por enquanto (site roda em `localhost` + Supabase nuvem)
+> Última atualização: **2026-09-29**  
+> **Fase:** MVP completo (web + mobile) → **ensaio de apresentação**  
+> **Deploy:** pós-apresentação (site roda em `localhost` + Supabase nuvem)
 
 ---
 
 ## Fase atual
 
 ```
-Backend ✅  →  Web ✅ (Passo 7 + painel auditoria Fase 2)  →  Mobile 🔄 (Passo 8)  →  Deploy ⏳ (longe)
+Backend ✅  →  Web ✅  →  Mobile ✅  →  Apresentação 🔄  →  Deploy ⏳
 ```
 
-**Passo 7 em validação cruzada:** você testa manualmente; o agente valida código + browser + build + schemas + auditoria LGPD/segurança. Após confirmação mútua → marcar Passo 7 ✅ e iniciar Passo 8 (mobile).
+**Foco atual:** ensaiar demo com [`docs/roteiro-apresentacao.md`](../docs/roteiro-apresentacao.md); matriz atualizada em [`docs/validacao-requisitos.md`](../docs/validacao-requisitos.md).
 
 ---
 
@@ -80,10 +80,15 @@ Usuários, conteúdos, temas, materiais, alunos, obras, recuperação de senha, 
 
 Roteiro: [`docs/gerenciador-roteiro-teste.md`](../docs/gerenciador-roteiro-teste.md)
 
-### Plataforma aluno `/app` — implementada (falta validar)
-Home, vitrines, destaques, detalhe de conteúdo, leituras, minha obra, obras públicas, perfil, senha, interações/comentários, curtidas.
+### Plataforma aluno `/app` — ✅
+Home, vitrines, destaques, detalhe de conteúdo, leituras, minha obra, obras públicas, perfil, senha, interações/comentários, curtidas, busca.
 
 Roteiro: [`docs/roteiro-validacao-aluno.md`](../docs/roteiro-validacao-aluno.md)
+
+### App mobile `apps/mobile` — ✅
+Tabs (Início, Explorar, Leituras, Pesquisa), leitor paginado, engajamento, minha obra, progresso, acessibilidade (TTS, font scale), splash animada, navegação stack + voltar.
+
+Ver: [`apps/mobile/README.md`](../apps/mobile/README.md)
 
 ### Auth + institucional
 Login (split + logo animada), esqueci/redefinir senha, `/privacidade`.

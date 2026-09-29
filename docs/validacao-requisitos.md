@@ -4,33 +4,34 @@ Matriz viva: o que **já atende**, o que **parcialmente atende** e o que **falta
 
 Legenda: ✅ implementado · 🔄 parcial · ⏳ pendente · ❌ fora do MVP
 
-> **Atualizado:** 2026-09-11 — Passo 7 validado (agente: código + browser + build + schemas); confirmação manual do usuário em andamento.
+> **Atualizado:** 2026-09-29 — Web admin + aluno validados; app mobile implementado (Expo SDK 57); pendências: deploy, LGPD formal, testes E2E e auditoria a11y/responsivo completa.
 
 ---
 
 ## Requisitos funcionais
 
-| RF | Descrição | Gerenciador | Plataforma aluno | Notas |
-|----|-----------|-------------|------------------|-------|
-| RF001 | Cadastro de usuários (admin) | ✅ | — | Edge Function `create-user` |
-| RF002 | Login | ✅ | ✅ | Redirect por perfil + troca obrigatória (`/trocar-senha`) |
-| RF003 | Gerenciar usuários | ✅ | — | Criar, editar, ativar/desativar, redefinir senha |
-| RF004 | CRUD conteúdos | ✅ | ✅ | Aluno consulta via RF007 |
-| RF005 | Temas | ✅ | ✅ | Detalhe do conteúdo |
-| RF006 | Materiais | ✅ | ✅ | Links no detalhe |
-| RF007 | Consulta/pesquisa conteúdos | — | ✅ | Home + rotas por tipo + busca header + `/app/busca` |
-| RF008 | Interações | — | ✅ | Comentários + reflexão orientada |
-| RF009 | Leitura | — | ✅ | Minhas leituras, status em cards |
-| RF010 | Evolução | ✅ | ✅ | `/app/progresso`, home XP/nível, `/admin/alunos` + view `evolucao_aluno` |
-| RF011 | Produções | — | ✅ | Via minha obra (capítulos/itens) |
-| RF012 | Obra autoral | — | ✅ | Minha obra + publicar + obras comunidade |
-| RF013 | Acompanhamento alunos | ✅ | — | `/admin/alunos` |
-| RF014 | Visão admin | ✅ | — | Dashboard + auditoria |
-| RF015 | Perfil / senha | ✅ | ✅ | `/admin/perfil`, `/app/perfil` |
+| RF | Descrição | Gerenciador | Aluno web | App mobile | Notas |
+|----|-----------|-------------|-----------|------------|-------|
+| RF001 | Cadastro de usuários (admin) | ✅ | — | — | Edge Function `create-user`; gerenciador só na web |
+| RF002 | Login | ✅ | ✅ | ✅ | Redirect por perfil + troca obrigatória (`/trocar-senha`) |
+| RF003 | Gerenciar usuários | ✅ | — | — | Criar, editar, ativar/desativar, redefinir senha |
+| RF004 | CRUD conteúdos | ✅ | ✅ | ✅ | Aluno consulta; staff edita na web |
+| RF005 | Temas | ✅ | ✅ | ✅ | Detalhe do conteúdo |
+| RF006 | Materiais | ✅ | ✅ | ✅ | Links no detalhe |
+| RF007 | Consulta/pesquisa conteúdos | — | ✅ | ✅ | Web: home + `/app/busca`; mobile: Explorar + Pesquisa |
+| RF008 | Interações | — | ✅ | ✅ | Comentários, reflexão, curtidas; excluir próprias interações |
+| RF009 | Leitura | — | ✅ | ✅ | Status em cards; aba Leituras no mobile |
+| RF010 | Evolução | ✅ | ✅ | ✅ | Progresso, XP/nível; admin em `/admin/alunos` |
+| RF011 | Produções | — | ✅ | ✅ | Via minha obra (capítulos/itens) |
+| RF012 | Obra autoral | — | ✅ | ✅ | Minha obra + publicar + obras comunidade |
+| RF013 | Acompanhamento alunos | ✅ | — | — | `/admin/alunos` |
+| RF014 | Visão admin | ✅ | — | — | Dashboard + auditoria |
+| RF015 | Perfil / senha | ✅ | ✅ | ✅ | Web + mobile; staff com link ao painel web |
 
-**Gerenciador:** RF001–RF006, RF013–RF015 ✅  
+**Gerenciador web:** RF001–RF006, RF013–RF015 ✅  
 **Aluno web:** RF002, RF004–RF012, RF015 ✅  
-**Próximo:** confirmação Passo 7 → [`session/current.md`](../session/current.md) Passo 8 (mobile)
+**App mobile (aluno):** RF002, RF004–RF012, RF015 ✅  
+**Próximo:** ensaio de apresentação → [`docs/roteiro-apresentacao.md`](./roteiro-apresentacao.md)
 
 ---
 
@@ -38,17 +39,17 @@ Legenda: ✅ implementado · 🔄 parcial · ⏳ pendente · ❌ fora do MVP
 
 | RNF | Status | Evidência |
 |-----|--------|-----------|
-| RNF01 Interface intuitiva | ✅ | Validado Passo 7 (usuário + agente) |
+| RNF01 Interface intuitiva | ✅ | Validado web + mobile (navegação tabs/stack, drawer, leitor) |
 | RNF02 Erros claros | ✅ | Toasts + `FieldError` em PT |
-| RNF03 Responsivo | 🔄 | Mobile web (hamburger); revisar todas telas |
-| RNF04 Compatibilidade | 🔄 | Vite/React; teste manual pendente |
-| RNF05 Desempenho | 🔄 | TanStack Query; sem profiling formal |
+| RNF03 Responsivo | 🔄 | Web responsiva parcial; mobile nativo com insets centralizados (`layout.ts`, `TabScrollView`) — revisar devices Android variados |
+| RNF04 Compatibilidade | 🔄 | Web: Vite/React; mobile: Expo Go 57 — teste manual em iOS + Android |
+| RNF05 Desempenho | 🔄 | TanStack Query; splash encurtada; sem profiling formal |
 | RNF06 Integridade | ✅ | Postgres + RLS + Zod |
-| RNF07 Disponibilidade | ⏳ | Local + Supabase nuvem; deploy longe |
+| RNF07 Disponibilidade | ⏳ | Localhost + Supabase nuvem; deploy produção pendente |
 | RNF08 Backup | 🔄 | Backups Supabase; ver [`supabase-nuvem.md`](./supabase-nuvem.md) |
-| RNF09 Consistência app/web | ⏳ | Mobile (`apps/mobile`) não iniciado |
-| RNF10 Legibilidade | ✅ | Design system, PT claro |
-| RNF11 Acessibilidade | 🔄 | Skip link, landmarks; revisar leitor e Tab |
+| RNF09 Consistência app/web | 🔄 | Paridade aluno ~90% (mobile + web); gerenciador **somente web** (decisão de escopo) |
+| RNF10 Legibilidade | ✅ | Design system, PT claro, Plus Jakarta Sans |
+| RNF11 Acessibilidade | 🔄 | Web: skip link, toolbar; mobile: TTS, font scale, leitura da tela, FAB a11y — auditoria formal pendente |
 
 ---
 
@@ -59,12 +60,12 @@ Legenda: ✅ implementado · 🔄 parcial · ⏳ pendente · ❌ fora do MVP
 | RS001 Auth segura | ✅ | Supabase Auth, JWT, logout |
 | RS002 Isolamento alunos | ✅ | RLS `auth.uid()` |
 | RS003 RBAC | ✅ | RLS + guards rotas admin |
-| RS004 Sem vazamento | ✅ | Login genérico; conta inativa sem enumeração (2026-09-11) |
+| RS004 Sem vazamento | ✅ | Login genérico; conta inativa sem enumeração |
 | RS005 LGPD | 🔄 | `/privacidade` ok; falta export formal, DPO (institucional) |
 | RS006 Integridade/soft delete | ✅ | Usuários + conteúdos/temas/materiais via `status: false` |
-| RS007 Auditoria | ✅ | Painel: cards, gráficos, timeline, fluxo senha, CSV, detalhe lateral |
+| RS007 Auditoria | ✅ | Painel: cards, gráficos, timeline, fluxo senha, CSV |
 | RS008 Links externos | 🔄 | Zod URL; whitelist futura |
-| RS009 Privacidade interações | ✅ | RLS reflexões privadas |
+| RS009 Privacidade interações | ✅ | RLS reflexões privadas; delete próprio (migration 20260923180000) |
 | RS010 Incidentes | ⏳ | Procedimento institucional |
 
 ### LGPD — feito
@@ -85,24 +86,53 @@ Legenda: ✅ implementado · 🔄 parcial · ⏳ pendente · ❌ fora do MVP
 
 | Tipo | Status |
 |------|--------|
-| Vitest schemas | ✅ `pnpm test:schemas` — 8 testes (2026-09-11) |
+| Vitest schemas | ✅ `pnpm test:schemas` — 8 testes |
+| `pnpm web:build` | ✅ build de produção web |
 | RTL componentes | ⏳ LoginForm, ContentCard |
-| RLS manual | 🔄 feito na implantação |
+| RLS manual | 🔄 validado na implantação |
 | E2E | ⏳ |
+| Mobile (RNTL) | ⏳ |
 
 ---
 
-## Como validar antes do mobile
+## Migrations Supabase
 
-1. [`docs/gerenciador-roteiro-teste.md`](./gerenciador-roteiro-teste.md) — admin/professor
-2. [`docs/roteiro-validacao-aluno.md`](./roteiro-validacao-aluno.md) — aluno
-3. [`docs/security.md`](./security.md) — checklist segurança
-4. [`docs/acessibilidade.md`](./acessibilidade.md) — Tab e leitor
-5. Corrigir bugs → Passo 3 em [`session/current.md`](../session/current.md)
-6. **Só então** iniciar `apps/mobile`
+| Item | Status |
+|------|--------|
+| Migrations locais | 24 arquivos em `supabase/migrations/` |
+| Nuvem | Sincronizadas (`pnpm db:push` quando houver novas) |
+| Última relevante | `20260923180000_interacoes_delete_own.sql` |
 
 ---
 
-## Próxima entrega
+## Como validar antes da apresentação
 
-Ver [`session/current.md`](../session/current.md) — passo a passo completo até o app mobile.
+1. [`docs/roteiro-apresentacao.md`](./roteiro-apresentacao.md) — **roteiro único** (orientador + stakeholder)
+2. [`docs/gerenciador-roteiro-teste.md`](./gerenciador-roteiro-teste.md) — admin/professor
+3. [`docs/roteiro-validacao-aluno.md`](./roteiro-validacao-aluno.md) — aluno web
+4. [`docs/perguntas-banca.md`](./perguntas-banca.md) — perguntas prováveis e respostas
+5. [`docs/security.md`](./security.md) — checklist segurança
+6. [`docs/acessibilidade.md`](./acessibilidade.md) — Tab e leitor
+
+**Mobile (ensaio opcional):** `pnpm mobile:dev` + Expo Go 57 na mesma rede; ver [`apps/mobile/README.md`](../apps/mobile/README.md).
+
+---
+
+## Veredito para apresentação (2026-09-29)
+
+| Público | Avaliação |
+|---------|-----------|
+| Orientador (TCC) | ✅ **Apto** — escopo MVP atendido, arquitetura documentada, ressalvas explícitas |
+| Stakeholder (produto) | ✅ **Apto com demo ensaiada** — valor de negócio demonstrável na web; mobile como diferencial |
+| Produção / deploy público | ⏳ **Não apto ainda** — depende de deploy, LGPD formal e testes E2E |
+
+---
+
+## Próximas entregas (pós-apresentação)
+
+- Deploy web (Vercel/Netlify + domínio institucional)
+- Atualizar textos LGPD institucionais
+- CI básico (build + schemas)
+- Testes E2E do fluxo crítico (login → leitura → obra)
+
+Ver também [`session/current.md`](../session/current.md).

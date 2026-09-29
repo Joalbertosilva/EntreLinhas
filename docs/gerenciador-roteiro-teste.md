@@ -1,8 +1,8 @@
 # Gerenciador web — roteiro de teste (encerramento)
 
-Use este roteiro para validar o gerenciador antes de iniciar a plataforma do aluno (`/app/*`).
+Use este roteiro para validar o gerenciador web (`/admin/*`).
 
-**Pré-requisitos:** `pnpm db:start`, `pnpm db:seed-admin`, `pnpm functions:serve`, `pnpm web:dev`  
+**Pré-requisitos:** Supabase nuvem configurado em `apps/web/.env.local`, `pnpm web:dev`  
 **Login admin:** `admin` / `Admin@123456`
 
 ---

@@ -1,6 +1,6 @@
 # Roteiro de validação — plataforma aluno (`/app`)
 
-Checklist manual para validar RF007–RF012 na web **antes** de iniciar o app mobile.
+Checklist manual para validar RF007–RF012 na plataforma aluno web (`/app`).
 
 **Pré-requisitos:**
 

@@ -2,7 +2,7 @@
 
 Plataforma de estímulo à leitura, reflexão e produção textual — **MVP do TCC (CESMAC)**.
 
-> Nome provisório (*EntreLinhas*). Monorepo TypeScript com backend Supabase, website para alunos e staff, e app mobile planejado para a Fase 3.
+> Nome provisório (*EntreLinhas*). Monorepo TypeScript com backend Supabase, website para alunos e staff, e app mobile nativo (Expo) para alunos.
 
 ---
 
@@ -33,7 +33,7 @@ Sistema educacional com **três camadas** no mesmo repositório:
 | Camada | Pasta | Público | Tecnologia |
 |--------|-------|---------|------------|
 | **Website + gerenciador** | `apps/web` | Alunos (`/app`) e staff (`/admin`) | React 19, Vite, TanStack Router, Tailwind |
-| **App mobile** | `apps/mobile` | Alunos (Android/iOS) — *Fase 3* | React Native, Expo, NativeWind |
+| **App mobile** | `apps/mobile` | Alunos (Android/iOS) | React Native, Expo SDK 57, NativeWind |
 | **Backend** | `supabase/` | Todas as plataformas | PostgreSQL, Auth, Storage, RLS, Edge Functions |
 
 O backend **não** é um servidor customizado: usamos **Supabase** (PostgreSQL + Auth + Storage), com regras de acesso no banco via **Row Level Security (RLS)**.
@@ -58,11 +58,13 @@ O backend **não** é um servidor customizado: usamos **Supabase** (PostgreSQL +
 - Curtidas, progresso de leitura (em andamento / concluída)
 - Perfil e alteração de senha
 
-### App mobile (`apps/mobile`) — planejado
+### App mobile (`apps/mobile`) — implementado
 
-- Paridade com a área `/app` da web (login, vitrines, leitura, reflexão, comentários, perfil)
+- Abas: Início, Explorar, Leituras, Pesquisa; stack para conteúdo, obra, perfil, minha obra, progresso
+- Leitor paginado, engajamento (comentários, reflexões, curtidas), minha obra + publicação
+- Acessibilidade nativa: escala de fonte, TTS, leitura da tela, toolbar flutuante
 - Mesmo backend Supabase; pacotes `@tcc-sistema/types` e `@tcc-sistema/schemas` compartilhados
-- Gerenciador permanece **somente na web**
+- Gerenciador permanece **somente na web** (staff usa `/admin` ou link no perfil mobile)
 
 Detalhes de stack e mobile: [`docs/stack-e-ferramentas.md`](./docs/stack-e-ferramentas.md)
 
@@ -73,7 +75,7 @@ Detalhes de stack e mobile: [`docs/stack-e-ferramentas.md`](./docs/stack-e-ferra
 ```
 ┌─────────────────────┐     ┌─────────────────────┐
 │   apps/mobile       │     │      apps/web        │
-│   (Fase 3)          │     │   /app + /admin      │
+│   aluno (Expo)      │     │   /app + /admin      │
 └──────────┬──────────┘     └──────────┬───────────┘
            │                           │
            │   Supabase JS · TanStack Query · types/schemas
@@ -300,14 +302,14 @@ Escopo MVP: [`docs/mvp-scope.md`](./docs/mvp-scope.md)
 | Backend Supabase (nuvem) | ✅ |
 | Login + recuperação de senha | ✅ |
 | Gerenciador `/admin` | ✅ |
-| Plataforma aluno `/app` | 🔄 implementada — **validar manualmente** |
+| Plataforma aluno `/app` | ✅ |
+| App mobile (`apps/mobile`) | ✅ — demo + piloto; lojas pendentes |
 | Minha obra, leituras, interações, obras públicas | ✅ |
-| Busca global no header | ⏳ |
-| Testes automatizados | ⏳ |
-| App mobile (`apps/mobile`) | ⏳ após web validado |
-| Deploy público | ⏳ longe |
+| Busca (web header + mobile aba Pesquisa) | ✅ |
+| Testes automatizados (schemas + build) | 🔄 E2E pendente |
+| Deploy público | ⏳ pós-apresentação |
 
-**Próximo passo:** [`session/current.md`](./session/current.md) — Passos 0–2 (validação).
+**Próximo passo:** [`docs/roteiro-apresentacao.md`](./docs/roteiro-apresentacao.md) — ensaio para orientador/stakeholder.
 
 ---
 
@@ -328,7 +330,10 @@ Escopo MVP: [`docs/mvp-scope.md`](./docs/mvp-scope.md)
 | [`docs/quando-rodar-comandos.md`](./docs/quando-rodar-comandos.md) | O que rodar sempre vs uma vez |
 | [`docs/supabase-nuvem.md`](./docs/supabase-nuvem.md) | Nuvem + preservar dados |
 | [`docs/roteiro-validacao-aluno.md`](./docs/roteiro-validacao-aluno.md) | Checklist manual aluno |
-| [`session/current.md`](./session/current.md) | **Passo a passo atual** |
+| [`docs/validacao-requisitos.md`](./docs/validacao-requisitos.md) | **Matriz RF/RNF/RS — status atual** |
+| [`docs/roteiro-apresentacao.md`](./docs/roteiro-apresentacao.md) | Roteiro único de apresentação |
+| [`docs/perguntas-banca.md`](./docs/perguntas-banca.md) | Perguntas prováveis e respostas |
+| [`session/current.md`](./session/current.md) | Passo a passo de desenvolvimento |
 | [`docs/docker.md`](./docs/docker.md) | Docker local (opcional) |
 | [`AGENTS.md`](./AGENTS.md) | Orientação para agentes de IA (Cursor) |
 
