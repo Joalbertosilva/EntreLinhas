@@ -1,10 +1,9 @@
-import { ActivityIndicator, ScrollView, Text, View } from 'react-native'
+import { ActivityIndicator, Text, View } from 'react-native'
 import { LinearGradient } from 'expo-linear-gradient'
 import { PLATFORM_GRADIENT, PLATFORM_GRADIENT_LOCATIONS } from '@/lib/brandTheme'
 import { BookOpen, Bookmark, CheckCircle2 } from 'lucide-react-native'
-import { useSafeAreaInsets } from 'react-native-safe-area-context'
 import { A11yScreen } from '@/components/layout/A11yScreen'
-import { TabScreenShell } from '@/components/layout/TabScreenShell'
+import { TabScreenShell, TabScrollView } from '@/components/layout/TabScreenShell'
 import { LeituraRow } from '@/features/leituras/LeituraRow'
 import type { MinhasLeiturasAgrupadas } from '@/features/leituras/useMinhasLeituras'
 import { useMinhasLeituras } from '@/features/leituras/useMinhasLeituras'
@@ -56,10 +55,8 @@ const SECTIONS: Array<{
 ]
 
 export default function LeiturasScreen() {
-  const insets = useSafeAreaInsets()
   const { profile } = useAuth()
   const { data, isLoading } = useMinhasLeituras(profile?.id)
-  const tabPadding = 72 + Math.max(insets.bottom, 12)
 
   const total =
     (data?.em_andamento.length ?? 0) +
@@ -74,10 +71,7 @@ export default function LeiturasScreen() {
           locations={[...PLATFORM_GRADIENT_LOCATIONS]}
           style={{ flex: 1 }}
         >
-          <ScrollView
-            contentContainerStyle={{ paddingTop: 12, paddingBottom: tabPadding }}
-            showsVerticalScrollIndicator={false}
-          >
+          <TabScrollView>
             <View
               style={{ marginHorizontal: SCREEN_HORIZONTAL_PADDING }}
               className="mb-6 overflow-hidden rounded-2xl border border-sky-mid bg-white/90 p-5"
@@ -160,7 +154,7 @@ export default function LeiturasScreen() {
               )
             })
           )}
-          </ScrollView>
+          </TabScrollView>
         </LinearGradient>
       </TabScreenShell>
     </A11yScreen>

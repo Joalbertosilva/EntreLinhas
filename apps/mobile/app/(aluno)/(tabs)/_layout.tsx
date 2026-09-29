@@ -1,13 +1,14 @@
 import { Tabs } from 'expo-router'
 import { BookOpen, Home, Library, Search } from 'lucide-react-native'
-import { Platform } from 'react-native'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
 import { useAccessibility } from '@/features/accessibility/AccessibilityProvider'
+import { tabBarBottomInset, tabBarContentHeight, TAB_BAR_PADDING_TOP } from '@/lib/layout'
 
 export default function AlunoTabsLayout() {
   const { fontMultiplier } = useAccessibility()
   const insets = useSafeAreaInsets()
-  const tabBarBottom = Math.max(insets.bottom, Platform.OS === 'ios' ? 16 : 12)
+  const tabBarBottom = tabBarBottomInset(insets)
+  const tabContentHeight = tabBarContentHeight(fontMultiplier)
   const tabLabelSize = Math.round(11 * fontMultiplier)
   const tabIconSize = Math.round(23 * fontMultiplier)
 
@@ -21,9 +22,9 @@ export default function AlunoTabsLayout() {
           backgroundColor: '#ffffff',
           borderTopColor: '#cdd9e3',
           borderTopWidth: 1,
-          height: 52 + tabBarBottom,
+          height: tabContentHeight + TAB_BAR_PADDING_TOP + tabBarBottom,
           paddingBottom: tabBarBottom,
-          paddingTop: 8,
+          paddingTop: TAB_BAR_PADDING_TOP,
         },
         tabBarLabelStyle: {
           fontFamily: 'PlusJakartaSans_600SemiBold',

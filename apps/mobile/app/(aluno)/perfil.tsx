@@ -1,7 +1,6 @@
 import { Alert, Linking, Pressable, ScrollView, Text, View } from 'react-native'
 import { Stack, useRouter } from 'expo-router'
 import { BookOpen, ChevronRight, ExternalLink, Lock, PenLine, Sparkles, Type } from 'lucide-react-native'
-import { useSafeAreaInsets } from 'react-native-safe-area-context'
 import { A11yScreen } from '@/components/layout/A11yScreen'
 import { ScreenBackHeader } from '@/components/layout/ScreenBackHeader'
 import { ProfileMenuItem } from '@/components/ui/ProfileMenuItem'
@@ -11,18 +10,18 @@ import { useAlunoProgress } from '@/features/progress/useAlunoProgress'
 import { useMinhasLeituras } from '@/features/leituras/useMinhasLeituras'
 import { faixaDoNivel, tituloJornada } from '@/lib/alunoProgress'
 import { SCREEN_HORIZONTAL_PADDING } from '@/lib/layout'
+import { useStackScreenInsets } from '@/lib/useStackScreenInsets'
 import { isStaffPerfil, PERFIL_LABELS } from '@/lib/perfilLabels'
 import { getAdminWebUrl } from '@/lib/webAppUrl'
 import { useAuth } from '@/providers/AuthProvider'
 
 export default function PerfilScreen() {
-  const insets = useSafeAreaInsets()
+  const { insets, scrollPaddingBottom } = useStackScreenInsets()
   const router = useRouter()
   const { profile, signOut } = useAuth()
   const { data: progress, isLoading } = useAlunoProgress(profile?.id)
   const { data: leituras } = useMinhasLeituras(profile?.id)
   const { setModeEnabled } = useAccessibility()
-  const bottomPadding = insets.bottom + 32
 
   const totalLeituras =
     (leituras?.em_andamento.length ?? 0) +
@@ -62,7 +61,7 @@ export default function PerfilScreen() {
           <ScrollView
             contentContainerStyle={{
               paddingTop: 12,
-              paddingBottom: bottomPadding,
+              paddingBottom: scrollPaddingBottom,
               paddingHorizontal: SCREEN_HORIZONTAL_PADDING,
               paddingRight: SCREEN_HORIZONTAL_PADDING,
             }}

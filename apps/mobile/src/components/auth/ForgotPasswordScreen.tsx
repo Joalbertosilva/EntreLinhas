@@ -1,5 +1,5 @@
 import { Controller } from 'react-hook-form'
-import { KeyboardAvoidingView, Platform, Pressable, ScrollView, Text, View } from 'react-native'
+import { KeyboardAvoidingView, Pressable, ScrollView, Text, View } from 'react-native'
 import { LinearGradient } from 'expo-linear-gradient'
 import { SPLASH_GRADIENT, SPLASH_GRADIENT_LOCATIONS } from '@/lib/brandTheme'
 import { useRouter } from 'expo-router'
@@ -11,6 +11,7 @@ import { Button } from '@/components/ui/Button'
 import { Input } from '@/components/ui/Input'
 import { useAccessibility } from '@/features/accessibility/AccessibilityProvider'
 import { useForgotPassword } from '@/features/auth/useForgotPassword'
+import { KEYBOARD_AVOIDING_BEHAVIOR } from '@/lib/layout'
 
 export function ForgotPasswordScreen() {
   const router = useRouter()
@@ -27,10 +28,7 @@ export function ForgotPasswordScreen() {
         locations={[...SPLASH_GRADIENT_LOCATIONS]}
         style={{ flex: 1, paddingTop: insets.top, paddingBottom: insets.bottom }}
       >
-        <KeyboardAvoidingView
-          behavior={Platform.OS === 'ios' ? 'padding' : undefined}
-          className="flex-1"
-        >
+        <KeyboardAvoidingView behavior={KEYBOARD_AVOIDING_BEHAVIOR} className="flex-1">
           <ScrollView
             contentContainerClassName="flex-grow px-6 py-8"
             keyboardShouldPersistTaps="handled"

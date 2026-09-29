@@ -1,3 +1,4 @@
+import { useSegments } from 'expo-router'
 import { Pressable, Text, View } from 'react-native'
 import { Volume2, X } from 'lucide-react-native'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
@@ -5,13 +6,23 @@ import { useAccessibility } from '@/features/accessibility/AccessibilityProvider
 import { AccessibilityToolbar, AccessibilityTrigger } from '@/features/accessibility/AccessibilityToolbar'
 import { useScreenAudioSession } from '@/features/accessibility/useScreenAudioSession'
 import { useScreenReader } from '@/features/accessibility/useScreenReader'
+import {
+  accessibilityFabBottomOnStack,
+  accessibilityFabBottomOnTabs,
+} from '@/lib/layout'
 
 /** Botão flutuante + banner de leitura da tela — sem overlay de tela inteira. */
 export function GlobalAccessibilityLayer() {
   const insets = useSafeAreaInsets()
-  const { screenExplorerMode, setScreenExplorerMode } = useAccessibility()
+  const segments = useSegments()
+  const { fontMultiplier, screenExplorerMode, setScreenExplorerMode } = useAccessibility()
   const reader = useScreenReader()
   useScreenAudioSession()
+
+  const onTabScreen = (segments as string[]).includes('(tabs)')
+  const fabBottom = onTabScreen
+    ? accessibilityFabBottomOnTabs(insets, fontMultiplier)
+    : accessibilityFabBottomOnStack(insets)
 
   return (
     <>
@@ -53,7 +64,7 @@ export function GlobalAccessibilityLayer() {
         pointerEvents="box-none"
         style={{
           position: 'absolute',
-          bottom: Math.max(insets.bottom, 12) + 68,
+          bottom: fabBottom,
           right: 16,
           zIndex: 40,
           elevation: 40,

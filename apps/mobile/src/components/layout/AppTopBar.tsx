@@ -4,19 +4,25 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context'
 import { BrandLogo } from '@/components/auth/BrandLogo'
 import { Avatar } from '@/components/ui/Avatar'
 import { useAppShell } from '@/components/layout/AppShellProvider'
+import { SCREEN_HORIZONTAL_PADDING } from '@/lib/layout'
+import { useGoHome } from '@/lib/useGoHome'
 import { useAuth } from '@/providers/AuthProvider'
 
 export function AppTopBar() {
   const insets = useSafeAreaInsets()
   const { profile } = useAuth()
   const { openDrawer, openAccount } = useAppShell()
+  const goHome = useGoHome()
 
   return (
     <View
       className="border-b border-sky-mid bg-white/95"
       style={{ paddingTop: insets.top, paddingBottom: 10 }}
     >
-      <View className="flex-row items-center px-4">
+      <View
+        className="flex-row items-center"
+        style={{ paddingHorizontal: SCREEN_HORIZONTAL_PADDING }}
+      >
         <Pressable
           onPress={openDrawer}
           accessibilityRole="button"
@@ -26,12 +32,17 @@ export function AppTopBar() {
           <Menu color="#1a3342" size={22} strokeWidth={1.75} />
         </Pressable>
 
-        <View className="min-w-0 flex-1 items-center">
+        <Pressable
+          onPress={goHome}
+          accessibilityRole="button"
+          accessibilityLabel="Ir para início"
+          className="min-w-0 flex-1 items-center active:opacity-80"
+        >
           <View className="flex-row items-center gap-2">
             <BrandLogo variant="mark" showTagline={false} markSize={32} backdrop="light" />
             <Text className="font-sans-bold text-base text-brand-navy">EntreLinhas</Text>
           </View>
-        </View>
+        </Pressable>
 
         <Pressable
           onPress={openAccount}

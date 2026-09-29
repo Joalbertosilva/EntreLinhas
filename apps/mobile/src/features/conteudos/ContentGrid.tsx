@@ -1,4 +1,4 @@
-import { Dimensions, FlatList, Text, View } from 'react-native'
+import { FlatList, Text, useWindowDimensions, View } from 'react-native'
 import type { ConteudoCardData } from '@/features/conteudos/useConteudos'
 import { ContentCard } from '@/features/conteudos/ContentCard'
 import { SCREEN_HORIZONTAL_PADDING } from '@/lib/layout'
@@ -7,11 +7,6 @@ const H_PADDING = SCREEN_HORIZONTAL_PADDING
 const GAP = 12
 const NUM_COLS = 2
 
-function gridCardWidth() {
-  const screen = Dimensions.get('window').width
-  return (screen - H_PADDING * 2 - GAP * (NUM_COLS - 1)) / NUM_COLS
-}
-
 interface ContentGridProps {
   items: ConteudoCardData[]
   showTipo?: boolean
@@ -19,7 +14,8 @@ interface ContentGridProps {
 }
 
 export function ContentGrid({ items, showTipo = true, emptyMessage }: ContentGridProps) {
-  const cardWidth = gridCardWidth()
+  const { width: screenWidth } = useWindowDimensions()
+  const cardWidth = (screenWidth - H_PADDING * 2 - GAP * (NUM_COLS - 1)) / NUM_COLS
 
   if (!items.length) {
     return (

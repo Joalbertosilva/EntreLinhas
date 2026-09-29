@@ -1,6 +1,6 @@
 import { zodResolver } from '@hookform/resolvers/zod'
 import { Controller, useForm } from 'react-hook-form'
-import { KeyboardAvoidingView, Platform, ScrollView, Text, View } from 'react-native'
+import { KeyboardAvoidingView, ScrollView, Text, View } from 'react-native'
 import { LinearGradient } from 'expo-linear-gradient'
 import { PLATFORM_GRADIENT, PLATFORM_GRADIENT_LOCATIONS } from '@/lib/brandTheme'
 import { useRouter } from 'expo-router'
@@ -12,6 +12,7 @@ import { AuthField } from '@/components/ui/AuthField'
 import { Button } from '@/components/ui/Button'
 import { PasswordInput } from '@/components/ui/PasswordInput'
 import { supabase } from '@/lib/supabase'
+import { KEYBOARD_AVOIDING_BEHAVIOR } from '@/lib/layout'
 import { useAuth } from '@/providers/AuthProvider'
 
 export default function TrocarSenhaScreen() {
@@ -53,7 +54,7 @@ export default function TrocarSenhaScreen() {
       locations={[...PLATFORM_GRADIENT_LOCATIONS]}
       style={{ flex: 1, paddingTop: insets.top }}
     >
-      <KeyboardAvoidingView behavior={Platform.OS === 'ios' ? 'padding' : undefined} className="flex-1">
+      <KeyboardAvoidingView behavior={KEYBOARD_AVOIDING_BEHAVIOR} className="flex-1">
         <ScrollView contentContainerClassName="flex-grow justify-center px-6 py-10" keyboardShouldPersistTaps="handled">
           <BrandLogo className="mb-8" />
 

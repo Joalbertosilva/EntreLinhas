@@ -1,7 +1,7 @@
 import { zodResolver } from '@hookform/resolvers/zod'
 import { Stack } from 'expo-router'
 import { Controller, useForm } from 'react-hook-form'
-import { KeyboardAvoidingView, Platform, Pressable, ScrollView, Text, View } from 'react-native'
+import { KeyboardAvoidingView, ScrollView, Text, View } from 'react-native'
 import { Lock } from 'lucide-react-native'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
 import { changePasswordSchema, nomeUsuarioToAuthEmail, type ChangePasswordInput } from '@tcc-sistema/schemas'
@@ -10,6 +10,7 @@ import { useGoBack } from '@/lib/useGoBack'
 import { AuthField } from '@/components/ui/AuthField'
 import { Button } from '@/components/ui/Button'
 import { PasswordInput } from '@/components/ui/PasswordInput'
+import { KEYBOARD_AVOIDING_BEHAVIOR, stackScrollPaddingBottom } from '@/lib/layout'
 import { supabase } from '@/lib/supabase'
 import { useAuth } from '@/providers/AuthProvider'
 
@@ -60,8 +61,11 @@ export default function AlterarSenhaScreen() {
       <View className="flex-1 bg-surface" style={{ paddingTop: insets.top }}>
         <ScreenBackHeader title="Alterar senha" />
 
-        <KeyboardAvoidingView behavior={Platform.OS === 'ios' ? 'padding' : undefined} className="flex-1">
-          <ScrollView contentContainerStyle={{ padding: 24, paddingBottom: insets.bottom + 24 }}>
+        <KeyboardAvoidingView behavior={KEYBOARD_AVOIDING_BEHAVIOR} className="flex-1">
+          <ScrollView
+            keyboardShouldPersistTaps="handled"
+            contentContainerStyle={{ padding: 24, paddingBottom: stackScrollPaddingBottom(insets) }}
+          >
             <View className="mb-6 flex-row items-start gap-4">
               <View className="rounded-2xl bg-primary-light p-3">
                 <Lock color="#1c756a" size={24} strokeWidth={1.75} />

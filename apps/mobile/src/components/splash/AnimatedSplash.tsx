@@ -25,8 +25,8 @@ export function AnimatedSplash({ exiting = false, onExitComplete }: AnimatedSpla
     captionOpacity.value = withTiming(0, { duration: 200, easing: Easing.in(Easing.quad) })
 
     screenOpacity.value = withDelay(
-      720,
-      withTiming(0, { duration: 420, easing: Easing.in(Easing.cubic) }, (finished) => {
+      380,
+      withTiming(0, { duration: 320, easing: Easing.in(Easing.cubic) }, (finished) => {
         if (finished && onExitComplete) runOnJS(onExitComplete)()
       }),
     )

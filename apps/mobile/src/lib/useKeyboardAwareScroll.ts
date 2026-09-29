@@ -14,11 +14,18 @@ type ScrollTarget = number | 'end' | null
 
 const FIELD_TOP_MARGIN = 100
 
+interface KeyboardAwareScrollOptions {
+  /** Padding inferior quando o teclado está fechado (ex.: clearance do FAB). */
+  basePaddingBottom?: number
+}
+
 /** Padding no fim do ScrollView; scroll só quando o campo focado pede. */
 export function useKeyboardAwareScroll(
   scrollRef: RefObject<ScrollView | null>,
   scrollViewportRef: RefObject<View | null>,
+  options: KeyboardAwareScrollOptions = {},
 ) {
+  const { basePaddingBottom = 32 } = options
   const [keyboardHeight, setKeyboardHeight] = useState(0)
   const keyboardHeightRef = useRef(0)
   const scrollTargetRef = useRef<ScrollTarget>(null)
@@ -134,7 +141,7 @@ export function useKeyboardAwareScroll(
     }
   }, [keyboardHeight, scheduleScroll, scrollToFieldY])
 
-  const scrollPaddingBottom = keyboardHeight > 0 ? keyboardHeight + 24 : 32
+  const scrollPaddingBottom = keyboardHeight > 0 ? keyboardHeight + 24 : basePaddingBottom
 
   return {
     scrollPaddingBottom,

@@ -1,20 +1,17 @@
 import { useMemo, useRef, useState } from 'react'
-import { ActivityIndicator, ScrollView, Text, TextInput, View } from 'react-native'
+import { ActivityIndicator, Text, TextInput, View } from 'react-native'
 import { LinearGradient } from 'expo-linear-gradient'
 import { PLATFORM_GRADIENT, PLATFORM_GRADIENT_LOCATIONS } from '@/lib/brandTheme'
 import { Search } from 'lucide-react-native'
-import { useSafeAreaInsets } from 'react-native-safe-area-context'
 import { A11yScreen } from '@/components/layout/A11yScreen'
-import { TabScreenShell } from '@/components/layout/TabScreenShell'
+import { TabScreenShell, TabScrollView } from '@/components/layout/TabScreenShell'
 import { ContentGrid } from '@/features/conteudos/ContentGrid'
 import { useAllConteudos } from '@/features/conteudos/useConteudos'
 import { SCREEN_HORIZONTAL_PADDING } from '@/lib/layout'
 
 export default function PesquisaScreen() {
-  const insets = useSafeAreaInsets()
   const inputRef = useRef<TextInput>(null)
   const [busca, setBusca] = useState('')
-  const tabPadding = 72 + Math.max(insets.bottom, 12)
 
   const { data: catalogo = [], isLoading } = useAllConteudos(80)
 
@@ -38,11 +35,7 @@ export default function PesquisaScreen() {
           locations={[...PLATFORM_GRADIENT_LOCATIONS]}
           style={{ flex: 1 }}
         >
-          <ScrollView
-            contentContainerStyle={{ paddingTop: 12, paddingBottom: tabPadding }}
-            showsVerticalScrollIndicator={false}
-            keyboardShouldPersistTaps="handled"
-          >
+          <TabScrollView>
             <View style={{ paddingHorizontal: SCREEN_HORIZONTAL_PADDING }} className="mb-5">
               <Text className="font-sans-bold text-2xl text-brand-navy">Pesquisar</Text>
               <Text className="mt-1 font-sans text-sm text-text-muted">
@@ -96,7 +89,7 @@ export default function PesquisaScreen() {
                 />
               </>
             )}
-          </ScrollView>
+          </TabScrollView>
         </LinearGradient>
       </TabScreenShell>
     </A11yScreen>

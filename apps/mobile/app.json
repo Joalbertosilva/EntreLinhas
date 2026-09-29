@@ -22,7 +22,8 @@
         "foregroundImage": "./assets/images/favicon.png",
         "backgroundColor": "#e5f7f3"
       },
-      "package": "com.cesmac.entrelinhas"
+      "package": "com.cesmac.entrelinhas",
+      "softwareKeyboardLayoutMode": "resize"
     },
     "web": {
       "bundler": "metro",

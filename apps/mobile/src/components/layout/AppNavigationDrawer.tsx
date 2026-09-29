@@ -15,6 +15,7 @@ import {
   type DrawerNavItem,
 } from '@/features/app/accountMenu'
 import { DRAWER_GRADIENT, DRAWER_GRADIENT_LOCATIONS } from '@/lib/brandTheme'
+import { useGoHome } from '@/lib/useGoHome'
 import { useAuth } from '@/providers/AuthProvider'
 
 const DRAWER_WIDTH = '88%'
@@ -25,12 +26,18 @@ export function AppNavigationDrawer() {
   const { profile } = useAuth()
   const { drawerOpen, closeDrawer, openAccount } = useAppShell()
   const { setModeEnabled } = useAccessibility()
+  const goHome = useGoHome()
   const firstName = profile?.nome.split(' ')[0] ?? 'Leitor'
   const perfilLabel = profile?.perfil ? PERFIL_LABELS[profile.perfil] : 'Aluno'
 
   const navigate = (href: string) => {
     closeDrawer()
     router.push(href as Href)
+  }
+
+  const handleGoHome = () => {
+    closeDrawer()
+    goHome()
   }
 
   return (
@@ -62,7 +69,13 @@ export function AppNavigationDrawer() {
                   paddingBottom: 16,
                 }}
               >
-                <View style={{ flexDirection: 'row', alignItems: 'center', gap: 12 }}>
+                <Pressable
+                  onPress={handleGoHome}
+                  accessibilityRole="button"
+                  accessibilityLabel="Ir para início"
+                  style={{ flexDirection: 'row', alignItems: 'center', gap: 12, flex: 1 }}
+                  className="active:opacity-80"
+                >
                   <BrandLogo variant="mark" showTagline={false} markSize={40} backdrop="dark" />
                   <View>
                     <Text style={{ fontFamily: 'PlusJakartaSans_700Bold', fontSize: 17, color: '#fff' }}>
@@ -72,7 +85,7 @@ export function AppNavigationDrawer() {
                       Olá, {firstName}
                     </Text>
                   </View>
-                </View>
+                </Pressable>
                 <Pressable
                   onPress={closeDrawer}
                   accessibilityLabel="Fechar menu"

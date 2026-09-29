@@ -1,10 +1,9 @@
-import { ScrollView, Text } from 'react-native'
+import { Text } from 'react-native'
 import { Speakable } from '@/features/accessibility/Speakable'
 import { LinearGradient } from 'expo-linear-gradient'
 import { PLATFORM_GRADIENT, PLATFORM_GRADIENT_LOCATIONS } from '@/lib/brandTheme'
-import { useSafeAreaInsets } from 'react-native-safe-area-context'
 import { A11yScreen } from '@/components/layout/A11yScreen'
-import { TabScreenShell } from '@/components/layout/TabScreenShell'
+import { TabScreenShell, TabScrollView } from '@/components/layout/TabScreenShell'
 import { ContentSectionRail } from '@/features/conteudos/ContentSectionRail'
 import { HOME_SECTIONS } from '@/features/conteudos/homeSections'
 import { ContinueReadingSection } from '@/features/home/ContinueReadingSection'
@@ -21,12 +20,10 @@ import { useAuth } from '@/providers/AuthProvider'
 const CATALOG_SECTIONS = HOME_SECTIONS.filter((section) => section.id !== 'destaques')
 
 export default function HomeScreen() {
-  const insets = useSafeAreaInsets()
   const { profile } = useAuth()
   const { data: progress } = useAlunoProgress(profile?.id)
   const { data: minhaObra, isLoading: obraLoading } = useMinhaObra(profile?.id)
   const firstName = profile?.nome?.split(' ')[0] ?? 'leitor'
-  const tabPadding = 72 + Math.max(insets.bottom, 12)
   const subtitulo = progress ? mensagemAcolhedora(progress) : 'Sua jornada de leitura começa aqui.'
 
   const greetingLabel = `${getTimeGreeting()}, ${firstName}. ${subtitulo}`
@@ -39,13 +36,7 @@ export default function HomeScreen() {
           locations={[...PLATFORM_GRADIENT_LOCATIONS]}
           style={{ flex: 1 }}
         >
-          <ScrollView
-            contentContainerStyle={{
-              paddingTop: 12,
-              paddingBottom: tabPadding,
-            }}
-            showsVerticalScrollIndicator={false}
-          >
+          <TabScrollView>
             <Speakable
               label={greetingLabel}
               style={{ paddingHorizontal: SCREEN_HORIZONTAL_PADDING }}
@@ -68,7 +59,7 @@ export default function HomeScreen() {
           {CATALOG_SECTIONS.map((section) => (
             <ContentSectionRail key={section.id} section={section} />
           ))}
-          </ScrollView>
+          </TabScrollView>
         </LinearGradient>
       </TabScreenShell>
     </A11yScreen>

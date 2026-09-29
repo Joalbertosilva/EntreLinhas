@@ -5,7 +5,8 @@ import { AnimatedSplash } from '@/components/splash/AnimatedSplash'
 import { fetchAuthProfile, resolvePostLoginRoute } from '@/lib/authSession'
 import { supabase } from '@/lib/supabase'
 
-const MIN_SPLASH_MS = 3000
+/** Tempo mínimo para a marca aparecer; não bloqueia além do necessário. */
+const MIN_SPLASH_MS = 1600
 
 async function resolveInitialRoute(): Promise<string> {
   const { data } = await supabase.auth.getSession()

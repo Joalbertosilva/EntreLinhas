@@ -1,6 +1,6 @@
 import { Controller } from 'react-hook-form'
 import { useRouter } from 'expo-router'
-import { KeyboardAvoidingView, Platform, Pressable, ScrollView, Text, View } from 'react-native'
+import { KeyboardAvoidingView, Pressable, ScrollView, Text, View } from 'react-native'
 import { LinearGradient } from 'expo-linear-gradient'
 import { SPLASH_GRADIENT, SPLASH_GRADIENT_LOCATIONS } from '@/lib/brandTheme'
 import { Lock, User } from 'lucide-react-native'
@@ -13,6 +13,7 @@ import { Input } from '@/components/ui/Input'
 import { PasswordInput } from '@/components/ui/PasswordInput'
 import { useAccessibility } from '@/features/accessibility/AccessibilityProvider'
 import { useLogin } from '@/features/auth/useLogin'
+import { KEYBOARD_AVOIDING_BEHAVIOR } from '@/lib/layout'
 
 export function LoginScreen() {
   const router = useRouter()
@@ -29,10 +30,7 @@ export function LoginScreen() {
         locations={[...SPLASH_GRADIENT_LOCATIONS]}
         style={{ flex: 1, paddingTop: insets.top, paddingBottom: insets.bottom }}
       >
-        <KeyboardAvoidingView
-          behavior={Platform.OS === 'ios' ? 'padding' : undefined}
-          className="flex-1"
-        >
+        <KeyboardAvoidingView behavior={KEYBOARD_AVOIDING_BEHAVIOR} className="flex-1">
           <ScrollView
             contentContainerClassName="flex-grow justify-center px-6 py-8"
             keyboardShouldPersistTaps="handled"

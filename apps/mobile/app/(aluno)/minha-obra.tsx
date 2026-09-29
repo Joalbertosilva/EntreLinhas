@@ -58,6 +58,7 @@ import {
 import { capaImageUri } from '@/lib/imageUrl'
 import { uploadObraCoverFromBase64 } from '@/lib/storage'
 import { cn } from '@/lib/cn'
+import { stackScrollPaddingBottom } from '@/lib/layout'
 import { useAuth } from '@/providers/AuthProvider'
 
 const TIPOS: Array<{ id: TipoObra; icon: typeof BookOpen }> = [
@@ -321,7 +322,10 @@ export default function MinhaObraScreen() {
             <Text className="mt-3 font-sans text-sm text-text-muted">Preparando seu espaço de escrita…</Text>
           </View>
         ) : obra ? (
-          <ScrollView contentContainerStyle={{ paddingBottom: insets.bottom + 24 }}>
+          <ScrollView
+            keyboardShouldPersistTaps="handled"
+            contentContainerStyle={{ paddingBottom: stackScrollPaddingBottom(insets) }}
+          >
             {isPublicada ? (
               <View className="mx-5 mt-4 flex-row items-center gap-2 rounded-xl bg-success/10 px-4 py-2">
                 <Globe color="#15803d" size={16} />

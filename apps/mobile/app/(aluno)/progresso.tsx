@@ -2,7 +2,6 @@ import { Stack } from 'expo-router'
 import { LinearGradient } from 'expo-linear-gradient'
 import { BookOpen, Sparkles, Trophy } from 'lucide-react-native'
 import { ActivityIndicator, ScrollView, Text, View } from 'react-native'
-import { useSafeAreaInsets } from 'react-native-safe-area-context'
 import { A11yScreen } from '@/components/layout/A11yScreen'
 import { ScreenBackHeader } from '@/components/layout/ScreenBackHeader'
 import { useAlunoProgress } from '@/features/progress/useAlunoProgress'
@@ -15,10 +14,11 @@ import {
 } from '@/lib/alunoProgress'
 import { mensagemAcolhedora, paletaLivroCinematico, resumoLeituras } from '@/lib/progressCopy'
 import { SCREEN_HORIZONTAL_PADDING } from '@/lib/layout'
+import { useStackScreenInsets } from '@/lib/useStackScreenInsets'
 import { useAuth } from '@/providers/AuthProvider'
 
 export default function ProgressoScreen() {
-  const insets = useSafeAreaInsets()
+  const { insets, scrollPaddingBottom } = useStackScreenInsets()
   const { profile } = useAuth()
   const { data: progress, isLoading } = useAlunoProgress(profile?.id)
 
@@ -36,7 +36,7 @@ export default function ProgressoScreen() {
               <ActivityIndicator color="#1c756a" size="large" />
             </View>
           ) : !progress || !paleta ? null : (
-            <ScrollView contentContainerStyle={{ paddingBottom: insets.bottom + 32 }}>
+            <ScrollView contentContainerStyle={{ paddingBottom: scrollPaddingBottom }}>
               <View style={{ paddingHorizontal: SCREEN_HORIZONTAL_PADDING, paddingTop: 20 }}>
                 <LinearGradient
                   colors={[paleta.ambiente, `${paleta.ambiente}dd`]}

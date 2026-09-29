@@ -5,7 +5,6 @@ import { useRef } from 'react'
 import { ActivityIndicator, Linking, Pressable, ScrollView, Text, View } from 'react-native'
 import { Speakable } from '@/features/accessibility/Speakable'
 import { ExternalLink, FileText } from 'lucide-react-native'
-import { useSafeAreaInsets } from 'react-native-safe-area-context'
 import { A11yScreen } from '@/components/layout/A11yScreen'
 import { ScreenBackHeader } from '@/components/layout/ScreenBackHeader'
 import {
@@ -25,11 +24,12 @@ import { buildBookPages } from '@/features/reader/bookPagination'
 import { DETAIL_COVER_HEIGHT, SCREEN_HORIZONTAL_PADDING } from '@/lib/layout'
 import { TIPO_CONTEUDO_LABEL, TIPO_MATERIAL_LABEL } from '@/lib/labels'
 import { useKeyboardAwareScroll } from '@/lib/useKeyboardAwareScroll'
+import { useStackScreenInsets } from '@/lib/useStackScreenInsets'
 import { useAuth } from '@/providers/AuthProvider'
 
 export default function ConteudoDetailScreen() {
   const { id } = useLocalSearchParams<{ id: string }>()
-  const insets = useSafeAreaInsets()
+  const { insets, scrollPaddingBottom: stackScrollPadding } = useStackScreenInsets()
   const { profile } = useAuth()
   const { data, isLoading, isError } = useConteudoDetail(id)
   const { data: temas = [] } = useConteudoTemas(id)
@@ -59,7 +59,7 @@ export default function ConteudoDetailScreen() {
   const scrollRef = useRef<ScrollView>(null)
   const scrollViewportRef = useRef<View>(null)
   const { scrollPaddingBottom, scrollToEnd, scrollFieldIntoView, onScroll, updateScrollViewPosition } =
-    useKeyboardAwareScroll(scrollRef, scrollViewportRef)
+    useKeyboardAwareScroll(scrollRef, scrollViewportRef, { basePaddingBottom: stackScrollPadding })
 
   return (
     <>
@@ -88,7 +88,7 @@ export default function ConteudoDetailScreen() {
                 keyboardDismissMode="interactive"
                 onScroll={onScroll}
                 scrollEventThrottle={16}
-                contentContainerStyle={{ paddingBottom: insets.bottom + scrollPaddingBottom }}
+                contentContainerStyle={{ paddingBottom: scrollPaddingBottom }}
               >
                 <LinearGradient
                   colors={['#e8f7f4', '#fafefc', '#ffffff']}

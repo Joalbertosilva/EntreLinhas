@@ -5,9 +5,8 @@ import { LinearGradient } from 'expo-linear-gradient'
 import { PLATFORM_GRADIENT, PLATFORM_GRADIENT_LOCATIONS } from '@/lib/brandTheme'
 import { Search } from 'lucide-react-native'
 import type { TipoConteudo } from '@tcc-sistema/types'
-import { useSafeAreaInsets } from 'react-native-safe-area-context'
 import { A11yScreen } from '@/components/layout/A11yScreen'
-import { TabScreenShell } from '@/components/layout/TabScreenShell'
+import { TabScreenShell, TabScrollView } from '@/components/layout/TabScreenShell'
 import { Input } from '@/components/ui/Input'
 import { ContentGrid } from '@/features/conteudos/ContentGrid'
 import { HOME_SECTIONS } from '@/features/conteudos/homeSections'
@@ -29,11 +28,9 @@ const FILTROS: Array<{ id: FiltroExplorar; label: string }> = [
 const TIPOS_VALIDOS = new Set<TipoConteudo>(['livro', 'cronica', 'musica', 'poema'])
 
 export default function ExplorarScreen() {
-  const insets = useSafeAreaInsets()
   const { tipo } = useLocalSearchParams<{ tipo?: string }>()
   const [filtro, setFiltro] = useState<FiltroExplorar>('todos')
   const [busca, setBusca] = useState('')
-  const tabPadding = 72 + Math.max(insets.bottom, 12)
 
   useEffect(() => {
     if (tipo && TIPOS_VALIDOS.has(tipo as TipoConteudo)) {
@@ -79,10 +76,7 @@ export default function ExplorarScreen() {
           locations={[...PLATFORM_GRADIENT_LOCATIONS]}
           style={{ flex: 1 }}
         >
-          <ScrollView
-            contentContainerStyle={{ paddingTop: 12, paddingBottom: tabPadding }}
-            showsVerticalScrollIndicator={false}
-          >
+          <TabScrollView>
             <View style={{ paddingHorizontal: SCREEN_HORIZONTAL_PADDING }} className="mb-5">
             <Text className="font-sans-semibold text-xs uppercase tracking-wider text-text-muted">
               Explorar
@@ -156,7 +150,7 @@ export default function ExplorarScreen() {
               <ObrasSectionRail />
             </View>
           )}
-          </ScrollView>
+          </TabScrollView>
         </LinearGradient>
       </TabScreenShell>
     </A11yScreen>

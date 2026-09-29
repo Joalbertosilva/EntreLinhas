@@ -3,7 +3,6 @@ import { Image } from 'expo-image'
 import { useRef } from 'react'
 import { ActivityIndicator, Pressable, ScrollView, Text, View } from 'react-native'
 import { BookOpen, Heart, PenLine } from 'lucide-react-native'
-import { useSafeAreaInsets } from 'react-native-safe-area-context'
 import { ObraEngagementSection } from '@/features/engagement/ObraEngagementSection'
 import { useObraPublica } from '@/features/obras/useObraPublica'
 import { useAuth } from '@/providers/AuthProvider'
@@ -14,16 +13,19 @@ import { ScreenBackHeader } from '@/components/layout/ScreenBackHeader'
 import { capaImageUri } from '@/lib/imageUrl'
 import { DETAIL_COVER_HEIGHT, SCREEN_HORIZONTAL_PADDING } from '@/lib/layout'
 import { useKeyboardAwareScroll } from '@/lib/useKeyboardAwareScroll'
+import { useStackScreenInsets } from '@/lib/useStackScreenInsets'
 import { TIPO_OBRA_LABEL } from '@/lib/obraLabels'
 
 export default function ObraDetailScreen() {
   const { id } = useLocalSearchParams<{ id: string }>()
-  const insets = useSafeAreaInsets()
+  const { insets, scrollPaddingBottom: stackScrollPadding } = useStackScreenInsets()
   const { profile } = useAuth()
   const { data, isLoading, isError } = useObraPublica(id)
   const scrollRef = useRef<ScrollView>(null)
   const scrollViewportRef = useRef<View>(null)
-  const { scrollPaddingBottom, scrollToEnd } = useKeyboardAwareScroll(scrollRef, scrollViewportRef)
+  const { scrollPaddingBottom, scrollToEnd } = useKeyboardAwareScroll(scrollRef, scrollViewportRef, {
+    basePaddingBottom: stackScrollPadding,
+  })
 
   const bookPages =
     data?.capitulos
@@ -61,7 +63,7 @@ export default function ObraDetailScreen() {
                 style={{ flex: 1 }}
                 keyboardShouldPersistTaps="handled"
                 keyboardDismissMode="interactive"
-                contentContainerStyle={{ paddingBottom: insets.bottom + scrollPaddingBottom }}
+                contentContainerStyle={{ paddingBottom: scrollPaddingBottom }}
               >
                 <View
                   className="items-center bg-accent-light/40 py-6"
