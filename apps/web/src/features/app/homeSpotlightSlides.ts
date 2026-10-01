@@ -44,7 +44,20 @@ type SpotlightPromoVideoSlide = {
   anchor: CatalogAnchor
 }
 
-export type SpotlightSlide = SpotlightContentSlide | SpotlightPromoNewSlide | SpotlightPromoVideoSlide
+type SpotlightPromoObraSlide = {
+  id: string
+  kind: 'promo-obra'
+  caption: string
+  badge: string
+  headline: string
+  deck: string
+}
+
+export type SpotlightSlide =
+  | SpotlightContentSlide
+  | SpotlightPromoNewSlide
+  | SpotlightPromoVideoSlide
+  | SpotlightPromoObraSlide
 
 export const SPOTLIGHT_READING_TIPOS: TipoConteudo[] = ['livro', 'cronica', 'musica', 'poema']
 
@@ -122,10 +135,22 @@ function buildPromoVideoSlide(
   }
 }
 
+function buildPromoObraSlide(): SpotlightPromoObraSlide {
+  return {
+    id: 'promo-obra',
+    kind: 'promo-obra',
+    caption: 'Minha obra',
+    badge: 'Escreva e publique',
+    headline: 'Sua história merece ser lida',
+    deck: 'Crie capítulos, revise no seu ritmo e publique para a comunidade EntreLinhas conhecer sua voz.',
+  }
+}
+
 export function buildSpotlightSlides(options: {
   byTipo: Partial<Record<TipoConteudo, SpotlightConteudoData[]>>
   newestContent?: SpotlightConteudoData | null
   promoVideos?: Array<{ video: SpotlightConteudoData; anchor: CatalogAnchor }>
+  includeObraPromo?: boolean
   maxSlides?: number
 }): SpotlightSlide[] {
   const contentSlides: SpotlightContentSlide[] = []
@@ -164,12 +189,18 @@ export function buildSpotlightSlides(options: {
   }
 
   const merged = insertAtRandomPositions(contentSlides, promos)
-  return merged.slice(0, maxSlides + promos.length)
+  const withObra =
+    options.includeObraPromo !== false
+      ? insertAtRandomPositions(merged, [buildPromoObraSlide()])
+      : merged
+
+  return withObra.slice(0, maxSlides + promos.length + 1)
 }
 
 export function spotlightDeckText(slide: SpotlightSlide): string {
   if (slide.kind === 'promo-new') return slide.deck
   if (slide.kind === 'promo-video') return slide.deck
+  if (slide.kind === 'promo-obra') return slide.deck
 
   const { conteudo, isContinueReading } = slide
   const fromDb = conteudo.descricao?.trim() || conteudo.resumo?.trim()

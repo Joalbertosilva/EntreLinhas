@@ -1,5 +1,6 @@
 import { createFileRoute } from '@tanstack/react-router'
 import { useEffect, useState } from 'react'
+import { AuthLegalFooter } from '@/components/layout/AuthLegalFooter'
 import { AuthSplitLayout } from '@/components/layout/AuthSplitLayout'
 import { SkipLink } from '@/components/ui/SkipLink'
 import { supabase } from '@/lib/supabase'
@@ -7,8 +8,6 @@ import {
   AuthBackLink,
   AuthFormPanel,
   AuthPageHeader,
-  BRAND_INSTITUTION,
-  BRAND_NAME,
   LoginHeroPanel,
   ResetPasswordForm,
   useResetPassword,
@@ -52,11 +51,7 @@ function ResetPasswordPage() {
       <SkipLink href="#reset-password-form" />
       <AuthSplitLayout
         hero={<LoginHeroPanel />}
-        footer={
-          <footer className="border-t border-brand-navy/10 px-6 py-3.5 text-center text-xs text-text-muted">
-            © {new Date().getFullYear()} {BRAND_NAME} · {BRAND_INSTITUTION}
-          </footer>
-        }
+        footer={<AuthLegalFooter />}
       >
         <div className="page-enter w-full">
           <AuthFormPanel className="space-y-5">

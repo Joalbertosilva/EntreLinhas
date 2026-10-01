@@ -7,6 +7,7 @@ import { conteudoFormSchema, type ConteudoFormInput } from '@tcc-sistema/schemas
 import type { Conteudo, TipoConteudo } from '@tcc-sistema/types'
 import { BookOpen, Music, PenLine, Quote, Video } from 'lucide-react'
 import { CONTEUDO_TIPOS_PLATAFORMA } from '@tcc-sistema/types'
+import { defaultConteudoCoverUrl } from '@/lib/conteudoCover'
 import { supabase } from '@/lib/supabase'
 import { deleteCoverByUrl, uploadCover } from '@/lib/storage'
 import { logAudit } from '@/lib/audit'
@@ -135,10 +136,22 @@ export function ContentFormDialog({
     plataformaTipo !== 'video' ? plataformaTipo : null
 
   useEffect(() => {
+    if (!open || isEditing || coverFile) return
+    const defaultCover = defaultConteudoCoverUrl(tipo)
+    if (defaultCover) {
+      setCoverUrl(defaultCover)
+      setValue('capa_url', defaultCover)
+    }
+  }, [tipo, open, isEditing, coverFile, setValue])
+
+  useEffect(() => {
     if (open) {
       reset(conteudo ? toFormValues(conteudo) : buildDefaultValues(defaultTipo))
       setCoverFile(null)
-      setCoverUrl(conteudo?.capa_url ?? null)
+      const initialCover =
+        conteudo?.capa_url ??
+        (!conteudo && defaultTipo ? defaultConteudoCoverUrl(defaultTipo) : null)
+      setCoverUrl(initialCover)
 
       if (conteudo?.id && shouldSyncReflexao(conteudo.tipo)) {
         void loadReflexaoFields(conteudo.id).then(
@@ -208,7 +221,8 @@ export function ContentFormDialog({
         return { id: conteudo.id, titulo: input.titulo, action: 'atualizar' as const }
       }
 
-      const payload = toDbPayload(input, user.id, false, null)
+      const presetCover = !coverFile ? defaultConteudoCoverUrl(input.tipo) : null
+      const payload = toDbPayload(input, user.id, false, presetCover ?? coverUrl)
       const { data: inserted, error } = await supabase
         .from('conteudos')
         .insert(payload)

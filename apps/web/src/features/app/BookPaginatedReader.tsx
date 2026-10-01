@@ -113,32 +113,32 @@ export function BookPaginatedReader({ pages, conteudoId, titulo, storageKey: sto
           type="button"
           variant="outline"
           size="sm"
-          className="book-page-nav rounded-full"
+          className="book-page-nav book-page-nav--prev rounded-full"
           disabled={atStart || Boolean(turn)}
           onClick={() => goTo('prev')}
           aria-label="Página anterior"
         >
           <ChevronLeft className="h-4 w-4" aria-hidden />
-          Anterior
+          <span className="book-page-nav__label">Anterior</span>
         </Button>
 
         <div className="book-page-indicator text-center">
           <p className="text-sm font-semibold text-brand-navy">
             Página {pageIndex + 1} de {pages.length}
           </p>
-          <p className="mt-0.5 text-xs text-text-muted">{current.title}</p>
+          <p className="mt-0.5 hidden text-xs text-text-muted sm:block">{current.title}</p>
         </div>
 
         <Button
           type="button"
           variant="outline"
           size="sm"
-          className="book-page-nav rounded-full"
+          className="book-page-nav book-page-nav--next rounded-full"
           disabled={atEnd || Boolean(turn)}
           onClick={() => goTo('next')}
           aria-label="Próxima página"
         >
-          Próxima
+          <span className="book-page-nav__label">Próxima</span>
           <ChevronRight className="h-4 w-4" aria-hidden />
         </Button>
       </footer>

@@ -59,7 +59,11 @@ export function LegalPageLayout({
         <p>
           © {year} {BRAND_NAME} · {BRAND_INSTITUTION}
         </p>
-        <p className="mt-1">
+        <p className="mt-1 flex flex-wrap items-center justify-center gap-x-3 gap-y-1">
+          <Link to="/sobre" className="font-medium text-primary hover:underline">
+            Sobre nós
+          </Link>
+          <span aria-hidden>·</span>
           <Link to="/privacidade" className="font-medium text-primary hover:underline">
             Política de privacidade
           </Link>

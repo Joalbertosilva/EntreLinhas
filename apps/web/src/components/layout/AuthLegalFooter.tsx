@@ -5,12 +5,12 @@ export function AuthLegalFooter() {
   const year = new Date().getFullYear()
 
   return (
-    <footer className="border-t border-primary/10 px-6 py-3.5 text-center text-xs text-text-muted">
-      <p>
+    <footer className="auth-legal-footer px-1 py-1 text-center text-xs lg:text-left">
+      <p className="auth-legal-footer__copy">
         © {year} {BRAND_NAME} · {BRAND_INSTITUTION}
       </p>
-      <p className="mt-1.5">
-        <Link to="/privacidade" className="font-medium text-primary hover:underline">
+      <p className="auth-legal-footer__policy mt-1.5">
+        <Link to="/privacidade" className="auth-legal-footer__link">
           Política de privacidade
         </Link>
       </p>

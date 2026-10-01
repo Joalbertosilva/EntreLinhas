@@ -20,6 +20,8 @@ const TIPO_META: Record<
 interface HomeObraCardProps {
   obra: MinhaObraResumo | null
   isLoading?: boolean
+  /** Preenche o painel da home em linha (capa + texto lado a lado). */
+  variant?: 'default' | 'row'
 }
 
 function ObraCoverImage({
@@ -65,12 +67,17 @@ function ObraCoverImage({
   )
 }
 
-export function HomeObraCard({ obra, isLoading }: HomeObraCardProps) {
+export function HomeObraCard({ obra, isLoading, variant = 'default' }: HomeObraCardProps) {
+  const cardClass = cn(
+    'home-obra-card group block no-underline',
+    variant === 'row' ? 'home-obra-card--row' : 'max-w-[16rem]',
+  )
+
   if (isLoading) {
     return (
-      <div className="home-obra-card animate-pulse">
+      <div className={cn('home-obra-card animate-pulse', variant === 'row' && 'home-obra-card--row')}>
         <div className="aspect-[2/3] w-full max-w-[11.5rem] rounded-xl bg-primary-light/40" />
-        <div className="mt-4 h-5 w-2/3 rounded-lg bg-primary-light/50" />
+        <div className="home-obra-card__body mt-4 h-5 w-2/3 rounded-lg bg-primary-light/50" />
         <div className="mt-2 h-4 w-1/2 rounded-lg bg-primary-light/30" />
       </div>
     )
@@ -78,13 +85,13 @@ export function HomeObraCard({ obra, isLoading }: HomeObraCardProps) {
 
   if (!obra) {
     return (
-      <Link to="/app/minha-obra" className="home-obra-card group block max-w-[16rem] no-underline">
+      <Link to="/app/minha-obra" className={cardClass}>
         <ObraCoverImage
           src={DEFAULT_OBRA_COVER}
           alt="Ilustração de mãos escrevendo em um caderno — capa padrão da sua obra"
           badge="Sua obra"
         />
-        <div className="mt-4">
+        <div className="home-obra-card__body mt-4">
           <p className="text-base font-semibold text-text group-hover:text-primary">Comece sua obra</p>
           <p className="mt-1 text-base leading-relaxed text-text-muted">
             Livro, crônica ou poema — seu espaço de escrita.
@@ -102,14 +109,14 @@ export function HomeObraCard({ obra, isLoading }: HomeObraCardProps) {
     : `Capa padrão de ${obra.titulo}`
 
   return (
-    <Link to="/app/minha-obra" className="home-obra-card group block max-w-[16rem] no-underline">
+    <Link to="/app/minha-obra" className={cardClass}>
       <ObraCoverImage
         src={coverSrc}
         alt={coverAlt}
         badge={!obra.capa_url ? 'Capa padrão' : undefined}
         tipoLabel={meta.label}
       />
-      <div className="mt-4">
+      <div className="home-obra-card__body mt-4">
         <h3 className="line-clamp-2 text-base font-semibold leading-snug text-text group-hover:text-primary">
           {obra.titulo}
         </h3>

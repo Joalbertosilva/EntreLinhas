@@ -1,5 +1,6 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import type { CategoriaObra, TipoObra, TipoProducao } from '@tcc-sistema/types'
+import { DEFAULT_OBRA_COVER } from '@/lib/obraCover'
 import { supabase } from '@/lib/supabase'
 
 export interface ObraCapitulo {
@@ -159,6 +160,7 @@ export async function ensureMinhaObra(userId: string, defaultTitle: string) {
       titulo: defaultTitle,
       descricao: null,
       tipo: 'livro',
+      capa_url: DEFAULT_OBRA_COVER,
     })
     .select(OBRA_FIELDS)
     .single()
@@ -367,6 +369,35 @@ export function useDespublicarObra(userId: string | undefined) {
       if (error) throw error
     },
     onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['minha-obra-editor', userId] })
+      queryClient.invalidateQueries({ queryKey: ['obras-publicas'] })
+    },
+  })
+}
+
+export function useExcluirObra(userId: string | undefined) {
+  const queryClient = useQueryClient()
+
+  return useMutation({
+    mutationFn: async (obraId: string) => {
+      const { error: producoesError } = await supabase
+        .from('producoes')
+        .delete()
+        .eq('obra_id', obraId)
+        .eq('usuario_id', userId!)
+
+      if (producoesError) throw producoesError
+
+      const { error } = await supabase
+        .from('obras')
+        .delete()
+        .eq('id', obraId)
+        .eq('usuario_id', userId!)
+
+      if (error) throw error
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['minha-obra', userId] })
       queryClient.invalidateQueries({ queryKey: ['minha-obra-editor', userId] })
       queryClient.invalidateQueries({ queryKey: ['obras-publicas'] })
     },

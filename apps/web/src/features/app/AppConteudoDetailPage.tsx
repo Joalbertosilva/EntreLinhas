@@ -38,6 +38,7 @@ import { Card, CardContent } from '@/components/ui/Card'
 import { Skeleton } from '@/components/ui/Skeleton'
 import { TIPO_CONTEUDO_LABEL, TIPO_MATERIAL_LABEL } from '@/lib/labels'
 import { STATUS_LEITURA_LABEL } from '@/lib/leituraLabels'
+import { resolveConteudoCoverUrl } from '@/lib/conteudoCover'
 import { cn } from '@/lib/utils'
 
 const TIPO_META: Record<TipoConteudo, { icon: typeof BookMarked; tint: string }> = {
@@ -127,7 +128,7 @@ export function AppConteudoDetailPage({ conteudoId }: AppConteudoDetailPageProps
       : []),
   ]
 
-  const isLivro = conteudo.tipo === 'livro'
+  const isKindleLayout = ['livro', 'cronica', 'poema', 'musica'].includes(conteudo.tipo)
 
   if (conteudo.tipo === 'video') {
     return (
@@ -135,7 +136,7 @@ export function AppConteudoDetailPage({ conteudoId }: AppConteudoDetailPageProps
     )
   }
 
-  if (isLivro) {
+  if (isKindleLayout) {
     return (
       <LivroDetailPage
         conteudo={conteudoComCurtidas}
@@ -314,6 +315,7 @@ function MusicaLinkPanel({ url }: { url: string }) {
 function ConteudoHero({ conteudo, compact = false }: { conteudo: Conteudo; compact?: boolean }) {
   const meta = TIPO_META[conteudo.tipo]
   const Icon = meta.icon
+  const coverUrl = resolveConteudoCoverUrl(conteudo)
 
   return (
     <Card className="border-primary/10 bg-white/85 backdrop-blur-sm">
@@ -321,9 +323,9 @@ function ConteudoHero({ conteudo, compact = false }: { conteudo: Conteudo; compa
         <div className="flex flex-col gap-6 sm:flex-row sm:items-start">
           {!compact && (
           <div className="mx-auto shrink-0 sm:mx-0">
-            {conteudo.capa_url ? (
+            {coverUrl ? (
               <img
-                src={conteudo.capa_url}
+                src={coverUrl}
                 alt=""
                 className="aspect-[3/4] w-[140px] rounded-xl border border-primary/10 object-cover shadow-[var(--shadow-soft)] sm:w-[168px]"
               />
@@ -434,8 +436,14 @@ function LeituraPanel({
                   Ir para o texto
                 </Button>
               )}
-              <Button size="sm" onClick={() => onUpdate('concluido')}>
-                Marcar como concluída
+              <Button
+                size="sm"
+                variant="outline"
+                className="book-cta-secondary rounded-full px-4"
+                onClick={() => onUpdate('concluido')}
+              >
+                <CheckCircle2 className="h-3.5 w-3.5" aria-hidden />
+                Concluído
               </Button>
             </>
           )}
@@ -457,8 +465,9 @@ function LeituraPanel({
               <Button variant="outline" size="sm" onClick={() => onUpdate('na_lista')}>
                 Salvar para depois
               </Button>
-              <Button variant="secondary" size="sm" onClick={() => onUpdate('concluido')}>
-                Já li
+              <Button variant="outline" size="sm" className="book-cta-secondary rounded-full px-4" onClick={() => onUpdate('concluido')}>
+                <CheckCircle2 className="h-3.5 w-3.5" aria-hidden />
+                Concluído
               </Button>
             </>
           )}

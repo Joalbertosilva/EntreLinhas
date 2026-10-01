@@ -5,7 +5,7 @@ import { BRAND_INSTITUTION, BRAND_NAME, BRAND_TAGLINE } from '@/features/auth/br
 export function LoginHeroPanel() {
   return (
     <aside
-      className="login-brand-panel relative hidden min-h-0 w-full flex-col justify-center px-8 py-10 xl:px-16 lg:flex lg:min-h-screen lg:w-1/2 lg:shrink-0 lg:grow-0"
+      className="login-brand-panel relative hidden min-h-0 w-full flex-col justify-center px-8 py-10 xl:px-16 lg:flex lg:w-1/2 lg:shrink-0 lg:grow-0"
       aria-label={BRAND_NAME}
     >
       <div className="mx-auto w-full max-w-md lg:mx-0 lg:pl-6 xl:pl-10">

@@ -11,6 +11,7 @@ import {
   PenLine,
   Plus,
   Quote,
+  Trash2,
 } from 'lucide-react'
 import { useEffect, useRef, useState } from 'react'
 import { toast } from 'sonner'
@@ -21,6 +22,7 @@ import {
   obraTemConteudo,
   useAdicionarCapitulo,
   useDespublicarObra,
+  useExcluirObra,
   useMinhaObraEditor,
   usePublicarObra,
   useSalvarMinhaObra,
@@ -43,6 +45,7 @@ import { DEFAULT_OBRA_COVER } from '@/lib/obraCover'
 import { uploadObraCover, validateCoverFile } from '@/lib/storage'
 import { Badge } from '@/components/ui/Badge'
 import { Button } from '@/components/ui/Button'
+import { ConfirmDialog } from '@/components/ui/ConfirmDialog'
 import { Input } from '@/components/ui/Input'
 import { Label } from '@/components/ui/Label'
 import { Textarea } from '@/components/ui/Textarea'
@@ -65,7 +68,9 @@ export function MinhaObraEditorPage() {
   const adicionarCapitulo = useAdicionarCapitulo(profile?.id)
   const publicar = usePublicarObra(profile?.id)
   const despublicar = useDespublicarObra(profile?.id)
+  const excluirObra = useExcluirObra(profile?.id)
 
+  const [confirmDelete, setConfirmDelete] = useState(false)
   const [tituloObra, setTituloObra] = useState('')
   const [descricao, setDescricao] = useState('')
   const [capaUrl, setCapaUrl] = useState<string | null>(null)
@@ -331,6 +336,16 @@ export function MinhaObraEditorPage() {
                   Publicar obra
                 </Button>
               )}
+              <Button
+                variant="outline"
+                size="sm"
+                className="border-error/30 text-error hover:bg-error/5"
+                disabled={excluirObra.isPending}
+                onClick={() => setConfirmDelete(true)}
+              >
+                <Trash2 className="h-4 w-4" aria-hidden />
+                Apagar obra
+              </Button>
             </div>
           </div>
 
@@ -560,6 +575,24 @@ export function MinhaObraEditorPage() {
           ) : null}
         </div>
       </ScrollReveal>
+
+      <ConfirmDialog
+        open={confirmDelete}
+        onOpenChange={setConfirmDelete}
+        title="Apagar obra?"
+        description="Todos os capítulos e rascunhos serão removidos permanentemente. Você poderá começar uma nova obra depois."
+        confirmLabel="Apagar permanentemente"
+        loading={excluirObra.isPending}
+        onConfirm={() => {
+          if (!obra) return
+          void excluirObra.mutateAsync(obra.id).then(() => {
+            toast.success('Obra apagada. Um novo espaço será criado na próxima visita.')
+            setConfirmDelete(false)
+          }).catch(() => {
+            toast.error('Não foi possível apagar a obra')
+          })
+        }}
+      />
     </div>
   )
 }

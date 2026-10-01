@@ -1,7 +1,8 @@
 import { ContentCarousel } from '@/features/app/ContentCarousel'
 import { HomeCompactStats } from '@/features/app/HomeCompactStats'
 import { HomeContinueReading } from '@/features/app/HomeContinueReading'
-import { HomeSidebar } from '@/features/app/HomeSidebar'
+import { HomeProgressCard } from '@/features/app/HomeProgressCard'
+import { HomeWritingRow } from '@/features/app/HomeWritingRow'
 import { HomeSpotlight } from '@/features/app/HomeSpotlight'
 import { getTimeGreeting } from '@/features/app/greeting'
 import { HOME_SECTIONS } from '@/features/app/homeSections'
@@ -45,20 +46,25 @@ export function HomeHero({ userId, firstName }: HomeHeroProps) {
 
       <HomeSpotlight userId={userId} />
 
-      <section className="home-editorial" aria-label="Destaques e painel lateral">
-        <div className="home-editorial__inner">
+      <section className="home-editorial" aria-label="Destaques, nível e obras da comunidade">
+        <div className="home-editorial__inner home-editorial__inner--highlights">
           <div className="home-editorial__main">
             <div className="home-editorial__section-head">
-              <h2 className="home-editorial__section-title">Destaques para ler</h2>
+              <h2 className="home-editorial__section-title">Destaques do EntreLinhas</h2>
               <p className="home-editorial__section-deck">
-                Leituras e textos mais curtidos — até seis itens, sem vídeos.
+                Livros, crônicas, poemas e músicas mais curtidos — até doze itens em filas de quatro.
               </p>
             </div>
             <ContentCarousel section={destaques} showViewAll variant="hero" fadeTone="catalog" />
           </div>
 
-          <HomeSidebar
-            userId={userId}
+          <aside className="home-editorial__aside home-editorial__aside--jornada" aria-label="Sua jornada de leitura">
+            <HomeProgressCard userId={userId} />
+          </aside>
+        </div>
+
+        <div className="home-editorial__inner home-editorial__inner--writing">
+          <HomeWritingRow
             obra={obra ?? null}
             loadingObra={loadingObra}
             obrasComunidade={obrasComunidade}

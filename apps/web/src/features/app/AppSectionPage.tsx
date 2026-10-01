@@ -62,10 +62,14 @@ export function AppSectionPage({ item }: AppSectionPageProps) {
             title: item.label,
             subtitle: item.description,
             tipo: item.tipo,
-            placeholderCount: item.placeholderCount,
+            placeholderCount: item.placeholderCount ?? 8,
             route: item.to,
           }}
           showViewAll={false}
+          showSectionHeader={false}
+          layout="grid"
+          overrideConteudos={conteudos}
+          externalLoading={isLoading}
         />
       </ScrollReveal>
 

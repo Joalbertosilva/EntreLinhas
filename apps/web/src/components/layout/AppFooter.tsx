@@ -9,7 +9,10 @@ const FOOTER_NAV = [
   { to: '/app/perfil', label: 'Minha conta' },
 ] as const
 
-const FOOTER_LEGAL = [{ to: '/privacidade', label: 'Privacidade' }] as const
+const FOOTER_LEGAL = [
+  { to: '/app/sobre', label: 'Sobre nós' },
+  { to: '/privacidade', label: 'Privacidade' },
+] as const
 
 export function AppFooter() {
   const year = new Date().getFullYear()

@@ -43,7 +43,7 @@ const ACTIONS: Array<{
   },
   {
     status: 'concluido',
-    label: 'Marcar como lido',
+    label: 'Concluído',
     hint: 'Registrar como concluída',
     icon: CheckCircle2,
     tone: 'text-success',

@@ -30,27 +30,29 @@ function AppHomePage() {
     <div className="home-page">
       <HomeHero userId={profile?.id} firstName={firstName} />
 
-      <div className="home-catalog-header">
-        <div className="home-catalog-intro">
-          <div className="home-catalog-inner home-catalog-intro__row">
-            <div>
-              <h2 className="home-catalog-intro__title">Explore o catálogo</h2>
-              <p className="home-catalog-intro__text">
-                Livros, crônicas, poemas e músicas — vídeos aparecem no carrossel e nas faixas abaixo de
-                cada seção, conforme definido no painel.
-              </p>
+      <div className="home-catalog-shell">
+        <div className="home-catalog-header">
+          <div className="home-catalog-intro">
+            <div className="home-catalog-inner home-catalog-intro__row">
+              <div>
+                <h2 className="home-catalog-intro__title">Explore o catálogo</h2>
+                <p className="home-catalog-intro__text">
+                  Livros, crônicas, poemas e músicas — vídeos aparecem no carrossel e nos blocos abaixo de
+                  cada seção, conforme definido no painel.
+                </p>
+              </div>
             </div>
           </div>
         </div>
 
         <HomeSectionRailSticky />
-      </div>
 
-      <section className="home-catalog-band">
-        <div className="home-catalog-inner">
-          <HomeCatalogSections sections={CATALOG_SECTIONS} />
-        </div>
-      </section>
+        <section className="home-catalog-band">
+          <div className="home-catalog-inner">
+            <HomeCatalogSections sections={CATALOG_SECTIONS} />
+          </div>
+        </section>
+      </div>
     </div>
   )
 }

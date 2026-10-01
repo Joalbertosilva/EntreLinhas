@@ -24,7 +24,11 @@ export function HomeCatalogSections({ sections }: HomeCatalogSectionsProps) {
         return (
           <div key={section.id}>
             <ScrollReveal delayMs={Math.min(index * 60, 240)}>
-              <ContentCarousel section={section} fadeTone="catalog" />
+              <ContentCarousel
+                section={section}
+                layout="grid"
+                gridLimit={section.placeholderCount}
+              />
             </ScrollReveal>
 
             {anchor && (

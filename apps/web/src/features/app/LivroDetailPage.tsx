@@ -13,7 +13,7 @@ import {
   Sparkles,
 } from 'lucide-react'
 import { toast } from 'sonner'
-import type { Conteudo, MaterialComplementar, StatusLeitura, Tema } from '@tcc-sistema/types'
+import type { Conteudo, MaterialComplementar, StatusLeitura, Tema, TipoConteudo } from '@tcc-sistema/types'
 import { BookPaginatedReader } from '@/features/app/BookPaginatedReader'
 import { buildBookPages } from '@/features/app/bookPagination'
 import { BookReadingShell } from '@/features/app/BookReadingShell'
@@ -23,9 +23,12 @@ import {
 } from '@/features/app/ConteudoInteracoesSections'
 import { ScrollReveal } from '@/features/app/ScrollReveal'
 import { scrollToConteudoTexto, useMinhaCurtida, useToggleCurtida } from '@/features/app/useConteudoEngagement'
+import { YouTubeEmbed } from '@/components/media/YouTubeEmbed'
 import { Badge } from '@/components/ui/Badge'
 import { Button } from '@/components/ui/Button'
-import { TIPO_MATERIAL_LABEL } from '@/lib/labels'
+import { resolveConteudoCoverUrl } from '@/lib/conteudoCover'
+import { TIPO_CONTEUDO_LABEL, TIPO_MATERIAL_LABEL } from '@/lib/labels'
+import { isYouTubeUrl } from '@/lib/youtube'
 import { STATUS_LEITURA_LABEL } from '@/lib/leituraLabels'
 import { cn } from '@/lib/utils'
 
@@ -102,6 +105,19 @@ export function LivroDetailPage({
           onLeitura={onLeitura}
         />
 
+        {conteudo.tipo === 'musica' && conteudo.video_url && isYouTubeUrl(conteudo.video_url) && (
+          <ScrollReveal delayMs={40}>
+            <section aria-label="Player de música" className="mx-auto max-w-3xl">
+              <YouTubeEmbed
+                url={conteudo.video_url}
+                title={conteudo.titulo}
+                allowSizeToggle
+                defaultSize="compact"
+              />
+            </section>
+          </ScrollReveal>
+        )}
+
         {journeySteps.length > 1 && (
           <ScrollReveal>
             <BookJourneyNav steps={journeySteps} />
@@ -168,11 +184,21 @@ function BookHero({
   const toggle = useToggleCurtida(conteudoId, usuarioId)
   const curtido = Boolean(minhaCurtida)
   const curtidas = conteudo.curtidas_count ?? 0
+  const coverUrl = resolveConteudoCoverUrl(conteudo)
+  const tipoLabel = TIPO_CONTEUDO_LABEL[conteudo.tipo]
+  const kicker =
+    conteudo.tipo === 'musica'
+      ? 'Ouça e leia a letra'
+      : conteudo.tipo === 'poema'
+        ? 'Seu poema'
+        : conteudo.tipo === 'cronica'
+          ? 'Sua crônica'
+          : 'Sua próxima leitura'
 
   const handleCurtir = async () => {
     try {
       await toggle.mutateAsync(curtido)
-      toast.success(curtido ? 'Curtida removida' : 'Você curtiu este livro')
+      toast.success(curtido ? 'Curtida removida' : `Você curtiu este conteúdo`)
     } catch {
       toast.error('Não foi possível registrar sua curtida')
     }
@@ -185,9 +211,9 @@ function BookHero({
 
       <div className="relative z-10 flex flex-col items-center gap-8 px-2 py-2 sm:px-4 lg:flex-row lg:items-end lg:gap-12 lg:pb-2">
         <div className="book-cover-float shrink-0">
-          {conteudo.capa_url ? (
+          {coverUrl ? (
             <img
-              src={conteudo.capa_url}
+              src={coverUrl}
               alt=""
               className="book-cover-image aspect-[3/4] w-[160px] object-cover sm:w-[190px] lg:w-[210px]"
             />
@@ -201,7 +227,8 @@ function BookHero({
         <div className="min-w-0 flex-1 text-center lg:pb-2 lg:text-left">
           <p className="book-hero-kicker flex items-center justify-center gap-1.5 lg:justify-start">
             <Sparkles className="h-3.5 w-3.5 text-accent-hover" aria-hidden />
-            Sua próxima leitura
+            {kicker}
+            <span className="sr-only"> — {tipoLabel}</span>
           </p>
           <h1 className="book-hero-title mt-2">{conteudo.titulo}</h1>
           {conteudo.autor && (
@@ -213,6 +240,7 @@ function BookHero({
 
           <div className="mt-6 flex flex-col items-center gap-4 lg:items-start">
             <BookLeituraActions
+              tipo={conteudo.tipo}
               status={status}
               isLoading={isLoading}
               isPending={isPending}
@@ -253,18 +281,23 @@ function BookHero({
 }
 
 function BookLeituraActions({
+  tipo,
   status,
   isLoading,
   isPending,
   temTexto,
   onLeitura,
 }: {
+  tipo: TipoConteudo
   status: StatusLeitura | null
   isLoading: boolean
   isPending: boolean
   temTexto: boolean
   onLeitura: (status: StatusLeitura, irParaTexto?: boolean) => void
 }) {
+  const isMusica = tipo === 'musica'
+  const iniciarLabel = isMusica ? 'Iniciar' : 'Iniciar leitura'
+  const continuarLabel = isMusica ? 'Continuar' : 'Continuar lendo'
   if (isPending) {
     return (
       <Button size="lg" disabled className="book-cta-primary rounded-full px-8">
@@ -309,12 +342,18 @@ function BookLeituraActions({
         </span>
         {temTexto && (
           <Button size="lg" className="book-cta-primary rounded-full px-8" onClick={scrollToConteudoTexto}>
-            Continuar lendo
+            {continuarLabel}
             <ChevronRight className="h-4 w-4" aria-hidden />
           </Button>
         )}
-        <Button variant="outline" size="sm" className="rounded-full" onClick={() => onLeitura('concluido')}>
-          Marcar como lido
+        <Button
+          variant="outline"
+          size="lg"
+          className="book-cta-secondary rounded-full px-6"
+          onClick={() => onLeitura('concluido')}
+        >
+          <CheckCircle2 className="h-4 w-4" aria-hidden />
+          Concluído
         </Button>
       </div>
     )
@@ -328,23 +367,29 @@ function BookLeituraActions({
         </Badge>
         <Button size="lg" className="book-cta-primary rounded-full px-8" onClick={() => onLeitura('em_andamento', true)}>
           <BookOpen className="h-4 w-4" aria-hidden />
-          Iniciar leitura
+          {iniciarLabel}
         </Button>
       </div>
     )
   }
 
   return (
-    <div className="flex flex-wrap items-center justify-center gap-2 lg:justify-start">
+    <div className="flex flex-wrap items-center justify-center gap-2.5 lg:justify-start">
       <Button size="lg" className="book-cta-primary rounded-full px-8" onClick={() => onLeitura('em_andamento', true)}>
         <BookOpen className="h-4 w-4" aria-hidden />
-        Iniciar leitura
+        {iniciarLabel}
       </Button>
-      <Button variant="outline" size="sm" className="rounded-full" onClick={() => onLeitura('na_lista')}>
+      <Button variant="outline" size="lg" className="book-cta-secondary rounded-full px-6" onClick={() => onLeitura('na_lista')}>
         Salvar para depois
       </Button>
-      <Button variant="ghost" size="sm" className="rounded-full text-text-muted" onClick={() => onLeitura('concluido')}>
-        Já li
+      <Button
+        variant="outline"
+        size="lg"
+        className="book-cta-secondary rounded-full px-6"
+        onClick={() => onLeitura('concluido')}
+      >
+        <CheckCircle2 className="h-4 w-4" aria-hidden />
+        Concluído
       </Button>
     </div>
   )
@@ -388,6 +433,15 @@ function BookReadingBlock({
 }) {
   const pages = buildBookPages(metaSections, conteudo.conteudo_textual)
   const pageCount = pages.length
+  const coverUrl = resolveConteudoCoverUrl(conteudo)
+  const readingLabel =
+    conteudo.tipo === 'musica'
+      ? 'Letra e leitura'
+      : conteudo.tipo === 'poema'
+        ? 'Leitura do poema'
+        : conteudo.tipo === 'cronica'
+          ? 'Leitura da crônica'
+          : 'Leitura do livro'
 
   if (pageCount === 0) return null
 
@@ -397,14 +451,14 @@ function BookReadingBlock({
         <div className="book-info-card-summary cursor-default">
           <div className="book-info-card-spine" aria-hidden />
           <div className="book-info-card-cover">
-            {conteudo.capa_url ? (
-              <img src={conteudo.capa_url} alt="" className="h-full w-full object-cover" />
+            {coverUrl ? (
+              <img src={coverUrl} alt="" className="h-full w-full object-cover" />
             ) : (
               <BookOpen className="h-6 w-6 text-primary/50" strokeWidth={1.5} aria-hidden />
             )}
           </div>
           <div className="min-w-0 flex-1">
-            <p className="font-semibold text-brand-navy">Leitura do livro</p>
+            <p className="font-semibold text-brand-navy">{readingLabel}</p>
             <p className="mt-0.5 text-xs text-text-muted">
               {pageCount} {pageCount === 1 ? 'página' : 'páginas'} · uma seção por folha · role
               dentro da página se precisar

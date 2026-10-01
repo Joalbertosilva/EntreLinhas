@@ -1,4 +1,4 @@
-import { useNavigate } from '@tanstack/react-router'
+import { Link, useNavigate } from '@tanstack/react-router'
 import { ChevronLeft, ChevronRight, Loader2 } from 'lucide-react'
 import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react'
 import type { ConteudoCardData } from '@/features/app/useConteudos'
@@ -10,8 +10,6 @@ import { cn } from '@/lib/utils'
 interface HomeContinueReadingProps {
   userId: string | undefined
 }
-
-const SCROLL_STEP = 148
 
 export function HomeContinueReading({ userId }: HomeContinueReadingProps) {
   const { data: conteudos = [], isLoading } = useHomeContinueReading(userId)
@@ -53,17 +51,20 @@ export function HomeContinueReading({ userId }: HomeContinueReadingProps) {
   }, [contentKey, updateScrollState])
 
   const scrollByStep = (direction: 'left' | 'right') => {
-    trackRef.current?.scrollBy({
-      left: direction === 'left' ? -SCROLL_STEP : SCROLL_STEP,
+    const el = trackRef.current
+    if (!el) return
+    const step = Math.max(el.clientWidth * 0.75, 220)
+    el.scrollBy({
+      left: direction === 'left' ? -step : step,
       behavior: 'smooth',
     })
   }
 
   if (isLoading) {
     return (
-      <div className="home-continue-shelf home-continue-shelf--loading" aria-busy="true">
-        <p className="flex items-center gap-2 text-sm text-white/70">
-          <Loader2 className="h-4 w-4 animate-spin" aria-hidden />
+      <div className="home-continue-strip home-continue-strip--loading" aria-busy="true">
+        <p className="flex items-center gap-2 text-sm text-text-muted">
+          <Loader2 className="h-4 w-4 animate-spin text-primary" aria-hidden />
           Carregando leituras em andamento…
         </p>
       </div>
@@ -73,35 +74,45 @@ export function HomeContinueReading({ userId }: HomeContinueReadingProps) {
   if (conteudos.length === 0) return null
 
   return (
-    <section className="home-continue-shelf" aria-labelledby="home-continue-reading-title">
-      <div className="home-continue-shelf__head">
-        <h2 id="home-continue-reading-title" className="home-continue-shelf__title">
-          Continue lendo
-        </h2>
-        <p className="home-continue-shelf__subtitle">Retome de onde parou</p>
+    <section className="home-continue-strip" aria-labelledby="home-continue-reading-title">
+      <div className="home-continue-strip__head">
+        <div>
+          <h2 id="home-continue-reading-title" className="home-continue-strip__title">
+            Continue lendo
+          </h2>
+          <p className="home-continue-strip__subtitle">Retome de onde parou</p>
+        </div>
+        <Link to="/app/minhas-leituras" className="home-continue-strip__link">
+          Minhas leituras
+          <ChevronRight className="h-4 w-4" aria-hidden />
+        </Link>
       </div>
 
-      <div className="home-continue-shelf__panel">
+      <div
+        className={cn(
+          'home-continue-strip__rail',
+          canScrollRight && 'home-continue-strip__rail--fade-right',
+          canScrollLeft && 'home-continue-strip__rail--fade-left',
+        )}
+      >
         {canScrollLeft && (
-          <ContinueShelfArrow direction="left" onClick={() => scrollByStep('left')} />
+          <ContinueStripArrow direction="left" onClick={() => scrollByStep('left')} />
         )}
         {canScrollRight && (
-          <ContinueShelfArrow direction="right" onClick={() => scrollByStep('right')} />
+          <ContinueStripArrow direction="right" onClick={() => scrollByStep('right')} />
         )}
 
-        <div className="home-continue-shelf__viewport">
-          <div ref={trackRef} className="home-continue-shelf__track" role="list">
-            {conteudos.map((conteudo) => (
-              <ContinueShelfItem key={conteudo.id} conteudo={conteudo} />
-            ))}
-          </div>
+        <div ref={trackRef} className="home-continue-strip__track" role="list">
+          {conteudos.map((conteudo) => (
+            <ContinueStripCard key={conteudo.id} conteudo={conteudo} />
+          ))}
         </div>
       </div>
     </section>
   )
 }
 
-function ContinueShelfItem({ conteudo }: { conteudo: ConteudoCardData }) {
+function ContinueStripCard({ conteudo }: { conteudo: ConteudoCardData }) {
   const navigate = useNavigate()
   const coverUrl = resolveConteudoCoverUrl(conteudo)
 
@@ -110,27 +121,32 @@ function ContinueShelfItem({ conteudo }: { conteudo: ConteudoCardData }) {
   }
 
   return (
-    <article role="listitem" className="home-continue-shelf__item">
-      <button type="button" onClick={open} className="home-continue-shelf__hit">
-        <div className="home-continue-shelf__cover">
+    <article role="listitem" className="home-continue-strip__card">
+      <button type="button" onClick={open} className="home-continue-strip__hit">
+        <div className="home-continue-strip__cover">
           {coverUrl ? (
             <img src={coverUrl} alt="" loading="lazy" decoding="async" />
           ) : (
-            <div className="home-continue-shelf__cover-fallback" aria-hidden />
+            <div className="home-continue-strip__cover-fallback" aria-hidden />
           )}
-          <span className="home-continue-shelf__badge">Lendo</span>
         </div>
-        <div className="home-continue-shelf__meta">
-          <p className="home-continue-shelf__tipo">{TIPO_CONTEUDO_LABEL[conteudo.tipo]}</p>
-          <p className="home-continue-shelf__titulo">{conteudo.titulo}</p>
-          {conteudo.autor && <p className="home-continue-shelf__autor">{conteudo.autor}</p>}
+
+        <div className="home-continue-strip__body">
+          <div className="home-continue-strip__labels">
+            <span className="home-continue-strip__status">Em andamento</span>
+            <span className="home-continue-strip__tipo">{TIPO_CONTEUDO_LABEL[conteudo.tipo]}</span>
+          </div>
+          <p className="home-continue-strip__titulo">{conteudo.titulo}</p>
+          {conteudo.autor && <p className="home-continue-strip__autor">{conteudo.autor}</p>}
         </div>
+
+        <ChevronRight className="home-continue-strip__chev" strokeWidth={2} aria-hidden />
       </button>
     </article>
   )
 }
 
-function ContinueShelfArrow({
+function ContinueStripArrow({
   direction,
   onClick,
 }: {
@@ -146,8 +162,8 @@ function ContinueShelfArrow({
       onClick={onClick}
       aria-label={isRight ? 'Ver mais obras em andamento' : 'Ver obras anteriores'}
       className={cn(
-        'home-continue-shelf__arrow',
-        isRight ? 'home-continue-shelf__arrow--right' : 'home-continue-shelf__arrow--left',
+        'home-continue-strip__arrow',
+        isRight ? 'home-continue-strip__arrow--right' : 'home-continue-strip__arrow--left',
       )}
     >
       <Icon className="h-4 w-4" strokeWidth={2.5} aria-hidden />

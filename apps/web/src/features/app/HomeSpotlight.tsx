@@ -5,6 +5,8 @@ import { getAppRouteForTipo } from '@/features/app/appNavigation'
 import { spotlightDeckText, type SpotlightSlide } from '@/features/app/homeSpotlightSlides'
 import { useHomeSpotlightSlides } from '@/features/app/useHomeSpotlightSlides'
 import { resolveConteudoCoverUrl } from '@/lib/conteudoCover'
+import { DEFAULT_OBRA_COVER } from '@/lib/obraCover'
+import { openVideoExternal } from '@/lib/openVideoUrl'
 import { cn } from '@/lib/utils'
 
 const AUTO_ADVANCE_MS = 8000
@@ -110,6 +112,7 @@ export function HomeSpotlight({ userId, className }: HomeSpotlightProps) {
       className={cn('home-spotlight home-spotlight--carousel', className)}
       aria-roledescription="carrossel"
       aria-label="Destaques do catálogo"
+      tabIndex={0}
       onMouseEnter={() => setPaused(true)}
       onMouseLeave={() => setPaused(false)}
       onFocusCapture={() => setPaused(true)}
@@ -180,7 +183,54 @@ function SpotlightSlideView({ slide }: { slide: SpotlightSlide }) {
     return <PromoVideoSlide slide={slide} />
   }
 
+  if (slide.kind === 'promo-obra') {
+    return <PromoObraSlide slide={slide} />
+  }
+
   return <ConteudoSlide slide={slide} />
+}
+
+function PromoObraSlide({ slide }: { slide: Extract<SpotlightSlide, { kind: 'promo-obra' }> }) {
+  const navigate = useNavigate()
+
+  const open = () => {
+    void navigate({ to: '/app/minha-obra' })
+  }
+
+  return (
+    <div className="home-spotlight__grid">
+      <div className="home-spotlight__copy">
+        <p className="home-spotlight__eyebrow">{slide.badge}</p>
+        <h2 className="home-spotlight__headline">{slide.headline}</h2>
+        <p className="home-spotlight__deck">{slide.deck}</p>
+        <div className="home-spotlight__actions">
+          <button type="button" onClick={open} className="home-spotlight__cta home-spotlight__cta--primary">
+            Iniciar obra
+            <ChevronRight className="h-4 w-4" aria-hidden />
+          </button>
+          <Link to="/app/livros" className="home-spotlight__cta home-spotlight__cta--ghost">
+            Explorar catálogo
+          </Link>
+        </div>
+      </div>
+
+      <button
+        type="button"
+        onClick={open}
+        className="home-spotlight__visual group home-spotlight__visual--promo home-spotlight__visual--obra"
+        aria-label="Ir para Minha obra"
+      >
+        <img
+          src={DEFAULT_OBRA_COVER}
+          alt=""
+          className="home-spotlight__cover transition-transform duration-300 group-hover:scale-[1.02]"
+          loading="lazy"
+          decoding="async"
+        />
+        <span className="home-spotlight__promo-tag">Minha obra</span>
+      </button>
+    </div>
+  )
 }
 
 function PromoNewSlide({ slide }: { slide: Extract<SpotlightSlide, { kind: 'promo-new' }> }) {
@@ -242,7 +292,9 @@ function PromoVideoSlide({ slide }: { slide: Extract<SpotlightSlide, { kind: 'pr
   }
 
   const openVideo = () => {
-    void navigate({ to: '/app/conteudos/$conteudoId', params: { conteudoId: video.id } })
+    if (!openVideoExternal(video.video_url)) {
+      void navigate({ to: '/app/conteudos/$conteudoId', params: { conteudoId: video.id } })
+    }
   }
 
   return (
@@ -303,13 +355,14 @@ function ConteudoSlide({ slide }: { slide: Extract<SpotlightSlide, { kind: 'cont
   const isVideo = conteudo.tipo === 'video'
 
   const open = () => {
+    if (isVideo && openVideoExternal(conteudo.video_url)) return
     void navigate({ to: '/app/conteudos/$conteudoId', params: { conteudoId: conteudo.id } })
   }
 
   const primaryLabel = isContinueReading
     ? 'Continuar leitura'
     : isVideo
-      ? 'Assistir agora'
+      ? 'Assistir no YouTube'
       : 'Abrir conteúdo'
 
   return (
@@ -366,6 +419,7 @@ function ConteudoSlide({ slide }: { slide: Extract<SpotlightSlide, { kind: 'cont
 
 function toneForSlide(slide: SpotlightSlide): string {
   if (slide.kind === 'promo-new') return 'teal'
+  if (slide.kind === 'promo-obra') return 'ink'
   if (slide.kind === 'promo-video') return 'warm'
 
   const tones: Record<string, string> = {

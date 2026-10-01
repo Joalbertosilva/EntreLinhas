@@ -2,6 +2,7 @@ import {
   BookMarked,
   CircleUser,
   Feather,
+  HeartHandshake,
   Home,
   LayoutDashboard,
   Library,
@@ -21,6 +22,7 @@ const SIZE = {
 const SECTION_SHELL: Record<AppSectionId | 'admin', string> = {
   home: 'bg-white/95 text-brand-navy ring-brand-navy/10',
   'minhas-leituras': 'bg-white/95 text-primary ring-primary/12',
+  sobre: 'bg-white/95 text-brand-navy ring-brand-navy/10',
   livros: 'bg-white/95 text-primary ring-primary/12',
   cronicas: 'bg-white/95 text-brand-navy ring-brand-navy/10',
   musicas: 'bg-white/95 text-primary ring-primary/12',
@@ -33,6 +35,7 @@ const SECTION_SHELL: Record<AppSectionId | 'admin', string> = {
 const SECTION_ACTIVE_SHELL: Record<AppSectionId | 'admin', string> = {
   home: 'bg-white text-primary ring-primary/28 shadow-[var(--shadow-soft)]',
   'minhas-leituras': 'bg-white text-primary ring-primary/28 shadow-[var(--shadow-soft)]',
+  sobre: 'bg-white text-primary ring-primary/28 shadow-[var(--shadow-soft)]',
   livros: 'bg-white text-primary ring-primary/28 shadow-[var(--shadow-soft)]',
   cronicas: 'bg-white text-primary ring-primary/28 shadow-[var(--shadow-soft)]',
   musicas: 'bg-white text-primary ring-primary/28 shadow-[var(--shadow-soft)]',
@@ -76,6 +79,7 @@ export function SectionIcon({
     <div className={shell} aria-hidden>
       {section === 'home' && <Home strokeWidth={STROKE} />}
       {section === 'minhas-leituras' && <Library strokeWidth={STROKE} />}
+      {section === 'sobre' && <HeartHandshake strokeWidth={STROKE} />}
       {section === 'livros' && <BookMarked strokeWidth={STROKE} />}
       {section === 'cronicas' && <ScrollText strokeWidth={STROKE} />}
       {section === 'musicas' && <Music2 strokeWidth={STROKE} />}

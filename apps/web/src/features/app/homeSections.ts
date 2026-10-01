@@ -13,10 +13,10 @@ export interface HomeSectionConfig {
 export const HOME_SECTIONS: HomeSectionConfig[] = [
   {
     id: 'destaques',
-    title: 'Destaques',
+    title: 'Destaques do EntreLinhas',
     subtitle: 'Livros, crônicas, poemas e músicas mais curtidos',
     tipo: 'livro',
-    placeholderCount: 6,
+    placeholderCount: 12,
   },
   {
     id: 'livros',

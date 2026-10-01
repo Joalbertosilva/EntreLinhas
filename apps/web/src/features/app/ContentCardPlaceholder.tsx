@@ -24,9 +24,10 @@ const TIPO_LABEL: Record<TipoConteudo, string> = {
 interface ContentCardPlaceholderProps {
   tipo: TipoConteudo
   index: number
+  fluid?: boolean
 }
 
-export function ContentCardPlaceholder({ tipo, index }: ContentCardPlaceholderProps) {
+export function ContentCardPlaceholder({ tipo, index, fluid = false }: ContentCardPlaceholderProps) {
   const section = TIPO_SECTION[tipo]
   const label = TIPO_LABEL[tipo]
 
@@ -34,7 +35,8 @@ export function ContentCardPlaceholder({ tipo, index }: ContentCardPlaceholderPr
     <article
       className={cn(
         'content-card-placeholder snap-start shrink-0',
-        'flex w-[8.75rem] cursor-default flex-col sm:w-[9.5rem]',
+        'flex cursor-default flex-col',
+        fluid ? 'w-full max-w-none' : 'w-[8.75rem] sm:w-[9.5rem]',
       )}
       aria-hidden
     >

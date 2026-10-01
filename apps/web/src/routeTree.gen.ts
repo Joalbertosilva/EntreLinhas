@@ -16,6 +16,7 @@ import { Route as EsqueciSenhaRouteImport } from './routes/esqueci-senha'
 import { Route as LoginRouteImport } from './routes/login'
 import { Route as PrivacidadeRouteImport } from './routes/privacidade'
 import { Route as RedefinirSenhaRouteImport } from './routes/redefinir-senha'
+import { Route as SobreRouteImport } from './routes/sobre'
 import { Route as TrocarSenhaRouteImport } from './routes/trocar-senha'
 import { Route as AdminIndexRouteImport } from './routes/admin/index'
 import { Route as AdminAlunosRouteImport } from './routes/admin/alunos'
@@ -35,6 +36,7 @@ import { Route as AppMusicasRouteImport } from './routes/app/musicas'
 import { Route as AppPerfilRouteImport } from './routes/app/perfil'
 import { Route as AppPoemasRouteImport } from './routes/app/poemas'
 import { Route as AppProgressoRouteImport } from './routes/app/progresso'
+import { Route as AppSobreRouteImport } from './routes/app/sobre'
 import { Route as AppVideosRouteImport } from './routes/app/videos'
 import { Route as AdminConteudosConteudoIdRouteImport } from './routes/admin/conteudos.$conteudoId'
 import { Route as AppConteudosConteudoIdRouteImport } from './routes/app/conteudos.$conteudoId'
@@ -74,6 +76,11 @@ const PrivacidadeRoute = PrivacidadeRouteImport.update({
 const RedefinirSenhaRoute = RedefinirSenhaRouteImport.update({
   id: '/redefinir-senha',
   path: '/redefinir-senha',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const SobreRoute = SobreRouteImport.update({
+  id: '/sobre',
+  path: '/sobre',
   getParentRoute: () => rootRouteImport,
 } as any)
 const TrocarSenhaRoute = TrocarSenhaRouteImport.update({
@@ -171,6 +178,11 @@ const AppProgressoRoute = AppProgressoRouteImport.update({
   path: '/progresso',
   getParentRoute: () => AppRouteRoute,
 } as any)
+const AppSobreRoute = AppSobreRouteImport.update({
+  id: '/sobre',
+  path: '/sobre',
+  getParentRoute: () => AppRouteRoute,
+} as any)
 const AppVideosRoute = AppVideosRouteImport.update({
   id: '/videos',
   path: '/videos',
@@ -206,6 +218,7 @@ export interface FileRoutesByFullPath {
   '/login': typeof LoginRoute
   '/privacidade': typeof PrivacidadeRoute
   '/redefinir-senha': typeof RedefinirSenhaRoute
+  '/sobre': typeof SobreRoute
   '/trocar-senha': typeof TrocarSenhaRoute
   '/admin/alunos': typeof AdminAlunosRoute
   '/admin/auditoria': typeof AdminAuditoriaRoute
@@ -223,6 +236,7 @@ export interface FileRoutesByFullPath {
   '/app/perfil': typeof AppPerfilRouteWithChildren
   '/app/poemas': typeof AppPoemasRoute
   '/app/progresso': typeof AppProgressoRoute
+  '/app/sobre': typeof AppSobreRoute
   '/app/videos': typeof AppVideosRoute
   '/admin/': typeof AdminIndexRoute
   '/app/': typeof AppIndexRoute
@@ -237,6 +251,7 @@ export interface FileRoutesByTo {
   '/login': typeof LoginRoute
   '/privacidade': typeof PrivacidadeRoute
   '/redefinir-senha': typeof RedefinirSenhaRoute
+  '/sobre': typeof SobreRoute
   '/trocar-senha': typeof TrocarSenhaRoute
   '/admin/alunos': typeof AdminAlunosRoute
   '/admin/auditoria': typeof AdminAuditoriaRoute
@@ -254,6 +269,7 @@ export interface FileRoutesByTo {
   '/app/perfil': typeof AppPerfilRouteWithChildren
   '/app/poemas': typeof AppPoemasRoute
   '/app/progresso': typeof AppProgressoRoute
+  '/app/sobre': typeof AppSobreRoute
   '/app/videos': typeof AppVideosRoute
   '/admin': typeof AdminIndexRoute
   '/app': typeof AppIndexRoute
@@ -271,6 +287,7 @@ export interface FileRoutesById {
   '/login': typeof LoginRoute
   '/privacidade': typeof PrivacidadeRoute
   '/redefinir-senha': typeof RedefinirSenhaRoute
+  '/sobre': typeof SobreRoute
   '/trocar-senha': typeof TrocarSenhaRoute
   '/admin/alunos': typeof AdminAlunosRoute
   '/admin/auditoria': typeof AdminAuditoriaRoute
@@ -288,6 +305,7 @@ export interface FileRoutesById {
   '/app/perfil': typeof AppPerfilRouteWithChildren
   '/app/poemas': typeof AppPoemasRoute
   '/app/progresso': typeof AppProgressoRoute
+  '/app/sobre': typeof AppSobreRoute
   '/app/videos': typeof AppVideosRoute
   '/admin/': typeof AdminIndexRoute
   '/app/': typeof AppIndexRoute
@@ -306,6 +324,7 @@ export interface FileRouteTypes {
     | '/login'
     | '/privacidade'
     | '/redefinir-senha'
+    | '/sobre'
     | '/trocar-senha'
     | '/admin/alunos'
     | '/admin/auditoria'
@@ -323,6 +342,7 @@ export interface FileRouteTypes {
     | '/app/perfil'
     | '/app/poemas'
     | '/app/progresso'
+    | '/app/sobre'
     | '/app/videos'
     | '/admin/'
     | '/app/'
@@ -337,6 +357,7 @@ export interface FileRouteTypes {
     | '/login'
     | '/privacidade'
     | '/redefinir-senha'
+    | '/sobre'
     | '/trocar-senha'
     | '/admin/alunos'
     | '/admin/auditoria'
@@ -354,6 +375,7 @@ export interface FileRouteTypes {
     | '/app/perfil'
     | '/app/poemas'
     | '/app/progresso'
+    | '/app/sobre'
     | '/app/videos'
     | '/admin'
     | '/app'
@@ -370,6 +392,7 @@ export interface FileRouteTypes {
     | '/login'
     | '/privacidade'
     | '/redefinir-senha'
+    | '/sobre'
     | '/trocar-senha'
     | '/admin/alunos'
     | '/admin/auditoria'
@@ -387,6 +410,7 @@ export interface FileRouteTypes {
     | '/app/perfil'
     | '/app/poemas'
     | '/app/progresso'
+    | '/app/sobre'
     | '/app/videos'
     | '/admin/'
     | '/app/'
@@ -404,6 +428,7 @@ export interface RootRouteChildren {
   LoginRoute: typeof LoginRoute
   PrivacidadeRoute: typeof PrivacidadeRoute
   RedefinirSenhaRoute: typeof RedefinirSenhaRoute
+  SobreRoute: typeof SobreRoute
   TrocarSenhaRoute: typeof TrocarSenhaRoute
 }
 
@@ -456,6 +481,13 @@ declare module '@tanstack/react-router' {
       path: '/redefinir-senha'
       fullPath: '/redefinir-senha'
       preLoaderRoute: typeof RedefinirSenhaRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/sobre': {
+      id: '/sobre'
+      path: '/sobre'
+      fullPath: '/sobre'
+      preLoaderRoute: typeof SobreRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/trocar-senha': {
@@ -591,6 +623,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AppProgressoRouteImport
       parentRoute: typeof AppRouteRoute
     }
+    '/app/sobre': {
+      id: '/app/sobre'
+      path: '/sobre'
+      fullPath: '/app/sobre'
+      preLoaderRoute: typeof AppSobreRouteImport
+      parentRoute: typeof AppRouteRoute
+    }
     '/app/videos': {
       id: '/app/videos'
       path: '/videos'
@@ -689,6 +728,7 @@ interface AppRouteRouteChildren {
   AppPerfilRoute: typeof AppPerfilRouteWithChildren
   AppPoemasRoute: typeof AppPoemasRoute
   AppProgressoRoute: typeof AppProgressoRoute
+  AppSobreRoute: typeof AppSobreRoute
   AppVideosRoute: typeof AppVideosRoute
   AppIndexRoute: typeof AppIndexRoute
   AppConteudosConteudoIdRoute: typeof AppConteudosConteudoIdRoute
@@ -705,6 +745,7 @@ const AppRouteRouteChildren: AppRouteRouteChildren = {
   AppPerfilRoute: AppPerfilRouteWithChildren,
   AppPoemasRoute: AppPoemasRoute,
   AppProgressoRoute: AppProgressoRoute,
+  AppSobreRoute: AppSobreRoute,
   AppVideosRoute: AppVideosRoute,
   AppIndexRoute: AppIndexRoute,
   AppConteudosConteudoIdRoute: AppConteudosConteudoIdRoute,
@@ -723,6 +764,7 @@ const rootRouteChildren: RootRouteChildren = {
   LoginRoute: LoginRoute,
   PrivacidadeRoute: PrivacidadeRoute,
   RedefinirSenhaRoute: RedefinirSenhaRoute,
+  SobreRoute: SobreRoute,
   TrocarSenhaRoute: TrocarSenhaRoute,
 }
 export const routeTree = rootRouteImport

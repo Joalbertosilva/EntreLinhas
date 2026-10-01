@@ -3,6 +3,7 @@ import type { TipoConteudo } from '@tcc-sistema/types'
 export type AppSectionId =
   | 'home'
   | 'minhas-leituras'
+  | 'sobre'
   | 'livros'
   | 'cronicas'
   | 'musicas'
@@ -34,6 +35,12 @@ export const APP_NAV_HEADER: AppNavItem[] = [
     to: '/app/minhas-leituras',
     label: 'Minhas leituras',
     description: 'Em andamento, lista e concluídas',
+  },
+  {
+    id: 'sobre',
+    to: '/app/sobre',
+    label: 'Sobre nós',
+    description: 'Como funciona cada parte da plataforma',
   },
 ]
 
@@ -105,6 +112,7 @@ export function getAppRouteForTipo(tipo: TipoConteudo): string {
 }
 
 export function resolveSectionId(pathname: string): AppSectionId {
+  if (pathname.startsWith('/app/sobre')) return 'sobre'
   if (pathname.startsWith('/app/minhas-leituras')) return 'minhas-leituras'
   if (pathname.startsWith('/app/livros')) return 'livros'
   if (pathname.startsWith('/app/cronicas')) return 'cronicas'

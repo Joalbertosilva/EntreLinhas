@@ -2,6 +2,7 @@ import { useNavigate } from '@tanstack/react-router'
 import type { TipoConteudo } from '@tcc-sistema/types'
 import { BookMarked, FileText, Music, Play, Quote, Sparkles, Video } from 'lucide-react'
 import { resolveConteudoCoverUrl } from '@/lib/conteudoCover'
+import { openVideoExternal } from '@/lib/openVideoUrl'
 import { ContentCardLeituraMenu } from '@/features/app/ContentCardLeituraMenu'
 import { useLeiturasMap } from '@/features/app/useLeiturasMap'
 import { useAuth } from '@/features/auth/AuthProvider'
@@ -25,9 +26,11 @@ const TIPO_META: Record<
 interface ContentCardProps {
   conteudo: ConteudoCardData
   showTipo?: boolean
+  /** Preenche a célula em grids (ex.: destaques 4×N) */
+  fluid?: boolean
 }
 
-export function ContentCard({ conteudo, showTipo = false }: ContentCardProps) {
+export function ContentCard({ conteudo, showTipo = false, fluid = false }: ContentCardProps) {
   const navigate = useNavigate()
   const { profile } = useAuth()
   const { data: leiturasMap } = useLeiturasMap(profile?.id)
@@ -39,6 +42,7 @@ export function ContentCard({ conteudo, showTipo = false }: ContentCardProps) {
   const leituraStatus = leiturasMap?.[conteudo.id] ?? null
 
   const open = () => {
+    if (isVideo && openVideoExternal(conteudo.video_url)) return
     void navigate({ to: '/app/conteudos/$conteudoId', params: { conteudoId: conteudo.id } })
   }
 
@@ -47,7 +51,8 @@ export function ContentCard({ conteudo, showTipo = false }: ContentCardProps) {
       role="listitem"
       className={cn(
         'group content-card card-lift snap-start shrink-0',
-        'relative z-[2] flex w-[8.75rem] flex-col sm:w-[9.5rem]',
+        'relative z-[2] flex flex-col',
+        fluid ? 'w-full max-w-none' : 'w-[8.75rem] sm:w-[9.5rem]',
       )}
     >
       <button
