@@ -1,5 +1,6 @@
 import { Link } from '@tanstack/react-router'
-import { ArrowRight, BookOpen } from 'lucide-react'
+import { ArrowRight } from 'lucide-react'
+import { AmbientCanvasField } from '@/components/layout/LoginAmbientBackground'
 import { BookProgressVisual } from '@/features/app/BookProgressVisual'
 import { ProgressLevelBar } from '@/features/app/ProgressLevelBar'
 import { faixaDoNivel, tituloJornada } from '@/features/app/alunoProgress'
@@ -55,82 +56,78 @@ export function HomeProgressCard({ userId }: HomeProgressCardProps) {
       <Link
         to="/app/progresso"
         className={cn(
-          'jornada-card jornada-card--interactive group block no-underline',
+          'jornada-card jornada-card--interactive jornada-card--ambient group block no-underline',
           showLevelUp && 'jornada-card--celebrate',
         )}
         aria-label={`${faixaRotulo}. Nível ${progress.nivel}. ${progress.xp} XP. ${displayPct}% deste capítulo.`}
       >
-        <div className="jornada-card__head">
-          <div className="jornada-card__avatar">
-            <BookProgressVisual
-              pageProgress={pageProgress}
-              nivel={progress.nivel}
-              marcadorCor="#003366"
-              paleta={{
-                accent: faixa.cor,
-                marcador: '#003366',
-                pagina: 'rgb(0 51 102 / 0.15)',
-                paginaEscura: 'rgb(0 51 102 / 0.28)',
-                glow: faixa.cor,
-                barra: '#efb034',
-                barraTrack: '#e8eef0',
-                ambiente: '#ffffff',
-                faixaNome: faixa.nome,
-                texto: '#003366',
-                textoMuted: '#64748b',
-              }}
-              justLeveledUp={justLeveledUp}
-              size="md"
-              cinematic
-            />
-          </div>
-          <div className="jornada-card__head-text min-w-0">
-            <span className="jornada-card__level-badge">Nível {progress.nivel}</span>
-            <p className="jornada-card__title">{faixaRotulo}</p>
-          </div>
-        </div>
+        <AmbientCanvasField compact className="jornada-card__ambient ambient-canvas-field" />
 
-        <hr className="jornada-card__divider" />
+        <div className="jornada-card__surface">
+          <div className="jornada-card__head">
+            <div className="jornada-card__avatar">
+              <BookProgressVisual
+                pageProgress={pageProgress}
+                nivel={progress.nivel}
+                marcadorCor="#003366"
+                paleta={{
+                  accent: faixa.cor,
+                  marcador: '#003366',
+                  pagina: 'rgb(0 51 102 / 0.15)',
+                  paginaEscura: 'rgb(0 51 102 / 0.28)',
+                  glow: faixa.cor,
+                  barra: '#efb034',
+                  barraTrack: '#e8eef0',
+                  ambiente: '#ffffff',
+                  faixaNome: faixa.nome,
+                  texto: '#003366',
+                  textoMuted: '#64748b',
+                }}
+                justLeveledUp={justLeveledUp}
+                size="sm"
+                cinematic
+              />
+            </div>
+            <div className="jornada-card__head-text min-w-0">
+              <span className="jornada-card__level-badge">Nível {progress.nivel}</span>
+              <p className="jornada-card__title">{faixaRotulo}</p>
+            </div>
+          </div>
 
-        <div className="jornada-card__xp-row">
-          <span className="jornada-card__xp-total">{progress.xp} XP</span>
-          <span className="jornada-card__xp-range">
-            {progress.xpNoNivel} / {progress.xpNecessarioNivel} XP
+          <hr className="jornada-card__divider" />
+
+          <div className="jornada-card__xp-row">
+            <span className="jornada-card__xp-total">{progress.xp} XP</span>
+            <span className="jornada-card__xp-range">
+              {progress.xpNoNivel} / {progress.xpNecessarioNivel} XP
+            </span>
+          </div>
+
+          <ProgressLevelBar
+            className="jornada-card__bar"
+            minimal
+            pct={displayPct}
+            nivel={progress.nivel}
+            barra="#efb034"
+            barraTrack="#e8eef0"
+            xpTotal={progress.xp}
+            xpParaProximo={progress.xpParaProximoNivel}
+            nivelMaximo={progress.nivelMaximo}
+          />
+
+          {progress.nivelMaximo ? (
+            <p className="jornada-card__hint">Nível máximo alcançado</p>
+          ) : progress.xpParaProximoNivel > 0 ? (
+            <p className="jornada-card__hint">
+              Faltam {progress.xpParaProximoNivel} XP para o nível {progress.nivel + 1}
+            </p>
+          ) : null}
+
+          <span className="jornada-card__cta">
+            Ver minha jornada
+            <ArrowRight className="jornada-card__cta-icon" strokeWidth={2} aria-hidden />
           </span>
         </div>
-
-        <ProgressLevelBar
-          className="mt-2.5"
-          minimal
-          pct={displayPct}
-          nivel={progress.nivel}
-          barra="#efb034"
-          barraTrack="#e8eef0"
-          xpTotal={progress.xp}
-          xpParaProximo={progress.xpParaProximoNivel}
-          nivelMaximo={progress.nivelMaximo}
-        />
-
-        {progress.nivelMaximo ? (
-          <p className="jornada-card__hint">Nível máximo alcançado</p>
-        ) : progress.xpParaProximoNivel > 0 ? (
-          <p className="jornada-card__hint">
-            Faltam {progress.xpParaProximoNivel} XP para o nível {progress.nivel + 1}
-          </p>
-        ) : null}
-
-        {progress.obrasExploradas > 0 && (
-          <p className="jornada-card__stat">
-            <BookOpen className="jornada-card__stat-icon" strokeWidth={1.75} aria-hidden />
-            {progress.obrasExploradas}{' '}
-            {progress.obrasExploradas === 1 ? 'obra aberta' : 'obras abertas'}
-          </p>
-        )}
-
-        <span className="jornada-card__cta">
-          Ver minha jornada
-          <ArrowRight className="jornada-card__cta-icon" strokeWidth={2} aria-hidden />
-        </span>
       </Link>
     </div>
   )

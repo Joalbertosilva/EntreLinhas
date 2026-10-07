@@ -9,9 +9,11 @@ import { cn } from '@/lib/utils'
 
 interface HomeContinueReadingProps {
   userId: string | undefined
+  /** Dentro de um painel (ex.: linha editorial), sem borda superior do hero. */
+  embedded?: boolean
 }
 
-export function HomeContinueReading({ userId }: HomeContinueReadingProps) {
+export function HomeContinueReading({ userId, embedded = false }: HomeContinueReadingProps) {
   const { data: conteudos = [], isLoading } = useHomeContinueReading(userId)
   const trackRef = useRef<HTMLDivElement>(null)
   const [canScrollLeft, setCanScrollLeft] = useState(false)
@@ -62,7 +64,13 @@ export function HomeContinueReading({ userId }: HomeContinueReadingProps) {
 
   if (isLoading) {
     return (
-      <div className="home-continue-strip home-continue-strip--loading" aria-busy="true">
+      <div
+        className={cn(
+          'home-continue-strip home-continue-strip--loading',
+          embedded && 'home-continue-strip--embedded',
+        )}
+        aria-busy="true"
+      >
         <p className="flex items-center gap-2 text-sm text-text-muted">
           <Loader2 className="h-4 w-4 animate-spin text-primary" aria-hidden />
           Carregando leituras em andamento…
@@ -74,18 +82,29 @@ export function HomeContinueReading({ userId }: HomeContinueReadingProps) {
   if (conteudos.length === 0) return null
 
   return (
-    <section className="home-continue-strip" aria-labelledby="home-continue-reading-title">
+    <section
+      className={cn('home-continue-strip', embedded && 'home-continue-strip--embedded')}
+      aria-labelledby="home-continue-reading-title"
+    >
       <div className="home-continue-strip__head">
-        <div>
-          <h2 id="home-continue-reading-title" className="home-continue-strip__title">
+        <div className="section-head-inline">
+          <h2
+            id="home-continue-reading-title"
+            className={cn(
+              embedded ? 'home-writing-row__title mb-0' : 'home-continue-strip__title',
+            )}
+          >
             Continue lendo
           </h2>
-          <p className="home-continue-strip__subtitle">Retome de onde parou</p>
+          <Link
+            to="/app/minhas-leituras"
+            className={cn('section-action-link', embedded && 'section-action-link--panel')}
+          >
+            Minhas leituras
+            <ChevronRight className="h-3.5 w-3.5" aria-hidden />
+          </Link>
         </div>
-        <Link to="/app/minhas-leituras" className="home-continue-strip__link">
-          Minhas leituras
-          <ChevronRight className="h-4 w-4" aria-hidden />
-        </Link>
+        <p className="home-continue-strip__subtitle">Retome de onde parou</p>
       </div>
 
       <div

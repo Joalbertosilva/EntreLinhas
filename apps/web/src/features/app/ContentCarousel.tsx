@@ -162,29 +162,29 @@ export function ContentCarousel({
         aria-label={isHero ? 'Conteúdos em destaque' : undefined}
       >
         {!isHero && showSectionHeader && (
-          <div className="flex items-end justify-between gap-4">
-            <div className="flex min-w-0 items-start gap-3">
-              <SectionIcon section={iconSection} size="sm" className="mt-0.5 shadow-none" />
-              <div className="min-w-0">
+          <div className="flex min-w-0 items-start gap-3">
+            <SectionIcon section={iconSection} size="sm" className="mt-0.5 shadow-none" />
+            <div className="min-w-0">
+              <div className="section-head-inline">
                 <h2
                   id={`section-${section.id}-title`}
                   className="text-lg font-semibold tracking-tight text-brand-navy sm:text-xl"
                 >
                   {section.title}
                 </h2>
-                {section.subtitle && (
-                  <p className="mt-0.5 text-sm text-text-muted">{section.subtitle}</p>
+                {showViewAll && section.route && (
+                  <Link to={section.route} className="hidden sm:inline-flex">
+                    <Button variant="ghost" size="sm" className="h-auto px-0 py-0 text-text-muted hover:text-primary">
+                      Ver tudo
+                      <ChevronRight className="h-4 w-4" aria-hidden />
+                    </Button>
+                  </Link>
                 )}
               </div>
+              {section.subtitle && (
+                <p className="mt-0.5 text-sm text-text-muted">{section.subtitle}</p>
+              )}
             </div>
-            {showViewAll && section.route && (
-              <Link to={section.route} className="hidden shrink-0 sm:block">
-                <Button variant="ghost" size="sm" className="text-text-muted hover:text-primary">
-                  Ver tudo
-                  <ChevronRight className="h-4 w-4" aria-hidden />
-                </Button>
-              </Link>
-            )}
           </div>
         )}
 
@@ -241,29 +241,29 @@ export function ContentCarousel({
       aria-label={isHero ? 'Conteúdos em destaque' : undefined}
     >
       {!isHero && (
-        <div className="flex items-end justify-between gap-4">
-          <div className="flex min-w-0 items-start gap-3">
-            <SectionIcon section={iconSection} size="sm" className="mt-0.5 shadow-none" />
-            <div className="min-w-0">
+        <div className="flex min-w-0 items-start gap-3">
+          <SectionIcon section={iconSection} size="sm" className="mt-0.5 shadow-none" />
+          <div className="min-w-0">
+            <div className="section-head-inline">
               <h2
                 id={`section-${section.id}-title`}
                 className="text-lg font-semibold tracking-tight text-brand-navy sm:text-xl"
               >
                 {section.title}
               </h2>
-              {section.subtitle && (
-                <p className="mt-0.5 text-sm text-text-muted">{section.subtitle}</p>
+              {showViewAll && section.route && (
+                <Link to={section.route} className="hidden sm:inline-flex">
+                  <Button variant="ghost" size="sm" className="h-auto px-0 py-0 text-text-muted hover:text-primary">
+                    Ver tudo
+                    <ChevronRight className="h-4 w-4" aria-hidden />
+                  </Button>
+                </Link>
               )}
             </div>
+            {section.subtitle && (
+              <p className="mt-0.5 text-sm text-text-muted">{section.subtitle}</p>
+            )}
           </div>
-          {showViewAll && section.route && (
-            <Link to={section.route} className="hidden shrink-0 sm:block">
-              <Button variant="ghost" size="sm" className="text-text-muted hover:text-primary">
-                Ver tudo
-                <ChevronRight className="h-4 w-4" aria-hidden />
-              </Button>
-            </Link>
-          )}
         </div>
       )}
 

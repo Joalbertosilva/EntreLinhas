@@ -1,6 +1,5 @@
 import { ContentCarousel } from '@/features/app/ContentCarousel'
-import { HomeCompactStats } from '@/features/app/HomeCompactStats'
-import { HomeContinueReading } from '@/features/app/HomeContinueReading'
+import { HomeObraStrip } from '@/features/app/HomeObraStrip'
 import { HomeProgressCard } from '@/features/app/HomeProgressCard'
 import { HomeWritingRow } from '@/features/app/HomeWritingRow'
 import { HomeSpotlight } from '@/features/app/HomeSpotlight'
@@ -23,11 +22,7 @@ export function HomeHero({ userId, firstName }: HomeHeroProps) {
 
   const hasProducao = Boolean(obra?.ultimaProducao)
   const obraSectionLabel = hasProducao ? 'Continue sua obra' : 'Comece sua obra'
-  const subtitle = progress
-    ? mensagemAcolhedora(progress)
-    : hasProducao
-      ? 'Continue sua jornada — explore e se divirta com nossa plataforma.'
-      : 'Explore leituras, registre reflexões e publique sua própria obra na comunidade.'
+  const personalLine = progress ? mensagemAcolhedora(progress) : null
 
   return (
     <>
@@ -37,39 +32,41 @@ export function HomeHero({ userId, firstName }: HomeHeroProps) {
             <h1 id="home-greeting" className="home-hero-title">
               {getTimeGreeting()}, {firstName}
             </h1>
-            <p className="home-hero-subtitle">{subtitle}</p>
-            <HomeCompactStats userId={userId} className="mt-3" />
-            <HomeContinueReading userId={userId} />
+            <p className="home-hero-deck">
+              Leia obras da comunidade, escreva a sua e acompanhe sua jornada — tudo num só lugar.
+            </p>
+            {personalLine && <p className="home-hero-subtitle">{personalLine}</p>}
           </header>
+
+          <div className="home-hero-priority">
+            <HomeObraStrip
+              obra={obra ?? null}
+              isLoading={loadingObra}
+              sectionLabel={obraSectionLabel}
+            />
+            <HomeProgressCard userId={userId} />
+          </div>
         </div>
       </section>
 
       <HomeSpotlight userId={userId} />
 
-      <section className="home-editorial" aria-label="Destaques, nível e obras da comunidade">
+      <section className="home-editorial" aria-label="Destaques e obras da comunidade">
         <div className="home-editorial__inner home-editorial__inner--highlights">
-          <div className="home-editorial__main">
-            <div className="home-editorial__section-head">
-              <h2 className="home-editorial__section-title">Destaques do EntreLinhas</h2>
-              <p className="home-editorial__section-deck">
-                Livros, crônicas, poemas e músicas mais curtidos — até doze itens em filas de quatro.
-              </p>
-            </div>
-            <ContentCarousel section={destaques} showViewAll variant="hero" fadeTone="catalog" />
+          <div className="home-editorial__section-head">
+            <h2 className="home-editorial__section-title">Destaques do EntreLinhas</h2>
+            <p className="home-editorial__section-deck">
+              Livros, crônicas, poemas e músicas mais curtidos — até doze itens em filas de quatro.
+            </p>
           </div>
-
-          <aside className="home-editorial__aside home-editorial__aside--jornada" aria-label="Sua jornada de leitura">
-            <HomeProgressCard userId={userId} />
-          </aside>
+          <ContentCarousel section={destaques} showViewAll variant="hero" fadeTone="catalog" />
         </div>
 
         <div className="home-editorial__inner home-editorial__inner--writing">
           <HomeWritingRow
-            obra={obra ?? null}
-            loadingObra={loadingObra}
+            userId={userId}
             obrasComunidade={obrasComunidade}
             loadingComunidade={loadingComunidade}
-            obraSectionLabel={obraSectionLabel}
           />
         </div>
       </section>

@@ -84,20 +84,22 @@ export function HomeCoverShelf({
       <div className="home-cover-shelf__inner">
         <div className="home-cover-shelf__head">
           <div className="min-w-0">
-            <h2
-              id={`cover-shelf-${title.replace(/\s+/g, '-').toLowerCase()}`}
-              className="home-cover-shelf__title"
-            >
-              {title}
-            </h2>
+            <div className="section-head-inline">
+              <h2
+                id={`cover-shelf-${title.replace(/\s+/g, '-').toLowerCase()}`}
+                className="home-cover-shelf__title"
+              >
+                {title}
+              </h2>
+              {viewAllTo && (
+                <Link to={viewAllTo} className="home-cover-shelf__view-all">
+                  Ver tudo
+                  <ChevronRight className="h-4 w-4" aria-hidden />
+                </Link>
+              )}
+            </div>
             {subtitle && <p className="home-cover-shelf__subtitle">{subtitle}</p>}
           </div>
-          {viewAllTo && (
-            <Link to={viewAllTo} className="home-cover-shelf__view-all">
-              Ver tudo
-              <ChevronRight className="h-4 w-4" aria-hidden />
-            </Link>
-          )}
         </div>
 
         <div className="home-cover-shelf__carousel">

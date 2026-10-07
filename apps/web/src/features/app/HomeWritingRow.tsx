@@ -1,24 +1,21 @@
 import { Link } from '@tanstack/react-router'
-import { HomeObraCard } from '@/features/app/HomeObraCard'
-import type { MinhaObraResumo, ObraPublicaCard } from '@/features/app/useMinhaObra'
+import { ChevronRight } from 'lucide-react'
+import { HomeLeiturasWidget } from '@/features/app/HomeLeiturasWidget'
+import type { ObraPublicaCard } from '@/features/app/useMinhaObra'
 import { TIPO_OBRA_LABEL } from '@/lib/obraLabels'
 import { CATEGORIA_OBRA_LABEL } from '@/lib/obraCategoriaLabels'
 
 interface HomeWritingRowProps {
-  obra: MinhaObraResumo | null
-  loadingObra: boolean
+  userId: string | undefined
   obrasComunidade: ObraPublicaCard[]
   loadingComunidade: boolean
-  obraSectionLabel: string
 }
 
-/** Minha obra + digest da comunidade — linha inferior da home editorial. */
+/** Continue lendo + digest da comunidade — linha inferior da home editorial. */
 export function HomeWritingRow({
-  obra,
-  loadingObra,
+  userId,
   obrasComunidade,
   loadingComunidade,
-  obraSectionLabel,
 }: HomeWritingRowProps) {
   const digest = obrasComunidade.slice(0, 4)
 
@@ -28,12 +25,13 @@ export function HomeWritingRow({
         className="home-writing-row__panel home-writing-row__panel--comunidade"
         aria-labelledby="home-comunidade"
       >
-        <div className="home-writing-row__head">
+        <div className="home-writing-row__head section-head-inline">
           <h2 id="home-comunidade" className="home-writing-row__title mb-0">
             Obras da comunidade
           </h2>
-          <Link to="/app/livros" className="home-writing-row__link">
+          <Link to="/app/livros" className="section-action-link section-action-link--panel">
             Ver tudo
+            <ChevronRight className="h-3.5 w-3.5" aria-hidden />
           </Link>
         </div>
 
@@ -79,12 +77,7 @@ export function HomeWritingRow({
         )}
       </section>
 
-      <section className="home-writing-row__panel home-writing-row__panel--obra" aria-labelledby="home-minha-obra">
-        <h2 id="home-minha-obra" className="home-writing-row__title">
-          {obraSectionLabel}
-        </h2>
-        <HomeObraCard obra={obra} isLoading={loadingObra} variant="row" />
-      </section>
+      <HomeLeiturasWidget userId={userId} />
     </div>
   )
 }

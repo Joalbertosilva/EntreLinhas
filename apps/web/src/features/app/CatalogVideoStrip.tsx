@@ -77,16 +77,18 @@ export function CatalogVideoStrip({ anchor, videos, className }: CatalogVideoStr
     >
       <div className="catalog-video-showcase__inner">
         <header className="catalog-video-showcase__head">
-          <div>
+          <div className="min-w-0">
             <p className="catalog-video-showcase__eyebrow">{copy.eyebrow}</p>
-            <h3 id={`catalog-video-showcase-${anchor}-title`} className="catalog-video-showcase__title">
-              {copy.title}
-            </h3>
+            <div className="section-head-inline">
+              <h3 id={`catalog-video-showcase-${anchor}-title`} className="catalog-video-showcase__title">
+                {copy.title}
+              </h3>
+              <Link to="/app/videos" className="catalog-video-showcase__more">
+                Ver todos
+                <ChevronRight className="h-4 w-4" aria-hidden />
+              </Link>
+            </div>
           </div>
-          <Link to="/app/videos" className="catalog-video-showcase__more">
-            Ver todos
-            <ChevronRight className="h-4 w-4" aria-hidden />
-          </Link>
         </header>
 
         <div className="catalog-video-showcase__layout">

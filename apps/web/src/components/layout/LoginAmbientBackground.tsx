@@ -145,7 +145,13 @@ const ORGANISMS: LivingOrganism[] = [
   },
 ]
 
-function drawLivingField(ctx: CanvasRenderingContext2D, width: number, height: number, time: number) {
+function drawLivingField(
+  ctx: CanvasRenderingContext2D,
+  width: number,
+  height: number,
+  time: number,
+  scale = 1,
+) {
   ctx.clearRect(0, 0, width, height)
 
   for (const organism of ORGANISMS) {
@@ -158,11 +164,11 @@ function drawLivingField(ctx: CanvasRenderingContext2D, width: number, height: n
 
     for (const node of organism.nodes) {
       const pulse = 1 + Math.sin(time * node.speed + node.phase) * 0.12
-      const wobbleX = Math.sin(time * node.speed * 1.15 + node.phase) * 52
-      const wobbleY = Math.cos(time * node.speed * 0.92 + node.phase * 1.3) * 44
-      const x = anchorX + node.offsetX + wobbleX
-      const y = anchorY + node.offsetY + wobbleY
-      const radius = node.radius * pulse
+      const wobbleX = Math.sin(time * node.speed * 1.15 + node.phase) * 52 * scale
+      const wobbleY = Math.cos(time * node.speed * 0.92 + node.phase * 1.3) * 44 * scale
+      const x = anchorX + node.offsetX * scale + wobbleX
+      const y = anchorY + node.offsetY * scale + wobbleY
+      const radius = node.radius * pulse * scale
 
       const gradient = ctx.createRadialGradient(x, y, 0, x, y, radius)
       gradient.addColorStop(0, organism.color)
@@ -185,53 +191,80 @@ function drawLivingField(ctx: CanvasRenderingContext2D, width: number, height: n
   }
 }
 
-/** Fundo do login — campo orgânico contínuo (canvas) */
-export function LoginAmbientBackground() {
+interface AmbientCanvasFieldProps {
+  className?: string
+  /** Escala blobs para cards compactos (jornada, minhas leituras). */
+  compact?: boolean
+}
+
+/** Campo orgânico animado — reutilizado no login e no card de jornada. */
+export function AmbientCanvasField({ className, compact = false }: AmbientCanvasFieldProps) {
+  const rootRef = useRef<HTMLDivElement>(null)
   const canvasRef = useRef<HTMLCanvasElement>(null)
 
   useEffect(() => {
+    const root = rootRef.current
     const canvas = canvasRef.current
-    if (!canvas) return
+    if (!root || !canvas) return
 
     const ctx = canvas.getContext('2d')
     if (!ctx) return
 
     const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches
+    const scale = compact ? 0.44 : 1
     let raf = 0
     const start = performance.now()
 
     const resize = () => {
       const dpr = Math.min(window.devicePixelRatio || 1, 2)
-      const { width, height } = canvas.getBoundingClientRect()
+      const { width, height } = root.getBoundingClientRect()
+      if (width < 1 || height < 1) return
       canvas.width = Math.floor(width * dpr)
       canvas.height = Math.floor(height * dpr)
       ctx.setTransform(dpr, 0, 0, dpr, 0, 0)
     }
 
+    const paint = (elapsed: number) => {
+      const { width, height } = root.getBoundingClientRect()
+      if (width < 1 || height < 1) return
+      drawLivingField(ctx, width, height, elapsed, scale)
+    }
+
     resize()
+
+    const observer = new ResizeObserver(() => {
+      resize()
+      if (reducedMotion) paint(0)
+    })
+    observer.observe(root)
     window.addEventListener('resize', resize)
 
     const frame = (now: number) => {
-      const elapsed = (now - start) / 1000
-      drawLivingField(ctx, canvas.getBoundingClientRect().width, canvas.getBoundingClientRect().height, elapsed)
+      paint((now - start) / 1000)
       if (!reducedMotion) raf = requestAnimationFrame(frame)
     }
 
     if (reducedMotion) {
-      drawLivingField(ctx, canvas.getBoundingClientRect().width, canvas.getBoundingClientRect().height, 0)
+      paint(0)
     } else {
       raf = requestAnimationFrame(frame)
     }
 
     return () => {
+      observer.disconnect()
       window.removeEventListener('resize', resize)
       cancelAnimationFrame(raf)
     }
-  }, [])
+  }, [compact])
 
   return (
-    <div className="login-ambient" aria-hidden>
-      <canvas ref={canvasRef} className="login-ambient__canvas" />
+    <div ref={rootRef} className={className} aria-hidden>
+      <canvas ref={canvasRef} className="ambient-canvas-field__canvas" />
     </div>
   )
+}
+
+/** Fundo do login — campo orgânico contínuo (canvas) */
+export function LoginAmbientBackground() {
+  return <AmbientCanvasField className="login-ambient ambient-canvas-field" />
 }
