@@ -30,6 +30,7 @@ import { resolveConteudoCoverUrl } from '@/lib/conteudoCover'
 import { TIPO_CONTEUDO_LABEL, TIPO_MATERIAL_LABEL } from '@/lib/labels'
 import { isYouTubeUrl } from '@/lib/youtube'
 import { STATUS_LEITURA_LABEL } from '@/lib/leituraLabels'
+import { Speakable } from '@/features/accessibility/Speakable'
 import { cn } from '@/lib/utils'
 
 const STATUS_LABEL = STATUS_LEITURA_LABEL
@@ -225,18 +226,24 @@ function BookHero({
         </div>
 
         <div className="min-w-0 flex-1 text-center lg:pb-2 lg:text-left">
-          <p className="book-hero-kicker flex items-center justify-center gap-1.5 lg:justify-start">
-            <Sparkles className="h-3.5 w-3.5 text-accent-hover" aria-hidden />
-            {kicker}
-            <span className="sr-only"> — {tipoLabel}</span>
-          </p>
-          <h1 className="book-hero-title mt-2">{conteudo.titulo}</h1>
-          {conteudo.autor && (
-            <p className="book-hero-author mt-2">por {conteudo.autor}</p>
-          )}
-          {conteudo.descricao && (
-            <p className="book-hero-desc mt-4 max-w-xl">{conteudo.descricao}</p>
-          )}
+          <Speakable
+            label={[tipoLabel, conteudo.titulo, conteudo.autor ? `por ${conteudo.autor}` : '', conteudo.descricao ?? '']
+              .filter(Boolean)
+              .join('. ')}
+          >
+            <p className="book-hero-kicker flex items-center justify-center gap-1.5 lg:justify-start">
+              <Sparkles className="h-3.5 w-3.5 text-accent-hover" aria-hidden />
+              {kicker}
+              <span className="sr-only"> — {tipoLabel}</span>
+            </p>
+            <h1 className="book-hero-title mt-2">{conteudo.titulo}</h1>
+            {conteudo.autor && (
+              <p className="book-hero-author mt-2">por {conteudo.autor}</p>
+            )}
+            {conteudo.descricao && (
+              <p className="book-hero-desc mt-4 max-w-xl">{conteudo.descricao}</p>
+            )}
+          </Speakable>
 
           <div className="mt-6 flex flex-col items-center gap-4 lg:items-start">
             <BookLeituraActions
@@ -500,24 +507,35 @@ function BookMateriaisSection({ materiais }: { materiais: MaterialComplementar[]
       </summary>
       <div className="book-meta-body space-y-4">
         {materiais.map((material) => (
-          <div key={material.id} className="rounded-xl border border-primary/8 bg-white/50 p-4">
-            <div className="flex flex-wrap items-center gap-2">
-              <h3 className="font-semibold text-text">{material.titulo}</h3>
-              <Badge variant="primary">{TIPO_MATERIAL_LABEL[material.tipo]}</Badge>
+          <Speakable
+            key={material.id}
+            label={[
+              `Material complementar. ${material.titulo}`,
+              TIPO_MATERIAL_LABEL[material.tipo],
+              material.descricao ?? '',
+            ]
+              .filter(Boolean)
+              .join('. ')}
+          >
+            <div className="rounded-xl border border-primary/8 bg-white/50 p-4">
+              <div className="flex flex-wrap items-center gap-2">
+                <h3 className="font-semibold text-text">{material.titulo}</h3>
+                <Badge variant="primary">{TIPO_MATERIAL_LABEL[material.tipo]}</Badge>
+              </div>
+              {material.descricao && (
+                <p className="mt-2 text-sm text-text-muted">{material.descricao}</p>
+              )}
+              <a
+                href={material.link}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="mt-3 inline-flex items-center gap-1.5 text-sm font-semibold text-primary hover:underline"
+              >
+                Abrir material
+                <ExternalLink className="h-3.5 w-3.5" aria-hidden />
+              </a>
             </div>
-            {material.descricao && (
-              <p className="mt-2 text-sm text-text-muted">{material.descricao}</p>
-            )}
-            <a
-              href={material.link}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="mt-3 inline-flex items-center gap-1.5 text-sm font-semibold text-primary hover:underline"
-            >
-              Abrir material
-              <ExternalLink className="h-3.5 w-3.5" aria-hidden />
-            </a>
-          </div>
+          </Speakable>
         ))}
       </div>
     </details>

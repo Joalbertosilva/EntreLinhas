@@ -38,6 +38,7 @@ import { Card, CardContent } from '@/components/ui/Card'
 import { Skeleton } from '@/components/ui/Skeleton'
 import { TIPO_CONTEUDO_LABEL, TIPO_MATERIAL_LABEL } from '@/lib/labels'
 import { STATUS_LEITURA_LABEL } from '@/lib/leituraLabels'
+import { Speakable } from '@/features/accessibility/Speakable'
 import { resolveConteudoCoverUrl } from '@/lib/conteudoCover'
 import { cn } from '@/lib/utils'
 
@@ -259,13 +260,19 @@ function VideoConteudoPage({
       <ScrollReveal delayMs={40}>
         <Card className="border-rose-200/50 bg-white/90 backdrop-blur-sm">
           <CardContent className="space-y-5 p-6 sm:p-8">
-            <Badge variant="accent">{TIPO_CONTEUDO_LABEL.video}</Badge>
-            <h1 className="text-2xl font-semibold tracking-tight text-brand-navy sm:text-3xl">
-              {conteudo.titulo}
-            </h1>
-            {conteudo.descricao && (
-              <p className="text-base leading-relaxed text-text-muted">{conteudo.descricao}</p>
-            )}
+            <Speakable
+              label={[TIPO_CONTEUDO_LABEL.video, conteudo.titulo, conteudo.descricao ?? '']
+                .filter(Boolean)
+                .join('. ')}
+            >
+              <Badge variant="accent">{TIPO_CONTEUDO_LABEL.video}</Badge>
+              <h1 className="text-2xl font-semibold tracking-tight text-brand-navy sm:text-3xl">
+                {conteudo.titulo}
+              </h1>
+              {conteudo.descricao && (
+                <p className="text-base leading-relaxed text-text-muted">{conteudo.descricao}</p>
+              )}
+            </Speakable>
             {videoUrl ? (
               <a href={videoUrl} target="_blank" rel="noopener noreferrer">
                 <Button size="lg" className="w-full sm:w-auto">
@@ -344,7 +351,17 @@ function ConteudoHero({ conteudo, compact = false }: { conteudo: Conteudo; compa
           </div>
           )}
 
-          <div className="min-w-0 flex-1 text-center sm:text-left">
+          <Speakable
+            label={[
+              TIPO_CONTEUDO_LABEL[conteudo.tipo],
+              conteudo.titulo,
+              conteudo.autor ? `por ${conteudo.autor}` : '',
+              conteudo.descricao ?? '',
+            ]
+              .filter(Boolean)
+              .join('. ')}
+            className="min-w-0 flex-1 text-center sm:text-left"
+          >
             <Badge variant="accent">{TIPO_CONTEUDO_LABEL[conteudo.tipo]}</Badge>
             <h1 className="mt-3 text-2xl font-semibold tracking-tight text-brand-navy sm:text-3xl">
               {conteudo.titulo}
@@ -357,7 +374,7 @@ function ConteudoHero({ conteudo, compact = false }: { conteudo: Conteudo; compa
                 {conteudo.descricao}
               </p>
             )}
-          </div>
+          </Speakable>
         </div>
       </CardContent>
     </Card>
@@ -494,35 +511,38 @@ function ConteudoInfo({ conteudo }: { conteudo: Conteudo }) {
   return (
     <div id="conteudo-texto" className="scroll-mt-24 space-y-4">
       {sections.map((section, index) => (
-        <details
-          key={section.label}
-          open={index === 0}
-          className="group rounded-2xl border border-primary/10 bg-white/80 backdrop-blur-sm open:shadow-[var(--shadow-soft)]"
-        >
-          <summary className="cursor-pointer list-none rounded-2xl px-5 py-4 font-semibold text-brand-navy marker:content-none sm:px-6 [&::-webkit-details-marker]:hidden">
-            <span className="flex items-center justify-between gap-3">
-              {section.label}
-              <span className="text-xs font-medium text-text-muted group-open:hidden">Toque para expandir</span>
-              <span className="hidden text-xs font-medium text-text-muted group-open:inline">Toque para recolher</span>
-            </span>
-          </summary>
-          <div className="border-t border-border/50 px-5 pb-5 pt-3 sm:px-6 sm:pb-6">
-            <p className="whitespace-pre-wrap text-base leading-relaxed text-text-muted">
-              {section.value}
-            </p>
-          </div>
-        </details>
+        <Speakable key={section.label} label={`${section.label}. ${section.value}`}>
+          <details
+            open={index === 0}
+            className="group rounded-2xl border border-primary/10 bg-white/80 backdrop-blur-sm open:shadow-[var(--shadow-soft)]"
+          >
+            <summary className="cursor-pointer list-none rounded-2xl px-5 py-4 font-semibold text-brand-navy marker:content-none sm:px-6 [&::-webkit-details-marker]:hidden">
+              <span className="flex items-center justify-between gap-3">
+                {section.label}
+                <span className="text-xs font-medium text-text-muted group-open:hidden">Toque para expandir</span>
+                <span className="hidden text-xs font-medium text-text-muted group-open:inline">Toque para recolher</span>
+              </span>
+            </summary>
+            <div className="border-t border-border/50 px-5 pb-5 pt-3 sm:px-6 sm:pb-6">
+              <p className="whitespace-pre-wrap text-base leading-relaxed text-text-muted">
+                {section.value}
+              </p>
+            </div>
+          </details>
+        </Speakable>
       ))}
 
       {hasTexto && (
-        <Card className="border-primary/10 bg-white/80 backdrop-blur-sm">
-          <CardContent className="p-5 sm:p-6">
-            <h2 className="text-lg font-semibold text-brand-navy">Texto da leitura</h2>
-            <div className="prose-content mt-4 whitespace-pre-wrap text-base leading-relaxed text-text">
-              {conteudo.conteudo_textual}
-            </div>
-          </CardContent>
-        </Card>
+        <Speakable label={`Texto da leitura. ${conteudo.conteudo_textual}`}>
+          <Card className="border-primary/10 bg-white/80 backdrop-blur-sm">
+            <CardContent className="p-5 sm:p-6">
+              <h2 className="text-lg font-semibold text-brand-navy">Texto da leitura</h2>
+              <div className="prose-content mt-4 whitespace-pre-wrap text-base leading-relaxed text-text">
+                {conteudo.conteudo_textual}
+              </div>
+            </CardContent>
+          </Card>
+        </Speakable>
       )}
     </div>
   )
@@ -547,14 +567,19 @@ function TemasInfoSection({
 
       <div className="grid gap-3 sm:grid-cols-2">
         {temas.map((tema) => (
-          <Card key={tema.id} className="border-primary/10 bg-white/80 backdrop-blur-sm">
-            <CardContent className="p-5">
-              <h3 className="font-semibold text-text">{tema.tema}</h3>
-              {tema.descricao && (
-                <p className="mt-2 text-base leading-relaxed text-text-muted">{tema.descricao}</p>
-              )}
-            </CardContent>
-          </Card>
+          <Speakable
+            key={tema.id}
+            label={[tema.tema, tema.descricao].filter(Boolean).join('. ')}
+          >
+            <Card className="border-primary/10 bg-white/80 backdrop-blur-sm">
+              <CardContent className="p-5">
+                <h3 className="font-semibold text-text">{tema.tema}</h3>
+                {tema.descricao && (
+                  <p className="mt-2 text-base leading-relaxed text-text-muted">{tema.descricao}</p>
+                )}
+              </CardContent>
+            </Card>
+          </Speakable>
         ))}
       </div>
     </section>
@@ -584,15 +609,25 @@ function MateriaisSection({
 
       <div className="space-y-3">
         {materiais.map((material) => (
-          <Card key={material.id} className="border-primary/10 bg-white/80 backdrop-blur-sm">
-            <CardContent className="p-5">
-              <div className="flex flex-wrap items-center gap-2">
-                <h3 className="font-semibold text-text">{material.titulo}</h3>
-                <Badge variant="primary">{TIPO_MATERIAL_LABEL[material.tipo]}</Badge>
-              </div>
-              {material.descricao && (
-                <p className="mt-2 text-sm text-text-muted">{material.descricao}</p>
-              )}
+          <Speakable
+            key={material.id}
+            label={[
+              `Material complementar. ${material.titulo}`,
+              TIPO_MATERIAL_LABEL[material.tipo],
+              material.descricao ?? '',
+            ]
+              .filter(Boolean)
+              .join('. ')}
+          >
+            <Card className="border-primary/10 bg-white/80 backdrop-blur-sm">
+              <CardContent className="p-5">
+                <div className="flex flex-wrap items-center gap-2">
+                  <h3 className="font-semibold text-text">{material.titulo}</h3>
+                  <Badge variant="primary">{TIPO_MATERIAL_LABEL[material.tipo]}</Badge>
+                </div>
+                {material.descricao && (
+                  <p className="mt-2 text-sm text-text-muted">{material.descricao}</p>
+                )}
               {material.tipo === 'video' && isYouTubeUrl(material.link) ? (
                 <div className="mt-4">
                   <YouTubeEmbed url={material.link} title={material.titulo} />
@@ -608,8 +643,9 @@ function MateriaisSection({
                   <ExternalLink className="h-3.5 w-3.5" aria-hidden />
                 </a>
               )}
-            </CardContent>
-          </Card>
+              </CardContent>
+            </Card>
+          </Speakable>
         ))}
       </div>
     </section>

@@ -10,8 +10,10 @@ import {
 import {
   FONT_SCALE_PERCENT,
   loadAccessibilityMode,
+  loadAudioPreference,
   loadFontScale,
   saveAccessibilityMode,
+  saveAudioPreference,
   saveFontScale,
   type FontScale,
 } from '@/features/accessibility/accessibilityStorage'
@@ -19,13 +21,20 @@ import { useSpeech } from '@/features/accessibility/useSpeech'
 
 interface AccessibilityState {
   modeEnabled: boolean
+  screenExplorerMode: boolean
   fontScale: FontScale
   fontScalePercent: number
+  audioEnabled: boolean | null
+  isSpeaking: boolean
   setModeEnabled: (enabled: boolean) => void
+  setScreenExplorerMode: (enabled: boolean) => void
+  setAudioEnabled: (enabled: boolean) => void
   increaseFont: () => void
   decreaseFont: () => void
   resetFont: () => void
   speak: (text: string) => boolean
+  toggleSpeak: (text: string) => boolean
+  isSpeakingText: (text: string) => boolean
   speakPage: () => boolean
   speakSelection: () => boolean
   stopSpeech: () => void
@@ -43,18 +52,41 @@ function applyFontScale(scale: FontScale) {
 
 export function AccessibilityProvider({ children }: { children: ReactNode }) {
   const [modeEnabled, setModeEnabledState] = useState(loadAccessibilityMode)
+  const [screenExplorerMode, setScreenExplorerModeState] = useState(false)
   const [fontScale, setFontScaleState] = useState<FontScale>(loadFontScale)
-  const { speak, speakPage, speakSelection, stop, isSupported } = useSpeech()
+  const [audioEnabled, setAudioEnabledState] = useState<boolean | null>(loadAudioPreference)
+  const { speak, toggleSpeak, isSpeakingText, speakPage, speakSelection, stop, isSpeaking, isSupported } =
+    useSpeech()
 
   useEffect(() => {
     applyFontScale(fontScale)
   }, [fontScale])
 
-  const setModeEnabled = useCallback((enabled: boolean) => {
-    setModeEnabledState(enabled)
-    saveAccessibilityMode(enabled)
-    if (!enabled) stop()
-  }, [stop])
+  const setModeEnabled = useCallback(
+    (enabled: boolean) => {
+      setModeEnabledState(enabled)
+      saveAccessibilityMode(enabled)
+      if (!enabled) stop()
+    },
+    [stop],
+  )
+
+  const setScreenExplorerMode = useCallback(
+    (enabled: boolean) => {
+      setScreenExplorerModeState(enabled)
+      if (!enabled) stop()
+    },
+    [stop],
+  )
+
+  const setAudioEnabled = useCallback(
+    (enabled: boolean) => {
+      setAudioEnabledState(enabled)
+      saveAudioPreference(enabled)
+      setScreenExplorerModeState(enabled)
+    },
+    [],
+  )
 
   const setFontScale = useCallback((scale: FontScale) => {
     setFontScaleState(scale)
@@ -76,13 +108,20 @@ export function AccessibilityProvider({ children }: { children: ReactNode }) {
   const value = useMemo<AccessibilityState>(
     () => ({
       modeEnabled,
+      screenExplorerMode,
       fontScale,
       fontScalePercent: FONT_SCALE_PERCENT[fontScale],
+      audioEnabled,
+      isSpeaking,
       setModeEnabled,
+      setScreenExplorerMode,
+      setAudioEnabled,
       increaseFont,
       decreaseFont,
       resetFont,
       speak,
+      toggleSpeak,
+      isSpeakingText,
       speakPage,
       speakSelection,
       stopSpeech: stop,
@@ -90,12 +129,19 @@ export function AccessibilityProvider({ children }: { children: ReactNode }) {
     }),
     [
       modeEnabled,
+      screenExplorerMode,
       fontScale,
+      audioEnabled,
+      isSpeaking,
       setModeEnabled,
+      setScreenExplorerMode,
+      setAudioEnabled,
       increaseFont,
       decreaseFont,
       resetFont,
       speak,
+      toggleSpeak,
+      isSpeakingText,
       speakPage,
       speakSelection,
       stop,

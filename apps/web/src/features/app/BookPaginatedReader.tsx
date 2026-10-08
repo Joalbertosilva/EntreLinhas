@@ -1,5 +1,6 @@
 import { ChevronLeft, ChevronRight } from 'lucide-react'
 import { useCallback, useEffect, useRef, useState } from 'react'
+import { Speakable } from '@/features/accessibility/Speakable'
 import { Button } from '@/components/ui/Button'
 import type { BookPage } from '@/features/app/bookPagination'
 import { getBookPageStorageKey } from '@/features/app/bookPagination'
@@ -75,6 +76,7 @@ export function BookPaginatedReader({ pages, conteudoId, titulo, storageKey: sto
   const atStart = pageIndex === 0
   const atEnd = pageIndex >= pages.length - 1
   const progress = ((pageIndex + 1) / pages.length) * 100
+  const pageSpeakLabel = `${current.title}. ${current.body}`
 
   return (
     <div className="book-reader" aria-label={`Leitura paginada: ${titulo}`}>
@@ -86,14 +88,16 @@ export function BookPaginatedReader({ pages, conteudoId, titulo, storageKey: sto
             turn === 'prev' && 'book-page-viewport--turn-prev',
           )}
         >
-          <div key={pageIndex} className="book-page-sheet">
-            <div className="book-page-inner-shadow" aria-hidden />
-            <h3 className="book-page-title">{current.title}</h3>
-            <div ref={scrollRef} className="book-prose book-page-text scrollbar-thin whitespace-pre-wrap">
-              {current.body}
+          <Speakable label={pageSpeakLabel}>
+            <div key={pageIndex} className="book-page-sheet">
+              <div className="book-page-inner-shadow" aria-hidden />
+              <h3 className="book-page-title">{current.title}</h3>
+              <div ref={scrollRef} className="book-prose book-page-text scrollbar-thin whitespace-pre-wrap">
+                {current.body}
+              </div>
+              <p className="book-page-scroll-hint">Role dentro da página para ler tudo</p>
             </div>
-            <p className="book-page-scroll-hint">Role dentro da página para ler tudo</p>
-          </div>
+          </Speakable>
         </div>
       </div>
 

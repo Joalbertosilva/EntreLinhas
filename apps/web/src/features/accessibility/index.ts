@@ -1,2 +1,5 @@
 export { AccessibilityProvider, useAccessibility } from './AccessibilityProvider'
 export { AccessibilityToolbar, AccessibilityTrigger } from './AccessibilityToolbar'
+export { GlobalAccessibilityLayer } from './GlobalAccessibilityLayer'
+export { Speakable } from './Speakable'
+export { SpeakButton } from './SpeakButton'

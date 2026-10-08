@@ -2,14 +2,17 @@ import { useEffect, useState } from 'react'
 import { Loader2, Lock, MessageCircle } from 'lucide-react'
 import { toast } from 'sonner'
 import type { InteracaoComAutor, Tema } from '@tcc-sistema/types'
+import { Speakable } from '@/features/accessibility/Speakable'
 import { getReflexaoDisplay } from '@/features/conteudos/conteudoReflexao'
 import {
   useComentariosPublicos,
+  useExcluirInteracao,
   useMinhasInteracoes,
   useSalvarInteracao,
 } from '@/features/app/useConteudoEngagement'
 import { Avatar } from '@/components/ui/Avatar'
 import { Button } from '@/components/ui/Button'
+import { ConfirmDialog } from '@/components/ui/ConfirmDialog'
 import { Card, CardContent } from '@/components/ui/Card'
 import { Textarea } from '@/components/ui/Textarea'
 import { formatRelativeTime } from '@/lib/formatRelativeTime'
@@ -135,30 +138,36 @@ function ReflexaoCard({
           <span className="text-[11px] font-medium text-text-muted">Reflexão privada</span>
         </div>
 
-        <figure
-          className={cn(
-            'rounded-xl px-4 py-5 sm:px-5',
-            variant === 'book'
-              ? 'book-quote-block'
-              : 'bg-gradient-to-br from-primary-light/80 to-white',
-          )}
-        >
-          <blockquote className="text-base font-medium leading-relaxed text-brand-navy sm:text-lg">
-            &ldquo;{frase}&rdquo;
-          </blockquote>
-        </figure>
+        <Speakable label={frase}>
+          <figure
+            className={cn(
+              'rounded-xl px-4 py-5 sm:px-5',
+              variant === 'book'
+                ? 'book-quote-block'
+                : 'bg-gradient-to-br from-primary-light/80 to-white',
+            )}
+          >
+            <blockquote className="text-base font-medium leading-relaxed text-brand-navy sm:text-lg">
+              &ldquo;{frase}&rdquo;
+            </blockquote>
+          </figure>
+        </Speakable>
 
         {reflexao && (
-          <div className="rounded-xl border border-accent/25 bg-accent-light/25 px-4 py-4 sm:px-5">
-            <p className="text-xs font-semibold uppercase tracking-wide text-[#5c4800]">Reflexão</p>
-            <p className="mt-2 text-base leading-relaxed text-text">{reflexao}</p>
-          </div>
+          <Speakable label={`Reflexão. ${reflexao}`}>
+            <div className="rounded-xl border border-accent/25 bg-accent-light/25 px-4 py-4 sm:px-5">
+              <p className="text-xs font-semibold uppercase tracking-wide text-[#5c4800]">Reflexão</p>
+              <p className="mt-2 text-base leading-relaxed text-text">{reflexao}</p>
+            </div>
+          </Speakable>
         )}
 
-        <div>
-          <p className="text-xs font-semibold uppercase tracking-wide text-primary">Pergunta</p>
-          <p className="mt-2 text-base font-semibold leading-snug text-text">{pergunta}</p>
-        </div>
+        <Speakable label={`Pergunta. ${pergunta}`}>
+          <div>
+            <p className="text-xs font-semibold uppercase tracking-wide text-primary">Pergunta</p>
+            <p className="mt-2 text-base font-semibold leading-snug text-text">{pergunta}</p>
+          </div>
+        </Speakable>
 
         <div className="space-y-2 border-t border-border/50 pt-4">
           <label htmlFor={`reflexao-${tema.id}`} className="text-sm font-medium text-text">
@@ -207,10 +216,12 @@ export function ConteudoComentariosSection({
 }: ConteudoComentariosSectionProps) {
   const { data: comentarios = [], isLoading } = useComentariosPublicos(conteudoId)
   const salvar = useSalvarInteracao(conteudoId, usuarioId)
+  const excluir = useExcluirInteracao(conteudoId, usuarioId)
 
   const [novoTexto, setNovoTexto] = useState('')
   const [editandoId, setEditandoId] = useState<string | null>(null)
   const [editTexto, setEditTexto] = useState('')
+  const [excluirId, setExcluirId] = useState<string | null>(null)
 
   const comentariosOrdenados = [...comentarios].sort(
     (a, b) => new Date(a.created_at).getTime() - new Date(b.created_at).getTime(),
@@ -261,6 +272,18 @@ export function ConteudoComentariosSection({
     }
   }
 
+  const handleConfirmExcluir = async () => {
+    if (!excluirId) return
+    try {
+      await excluir.mutateAsync(excluirId)
+      if (editandoId === excluirId) cancelarEdicao()
+      setExcluirId(null)
+      toast.success('Comentário excluído')
+    } catch {
+      toast.error('Não foi possível excluir o comentário')
+    }
+  }
+
   const totalLabel =
     comentarios.length === 0
       ? 'Nenhum comentário ainda'
@@ -283,10 +306,8 @@ export function ConteudoComentariosSection({
           <h2 className={cn('text-lg font-semibold text-text', variant === 'book' && 'book-interaction-title')}>
             Comentários
           </h2>
-          <p className="text-sm text-text-muted">{totalLabel}</p>
-          <p className="mt-1 text-xs leading-relaxed text-text-muted">
-            Espaço <strong className="font-medium text-text">público</strong> — todos os alunos veem. Diferente
-            da sua reflexão, que é privada.
+          <p className="text-sm text-text-muted">
+            {totalLabel} · Espaço público de comentários
           </p>
         </div>
       </div>
@@ -294,23 +315,40 @@ export function ConteudoComentariosSection({
       {isLoading ? (
         <p className="text-sm text-text-muted">Carregando comentários...</p>
       ) : comentariosOrdenados.length > 0 ? (
-        <ul className="divide-y divide-border rounded-2xl border border-border bg-elevated-muted">
-          {comentariosOrdenados.map((c) => (
-            <li key={c.id}>
-              <ComentarioPublicoCard
-                comentario={c}
-                variant={variant}
-                isMine={c.usuario_id === usuarioId}
-                editando={editandoId === c.id}
-                editTexto={editTexto}
-                onEditTexto={setEditTexto}
-                onIniciarEdicao={() => iniciarEdicao(c)}
-                onCancelarEdicao={cancelarEdicao}
-                onSalvarEdicao={handleSalvarEdicao}
-                salvando={salvar.isPending}
-              />
-            </li>
-          ))}
+        <ul className="flex flex-col gap-3">
+          {comentariosOrdenados.map((c) => {
+            const nomeCompleto = c.profiles?.nome ?? 'Aluno'
+            const nome = nomeCompleto.split(' ')[0]
+            const speakLabel = `${nome} disse: ${c.texto}`
+
+            return (
+              <li
+                key={c.id}
+                className={cn(
+                  variant === 'book'
+                    ? 'book-comment-bubble'
+                    : 'overflow-hidden rounded-2xl border border-border bg-elevated-muted',
+                )}
+              >
+                <Speakable label={speakLabel}>
+                  <ComentarioPublicoCard
+                    comentario={c}
+                    variant={variant}
+                    isMine={c.usuario_id === usuarioId}
+                    editando={editandoId === c.id}
+                    editTexto={editTexto}
+                    onEditTexto={setEditTexto}
+                    onIniciarEdicao={() => iniciarEdicao(c)}
+                    onCancelarEdicao={cancelarEdicao}
+                    onSalvarEdicao={handleSalvarEdicao}
+                    onExcluir={() => setExcluirId(c.id)}
+                    salvando={salvar.isPending}
+                    excluindo={excluir.isPending}
+                  />
+                </Speakable>
+              </li>
+            )
+          })}
         </ul>
       ) : (
         <p className="py-4 text-center text-sm text-text-muted">
@@ -353,6 +391,18 @@ export function ConteudoComentariosSection({
           )}
         </Button>
       </div>
+
+      <ConfirmDialog
+        open={excluirId !== null}
+        onOpenChange={(open) => {
+          if (!open) setExcluirId(null)
+        }}
+        title="Excluir comentário"
+        description="Seu comentário público será removido. Deseja continuar?"
+        confirmLabel="Excluir"
+        loading={excluir.isPending}
+        onConfirm={() => void handleConfirmExcluir()}
+      />
     </section>
   )
 }
@@ -367,7 +417,9 @@ function ComentarioPublicoCard({
   onIniciarEdicao,
   onCancelarEdicao,
   onSalvarEdicao,
+  onExcluir,
   salvando = false,
+  excluindo = false,
 }: {
   comentario: InteracaoComAutor
   variant?: 'default' | 'book'
@@ -378,19 +430,16 @@ function ComentarioPublicoCard({
   onIniciarEdicao?: () => void
   onCancelarEdicao?: () => void
   onSalvarEdicao?: () => void
+  onExcluir?: () => void
   salvando?: boolean
+  excluindo?: boolean
 }) {
   const nomeCompleto = comentario.profiles?.nome ?? 'Aluno'
   const nome = nomeCompleto.split(' ')[0]
   const relativo = formatRelativeTime(comentario.created_at)
 
   return (
-    <article
-      className={cn(
-        'px-4 py-4 sm:px-5',
-        variant === 'book' && 'book-comment-bubble mx-0 border-0 bg-transparent',
-      )}
-    >
+    <article className={cn('px-4 py-4 sm:px-5', variant === 'book' && 'px-0 py-0')}>
       <div className="flex gap-3">
         <Avatar name={nomeCompleto} className="h-8 w-8 shrink-0 text-[10px]" />
         <div className="min-w-0 flex-1">
@@ -425,13 +474,24 @@ function ComentarioPublicoCard({
                 {comentario.texto}
               </p>
               {isMine && (
-                <button
-                  type="button"
-                  onClick={onIniciarEdicao}
-                  className="mt-2 text-xs font-semibold text-text-muted transition-colors hover:text-primary"
-                >
-                  Editar
-                </button>
+                <div className="mt-2 flex flex-wrap items-center gap-3">
+                  <button
+                    type="button"
+                    onClick={onIniciarEdicao}
+                    disabled={excluindo}
+                    className="text-xs font-semibold text-text-muted transition-colors hover:text-primary disabled:opacity-50"
+                  >
+                    Editar
+                  </button>
+                  <button
+                    type="button"
+                    onClick={onExcluir}
+                    disabled={excluindo}
+                    className="text-xs font-semibold text-error transition-opacity hover:opacity-80 disabled:opacity-50"
+                  >
+                    Excluir
+                  </button>
+                </div>
               )}
             </>
           )}

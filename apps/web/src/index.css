@@ -310,13 +310,15 @@
   .home-catalog-shell {
     position: relative;
     z-index: 1;
+    --catalog-rail-gap: 3rem;
   }
 
   .home-section-rail-sticky {
     position: sticky;
     top: 0.5rem;
     z-index: 45;
-    padding-block: 0.35rem 1rem;
+    margin-bottom: var(--catalog-rail-gap);
+    padding-block: 0.4rem;
     background: transparent;
     transition:
       padding 0.2s ease,
@@ -331,7 +333,7 @@
   }
 
   .home-section-rail-sticky.is-pinned {
-    padding-block: 0.45rem 1.15rem;
+    padding-block: 0.5rem;
     background: linear-gradient(
       to bottom,
       rgb(255 255 255 / 0.78) 0%,
@@ -2539,7 +2541,8 @@
     display: flex;
     flex-direction: column;
     gap: 0.75rem;
-    padding-bottom: 0.15rem;
+    margin-bottom: var(--catalog-rail-gap, 3rem);
+    padding-bottom: 0;
     background: transparent;
   }
 
@@ -3921,7 +3924,7 @@
   .home-catalog-band {
     position: relative;
     margin-top: 0;
-    padding: 1.75rem 0 3.25rem;
+    padding: 0 0 3.25rem;
     background: transparent;
   }
 
