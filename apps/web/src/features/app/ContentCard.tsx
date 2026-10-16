@@ -68,7 +68,8 @@ export function ContentCard({ conteudo, showTipo = false, fluid = false }: Conte
       >
         <div
           className={cn(
-            'relative aspect-[3/4] overflow-hidden rounded-xl border border-primary/10',
+            'relative overflow-hidden rounded-xl border border-primary/10',
+            isVideo ? 'aspect-video bg-brand-navy/10' : 'aspect-[3/4]',
             'bg-gradient-to-br shadow-[var(--shadow-soft)]',
             !coverUrl && meta.tint,
           )}
@@ -77,7 +78,10 @@ export function ContentCard({ conteudo, showTipo = false, fluid = false }: Conte
             <img
               src={coverUrl}
               alt=""
-              className="h-full w-full object-cover transition-transform duration-300 group-hover:scale-[1.02]"
+              className={cn(
+                'h-full w-full transition-transform duration-300 group-hover:scale-[1.02]',
+                isVideo ? 'object-contain object-center' : 'object-cover',
+              )}
               loading="lazy"
               decoding="async"
             />

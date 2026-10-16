@@ -13,6 +13,8 @@ interface ObrasComunidadeSectionProps {
   hideWhenEmpty?: boolean
   /** Ao lado do card de nível na home */
   variant?: 'default' | 'inline'
+  /** Carrossel horizontal ou grade compacta (páginas de seção) */
+  layout?: 'carousel' | 'grid'
   /** Evita fetch duplicado quando o pai já carregou as obras */
   obras?: ObraPublicaCard[]
   isLoading?: boolean
@@ -23,10 +25,12 @@ export function ObrasComunidadeSection({
   className,
   hideWhenEmpty = false,
   variant = 'default',
+  layout = 'carousel',
   obras: obrasProp,
   isLoading: isLoadingProp,
 }: ObrasComunidadeSectionProps) {
   const inline = variant === 'inline'
+  const useGrid = layout === 'grid'
   const query = useObrasPublicas(limit, { enabled: obrasProp === undefined })
   const obras = obrasProp ?? query.data ?? []
   const isLoading = isLoadingProp ?? (obrasProp === undefined ? query.isLoading : false)
@@ -82,24 +86,29 @@ export function ObrasComunidadeSection({
       <SectionHeader count={obras.length} inline={inline} />
       <ul
         className={cn(
-          'flex gap-4 overflow-x-auto pb-2 scrollbar-thin',
-          inline && 'home-obras-publicas__list--inline',
+          useGrid
+            ? 'catalog-preview-grid catalog-preview-grid--section'
+            : 'flex gap-4 overflow-x-auto pb-2 scrollbar-thin',
+          inline && !useGrid && 'home-obras-publicas__list--inline',
         )}
         role="list"
       >
         {obras.map((obra) => (
-          <li key={obra.id} className="shrink-0">
+          <li key={obra.id} className={cn(!useGrid && 'shrink-0')}>
             <Link
               to="/app/obras/$obraId"
               params={{ obraId: obra.id }}
-              className="home-obra-publica-card group block w-[140px] no-underline sm:w-[160px]"
+              className={cn(
+                'home-obra-publica-card group block no-underline',
+                useGrid ? 'w-full' : 'w-[118px] sm:w-[128px]',
+              )}
             >
               <div className="relative aspect-[3/4] overflow-hidden rounded-xl border border-primary/10 bg-primary-light/30 shadow-[var(--shadow-soft)] transition-transform duration-200 group-hover:-translate-y-0.5 group-hover:shadow-[var(--shadow-card)]">
                 {obra.capa_url ? (
                   <img
                     src={obra.capa_url}
                     alt=""
-                    className="h-full w-full object-cover"
+                    className="h-full w-full object-contain object-center"
                     loading="lazy"
                   />
                 ) : (

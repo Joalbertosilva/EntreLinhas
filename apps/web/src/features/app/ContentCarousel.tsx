@@ -213,6 +213,7 @@ export function ContentCarousel({
           className={cn(
             'catalog-preview-grid',
             isHomePreviewGrid && 'catalog-preview-grid--home-slot',
+            !isHero && !isHomePreviewGrid && 'catalog-preview-grid--section',
           )}
           role="list"
           aria-label={gridLabel}

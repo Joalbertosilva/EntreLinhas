@@ -75,7 +75,7 @@ export function AppSectionPage({ item }: AppSectionPageProps) {
 
       {item.id === 'livros' && (
         <ScrollReveal delayMs={140}>
-          <ObrasComunidadeSection limit={16} />
+          <ObrasComunidadeSection limit={16} layout="grid" />
         </ScrollReveal>
       )}
     </div>

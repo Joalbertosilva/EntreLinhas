@@ -42,8 +42,8 @@ export const ACCOUNT_MENU_ITEMS: AccountMenuItem[] = [
   },
   {
     to: '/app/perfil',
-    label: 'Dados da conta',
-    description: 'Nome, usuário e perfil de acesso',
+    label: 'Minha conta',
+    description: 'Seus dados e preferências',
     icon: User,
   },
 ]

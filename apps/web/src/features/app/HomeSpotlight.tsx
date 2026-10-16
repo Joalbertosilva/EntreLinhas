@@ -217,7 +217,7 @@ function PromoObraSlide({ slide }: { slide: Extract<SpotlightSlide, { kind: 'pro
       <button
         type="button"
         onClick={open}
-        className="home-spotlight__visual group home-spotlight__visual--promo home-spotlight__visual--obra"
+        className="home-spotlight__visual home-spotlight__visual--cover group home-spotlight__visual--promo home-spotlight__visual--obra"
         aria-label="Ir para Minha obra"
       >
         <img
@@ -260,7 +260,7 @@ function PromoNewSlide({ slide }: { slide: Extract<SpotlightSlide, { kind: 'prom
       <button
         type="button"
         onClick={open}
-        className="home-spotlight__visual group home-spotlight__visual--promo"
+        className="home-spotlight__visual home-spotlight__visual--cover group home-spotlight__visual--promo"
         aria-label={`Abrir ${conteudo.titulo}`}
       >
         {coverUrl ? (
@@ -386,7 +386,10 @@ function ConteudoSlide({ slide }: { slide: Extract<SpotlightSlide, { kind: 'cont
       <button
         type="button"
         onClick={open}
-        className={cn('home-spotlight__visual group', isVideo && 'home-spotlight__visual--video')}
+        className={cn(
+          'home-spotlight__visual group',
+          isVideo ? 'home-spotlight__visual--video' : 'home-spotlight__visual--cover',
+        )}
         aria-label={`Abrir ${conteudo.titulo}`}
       >
         {coverUrl ? (

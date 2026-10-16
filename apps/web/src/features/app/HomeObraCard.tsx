@@ -39,11 +39,16 @@ function ObraCoverImage({
     <div
       className={cn(
         'home-obra-cover relative aspect-[2/3] w-full max-w-[11.5rem] overflow-hidden rounded-xl',
-        'border border-primary/12 shadow-[var(--shadow-card)]',
+        'border border-primary/12 bg-primary-light/35 shadow-[var(--shadow-card)]',
         'transition-transform duration-300 group-hover:-translate-y-1 group-hover:shadow-[var(--shadow-card),0_12px_28px_rgb(0_51_102_/_0.12)]',
       )}
     >
-      <img src={src} alt={alt} className="h-full w-full object-cover" loading="lazy" />
+      <img
+        src={src}
+        alt={alt}
+        className="h-full w-full object-contain object-center"
+        loading="lazy"
+      />
       <div
         className="pointer-events-none absolute inset-0 bg-gradient-to-t from-brand-navy/75 via-brand-navy/15 to-transparent"
         aria-hidden

@@ -88,16 +88,20 @@ export function BookPaginatedReader({ pages, conteudoId, titulo, storageKey: sto
             turn === 'prev' && 'book-page-viewport--turn-prev',
           )}
         >
-          <Speakable label={pageSpeakLabel}>
-            <div key={pageIndex} className="book-page-sheet">
-              <div className="book-page-inner-shadow" aria-hidden />
-              <h3 className="book-page-title">{current.title}</h3>
-              <div ref={scrollRef} className="book-prose book-page-text scrollbar-thin whitespace-pre-wrap">
+          <div key={pageIndex} className="book-page-sheet">
+            <div className="book-page-inner-shadow" aria-hidden />
+            <h3 className="book-page-title">{current.title}</h3>
+            <Speakable label={pageSpeakLabel} className="book-page-text-region">
+              <div
+                ref={scrollRef}
+                className="book-prose book-page-text scrollbar-thin whitespace-pre-wrap"
+                tabIndex={0}
+              >
                 {current.body}
               </div>
-              <p className="book-page-scroll-hint">Role dentro da página para ler tudo</p>
-            </div>
-          </Speakable>
+            </Speakable>
+            <p className="book-page-scroll-hint">Role dentro da página para ler tudo</p>
+          </div>
         </div>
       </div>
 
