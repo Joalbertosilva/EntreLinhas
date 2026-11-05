@@ -1,4 +1,5 @@
 import { Link } from '@tanstack/react-router'
+import { Speakable } from '@/features/accessibility/Speakable'
 import { ArrowRight } from 'lucide-react'
 import { AmbientCanvasField } from '@/components/layout/LoginAmbientBackground'
 import { BookProgressVisual } from '@/features/app/BookProgressVisual'
@@ -45,22 +46,37 @@ export function HomeProgressCard({ userId }: HomeProgressCardProps) {
   const faixa = faixaDoNivel(progress.nivel)
   const faixaRotulo = tituloJornada(progress.nivel)
 
+  const journeyLabel = [
+    'Sua jornada de leitura',
+    `Nível ${progress.nivel}`,
+    faixaRotulo,
+    `${progress.xp} XP`,
+    progress.nivelMaximo
+      ? 'Nível máximo alcançado'
+      : progress.xpParaProximoNivel > 0
+        ? `Faltam ${progress.xpParaProximoNivel} XP para o nível ${progress.nivel + 1}`
+        : null,
+  ]
+    .filter(Boolean)
+    .join('. ')
+
   return (
     <div className="home-progress-wrap">
-      <p className="home-jornada-eyebrow">Sua jornada de leitura</p>
       {showLevelUp && (
         <p className="home-level-up-banner" role="status">
           Você subiu de nível!
         </p>
       )}
-      <Link
-        to="/app/progresso"
-        className={cn(
-          'jornada-card jornada-card--interactive jornada-card--ambient group block no-underline',
-          showLevelUp && 'jornada-card--celebrate',
-        )}
-        aria-label={`${faixaRotulo}. Nível ${progress.nivel}. ${progress.xp} XP. ${displayPct}% deste capítulo.`}
-      >
+      <p className="home-jornada-eyebrow">Sua jornada de leitura</p>
+      <Speakable label={journeyLabel} className="home-jornada-speakable">
+        <Link
+          to="/app/progresso"
+          className={cn(
+            'jornada-card jornada-card--interactive jornada-card--ambient group block no-underline',
+            showLevelUp && 'jornada-card--celebrate',
+          )}
+          aria-label={`${faixaRotulo}. Nível ${progress.nivel}. ${progress.xp} XP. ${displayPct}% deste capítulo.`}
+        >
         <AmbientCanvasField compact className="jornada-card__ambient ambient-canvas-field" />
 
         <div className="jornada-card__surface">
@@ -128,7 +144,8 @@ export function HomeProgressCard({ userId }: HomeProgressCardProps) {
             <ArrowRight className="jornada-card__cta-icon" strokeWidth={2} aria-hidden />
           </span>
         </div>
-      </Link>
+        </Link>
+      </Speakable>
     </div>
   )
 }

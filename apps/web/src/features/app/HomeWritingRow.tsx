@@ -1,4 +1,6 @@
 import { Link } from '@tanstack/react-router'
+import { SectionSpeakHeader } from '@/features/accessibility/SectionSpeakHeader'
+import { CommunityObraCard } from '@/features/app/CommunityObraCard'
 import { ChevronRight } from 'lucide-react'
 import { HomeLeiturasWidget } from '@/features/app/HomeLeiturasWidget'
 import type { ObraPublicaCard } from '@/features/app/useMinhaObra'
@@ -25,15 +27,20 @@ export function HomeWritingRow({
         className="home-writing-row__panel home-writing-row__panel--comunidade"
         aria-labelledby="home-comunidade"
       >
-        <div className="home-writing-row__head section-head-inline">
-          <h2 id="home-comunidade" className="home-writing-row__title mb-0">
-            Obras da comunidade
-          </h2>
-          <Link to="/app/livros" className="section-action-link section-action-link--panel">
-            Ver tudo
-            <ChevronRight className="h-3.5 w-3.5" aria-hidden />
-          </Link>
-        </div>
+        <SectionSpeakHeader
+          label="Obras da comunidade. Leituras publicadas por outros alunos."
+          className="home-writing-row__head section-head-inline mb-0"
+        >
+          <div className="flex min-w-0 flex-wrap items-center gap-x-3 gap-y-1">
+            <h2 id="home-comunidade" className="home-writing-row__title mb-0">
+              Obras da comunidade
+            </h2>
+            <Link to="/app/livros" className="section-action-link section-action-link--panel">
+              Ver tudo
+              <ChevronRight className="h-3.5 w-3.5" aria-hidden />
+            </Link>
+          </div>
+        </SectionSpeakHeader>
 
         {loadingComunidade ? (
           <p className="text-sm text-text-muted">Carregando…</p>
@@ -47,32 +54,22 @@ export function HomeWritingRow({
           </p>
         ) : (
           <ul className="home-writing-row__list">
-            {digest.map((item) => (
-              <li key={item.id}>
-                <Link
-                  to="/app/obras/$obraId"
-                  params={{ obraId: item.id }}
-                  className="home-writing-row__item"
-                >
-                  <div className="home-writing-row__thumb">
-                    {item.capa_url ? (
-                      <img src={item.capa_url} alt="" loading="lazy" />
-                    ) : (
-                      <span aria-hidden>{item.titulo.charAt(0)}</span>
-                    )}
-                  </div>
-                  <div className="min-w-0">
-                    <p className="home-writing-row__cat">
-                      {CATEGORIA_OBRA_LABEL[item.categoria] ?? item.categoria}
-                    </p>
-                    <p className="home-writing-row__titulo">{item.titulo}</p>
-                    <p className="home-writing-row__meta">
-                      {item.autor?.nome ?? 'Autor da comunidade'} · {TIPO_OBRA_LABEL[item.tipo]}
-                    </p>
-                  </div>
-                </Link>
-              </li>
-            ))}
+            {digest.map((item) => {
+              const itemLabel = [
+                item.titulo,
+                CATEGORIA_OBRA_LABEL[item.categoria] ?? item.categoria,
+                item.autor?.nome ?? 'Autor da comunidade',
+                TIPO_OBRA_LABEL[item.tipo],
+              ]
+                .filter(Boolean)
+                .join('. ')
+
+              return (
+                <li key={item.id}>
+                  <CommunityObraCard item={item} speakLabel={itemLabel} />
+                </li>
+              )
+            })}
           </ul>
         )}
       </section>

@@ -1,6 +1,8 @@
 import { ChevronLeft, ChevronRight } from 'lucide-react'
 import { useCallback, useEffect, useRef, useState } from 'react'
+import { useAccessibility } from '@/features/accessibility/AccessibilityProvider'
 import { Speakable } from '@/features/accessibility/Speakable'
+import { SpeakButton } from '@/features/accessibility/SpeakButton'
 import { Button } from '@/components/ui/Button'
 import type { BookPage } from '@/features/app/bookPagination'
 import { getBookPageStorageKey } from '@/features/app/bookPagination'
@@ -19,6 +21,7 @@ type TurnDirection = 'next' | 'prev' | null
 export function BookPaginatedReader({ pages, conteudoId, titulo, storageKey: storageKeyProp }: BookPaginatedReaderProps) {
   const storageKey = storageKeyProp ?? getBookPageStorageKey(conteudoId)
   const scrollRef = useRef<HTMLDivElement>(null)
+  const { audioEnabled } = useAccessibility()
 
   const [pageIndex, setPageIndex] = useState(0)
   const [turn, setTurn] = useState<TurnDirection>(null)
@@ -90,8 +93,11 @@ export function BookPaginatedReader({ pages, conteudoId, titulo, storageKey: sto
         >
           <div key={pageIndex} className="book-page-sheet">
             <div className="book-page-inner-shadow" aria-hidden />
-            <h3 className="book-page-title">{current.title}</h3>
-            <Speakable label={pageSpeakLabel} className="book-page-text-region">
+            <div className="book-page-title-row">
+              <h3 className="book-page-title">{current.title}</h3>
+              {audioEnabled && <SpeakButton label={pageSpeakLabel} className="book-page-title-speak" />}
+            </div>
+            <Speakable hideButton label={pageSpeakLabel} className="book-page-text-region">
               <div
                 ref={scrollRef}
                 className="book-prose book-page-text scrollbar-thin whitespace-pre-wrap"

@@ -1,6 +1,9 @@
 import { Link, useNavigate } from '@tanstack/react-router'
 import { BookOpen, ChevronLeft, ChevronRight, Loader2, Play, Sparkles } from 'lucide-react'
-import { useCallback, useEffect, useState } from 'react'
+import { useCallback, useEffect, useState, type ReactNode } from 'react'
+import { useAccessibility } from '@/features/accessibility/AccessibilityProvider'
+import { Speakable } from '@/features/accessibility/Speakable'
+import { SpeakButton } from '@/features/accessibility/SpeakButton'
 import { getAppRouteForTipo } from '@/features/app/appNavigation'
 import { spotlightDeckText, type SpotlightSlide } from '@/features/app/homeSpotlightSlides'
 import { useHomeSpotlightSlides } from '@/features/app/useHomeSpotlightSlides'
@@ -83,7 +86,7 @@ export function HomeSpotlight({ userId, className }: HomeSpotlightProps) {
       <section className={cn('home-spotlight home-spotlight--empty', className)}>
         <div className="home-spotlight__stage" data-tone="content">
           <div className="home-spotlight__inner home-spotlight__grid">
-            <div className="home-spotlight__copy">
+            <SpotlightCopy label="Catálogo EntreLinhas. Cadastre conteúdos para preencher o catálogo. Livros, crônicas, poemas, músicas e vídeos aparecerão aqui conforme forem adicionados no painel administrativo.">
               <p className="home-spotlight__eyebrow">Catálogo EntreLinhas</p>
               <h2 className="home-spotlight__headline">Cadastre conteúdos para preencher o catálogo</h2>
               <p className="home-spotlight__deck">
@@ -95,7 +98,7 @@ export function HomeSpotlight({ userId, className }: HomeSpotlightProps) {
                   Explorar catálogo
                 </Link>
               </div>
-            </div>
+            </SpotlightCopy>
             <div className="home-spotlight__visual home-spotlight__visual--placeholder" aria-hidden>
               <BookOpen className="h-16 w-16 text-white/25" strokeWidth={1.25} />
             </div>
@@ -163,12 +166,16 @@ export function HomeSpotlight({ userId, className }: HomeSpotlightProps) {
       </div>
 
       {showCaption && (
-        <div className="home-spotlight__caption-wrap" aria-live="polite">
-          <p key={captionKey} className="home-spotlight__caption home-spotlight__caption--enter">
+        <SpotlightCopy label={`${activeSlide.badge}. ${activeSlide.caption}`}>
+          <p
+            key={captionKey}
+            className="home-spotlight__caption home-spotlight__caption-wrap home-spotlight__caption--enter"
+            aria-live="polite"
+          >
             <span className="home-spotlight__caption-badge">{activeSlide.badge}</span>
             <span className="home-spotlight__caption-title">{activeSlide.caption}</span>
           </p>
-        </div>
+        </SpotlightCopy>
       )}
     </section>
   )
@@ -199,7 +206,7 @@ function PromoObraSlide({ slide }: { slide: Extract<SpotlightSlide, { kind: 'pro
 
   return (
     <div className="home-spotlight__grid">
-      <div className="home-spotlight__copy">
+      <SpotlightCopy label={`${slide.badge}. ${slide.headline}. ${slide.deck}`}>
         <p className="home-spotlight__eyebrow">{slide.badge}</p>
         <h2 className="home-spotlight__headline">{slide.headline}</h2>
         <p className="home-spotlight__deck">{slide.deck}</p>
@@ -212,7 +219,7 @@ function PromoObraSlide({ slide }: { slide: Extract<SpotlightSlide, { kind: 'pro
             Explorar catálogo
           </Link>
         </div>
-      </div>
+      </SpotlightCopy>
 
       <button
         type="button"
@@ -244,7 +251,7 @@ function PromoNewSlide({ slide }: { slide: Extract<SpotlightSlide, { kind: 'prom
 
   return (
     <div className="home-spotlight__grid">
-      <div className="home-spotlight__copy">
+      <SpotlightCopy label={`${slide.badge}. ${slide.headline}. ${conteudo.titulo}. ${slide.deck}`}>
         <p className="home-spotlight__eyebrow">{slide.badge}</p>
         <h2 className="home-spotlight__headline">{slide.headline}</h2>
         <p className="home-spotlight__author">{conteudo.titulo}</p>
@@ -255,7 +262,7 @@ function PromoNewSlide({ slide }: { slide: Extract<SpotlightSlide, { kind: 'prom
             <ChevronRight className="h-4 w-4" aria-hidden />
           </button>
         </div>
-      </div>
+      </SpotlightCopy>
 
       <button
         type="button"
@@ -299,7 +306,7 @@ function PromoVideoSlide({ slide }: { slide: Extract<SpotlightSlide, { kind: 'pr
 
   return (
     <div className="home-spotlight__grid">
-      <div className="home-spotlight__copy">
+      <SpotlightCopy label={`${slide.badge}. ${slide.headline}. ${slide.deck}`}>
         <p className="home-spotlight__eyebrow">{slide.badge}</p>
         <h2 className="home-spotlight__headline">{slide.headline}</h2>
         <p className="home-spotlight__deck">{slide.deck}</p>
@@ -316,7 +323,7 @@ function PromoVideoSlide({ slide }: { slide: Extract<SpotlightSlide, { kind: 'pr
             Assistir agora
           </button>
         </div>
-      </div>
+      </SpotlightCopy>
 
       <button
         type="button"
@@ -367,7 +374,9 @@ function ConteudoSlide({ slide }: { slide: Extract<SpotlightSlide, { kind: 'cont
 
   return (
     <div className="home-spotlight__grid">
-      <div className="home-spotlight__copy">
+      <SpotlightCopy
+        label={[badge, conteudo.titulo, conteudo.autor, spotlightDeckText(slide)].filter(Boolean).join('. ')}
+      >
         <p className="home-spotlight__eyebrow">{badge}</p>
         <h2 className="home-spotlight__headline">{conteudo.titulo}</h2>
         {conteudo.autor && <p className="home-spotlight__author">{conteudo.autor}</p>}
@@ -381,7 +390,7 @@ function ConteudoSlide({ slide }: { slide: Extract<SpotlightSlide, { kind: 'cont
             Ver seção
           </Link>
         </div>
-      </div>
+      </SpotlightCopy>
 
       <button
         type="button"
@@ -416,6 +425,23 @@ function ConteudoSlide({ slide }: { slide: Extract<SpotlightSlide, { kind: 'cont
           </div>
         )}
       </button>
+    </div>
+  )
+}
+
+function SpotlightCopy({ label, children }: { label: string; children: ReactNode }) {
+  const { audioEnabled } = useAccessibility()
+
+  return (
+    <div className="home-spotlight__copy">
+      {audioEnabled === true && (
+        <div className="home-spotlight__copy-speak">
+          <SpeakButton label={label} />
+        </div>
+      )}
+      <Speakable hideButton label={label}>
+        {children}
+      </Speakable>
     </div>
   )
 }

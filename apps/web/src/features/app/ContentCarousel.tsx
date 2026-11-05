@@ -11,6 +11,7 @@ import {
   countPlaceholders,
   useSectionConteudos,
 } from '@/features/app/useConteudos'
+import { SectionSpeakHeader } from '@/features/accessibility/SectionSpeakHeader'
 import { Button } from '@/components/ui/Button'
 import { cn } from '@/lib/utils'
 
@@ -162,8 +163,11 @@ export function ContentCarousel({
         aria-label={isHero ? 'Conteúdos em destaque' : undefined}
       >
         {!isHero && showSectionHeader && (
-          <div className="flex min-w-0 items-start gap-3">
-            <SectionIcon section={iconSection} size="sm" className="mt-0.5 shadow-none" />
+          <SectionSpeakHeader
+            label={[section.title, section.subtitle].filter(Boolean).join('. ')}
+            icon={<SectionIcon section={iconSection} size="sm" className="mt-0.5 shadow-none" />}
+            className="min-w-0 items-start gap-3"
+          >
             <div className="min-w-0">
               <div className="section-head-inline">
                 <h2
@@ -185,7 +189,7 @@ export function ContentCarousel({
                 <p className="mt-0.5 text-sm text-text-muted">{section.subtitle}</p>
               )}
             </div>
-          </div>
+          </SectionSpeakHeader>
         )}
 
         {isError && !usesExternalData && (
@@ -242,8 +246,11 @@ export function ContentCarousel({
       aria-label={isHero ? 'Conteúdos em destaque' : undefined}
     >
       {!isHero && (
-        <div className="flex min-w-0 items-start gap-3">
-          <SectionIcon section={iconSection} size="sm" className="mt-0.5 shadow-none" />
+        <SectionSpeakHeader
+          label={[section.title, section.subtitle].filter(Boolean).join('. ')}
+          icon={<SectionIcon section={iconSection} size="sm" className="mt-0.5 shadow-none" />}
+          className="min-w-0 items-start gap-3"
+        >
           <div className="min-w-0">
             <div className="section-head-inline">
               <h2
@@ -265,7 +272,7 @@ export function ContentCarousel({
               <p className="mt-0.5 text-sm text-text-muted">{section.subtitle}</p>
             )}
           </div>
-        </div>
+        </SectionSpeakHeader>
       )}
 
       {isError && !overrideConteudos && (

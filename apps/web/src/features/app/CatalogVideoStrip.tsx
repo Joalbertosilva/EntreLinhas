@@ -1,4 +1,6 @@
 import { Link } from '@tanstack/react-router'
+import { Speakable } from '@/features/accessibility/Speakable'
+import { SectionSpeakHeader } from '@/features/accessibility/SectionSpeakHeader'
 import { ChevronRight, Play } from 'lucide-react'
 import { useEffect, useMemo, useState } from 'react'
 import type { CatalogAnchor } from '@tcc-sistema/types'
@@ -76,7 +78,10 @@ export function CatalogVideoStrip({ anchor, videos, className }: CatalogVideoStr
       data-anchor={anchor}
     >
       <div className="catalog-video-showcase__inner">
-        <header className="catalog-video-showcase__head">
+        <SectionSpeakHeader
+          label={`${copy.eyebrow}. ${copy.title}`}
+          className="catalog-video-showcase__head items-start gap-2"
+        >
           <div className="min-w-0">
             <p className="catalog-video-showcase__eyebrow">{copy.eyebrow}</p>
             <div className="section-head-inline">
@@ -89,7 +94,7 @@ export function CatalogVideoStrip({ anchor, videos, className }: CatalogVideoStr
               </Link>
             </div>
           </div>
-        </header>
+        </SectionSpeakHeader>
 
         <div className="catalog-video-showcase__layout">
           <FeaturedVideo
@@ -147,15 +152,17 @@ function FeaturedVideo({
         </div>
       </button>
 
-      <div className="catalog-video-featured__meta">
-        <p className="catalog-video-featured__label">{label}</p>
-        <h4 className="catalog-video-featured__name">{video.titulo}</h4>
-        {video.autor && <p className="catalog-video-featured__author">{video.autor}</p>}
-        <button type="button" onClick={onOpen} className="catalog-video-featured__cta">
-          Assistir no YouTube
-          <ChevronRight className="h-4 w-4" aria-hidden />
-        </button>
-      </div>
+      <Speakable label={[label, video.titulo, video.autor].filter(Boolean).join('. ')}>
+        <div className="catalog-video-featured__meta">
+          <p className="catalog-video-featured__label">{label}</p>
+          <h4 className="catalog-video-featured__name">{video.titulo}</h4>
+          {video.autor && <p className="catalog-video-featured__author">{video.autor}</p>}
+          <button type="button" onClick={onOpen} className="catalog-video-featured__cta">
+            Assistir no YouTube
+            <ChevronRight className="h-4 w-4" aria-hidden />
+          </button>
+        </div>
+      </Speakable>
     </article>
   )
 }

@@ -14,6 +14,8 @@ export function SpeakButton({ label, className }: SpeakButtonProps) {
   return (
     <button
       type="button"
+      data-speak-btn="1"
+      data-no-a11y-speak="1"
       onClick={() => toggleSpeak(label)}
       aria-label={active ? 'Parar leitura' : `Ouvir: ${label}`}
       aria-pressed={active}

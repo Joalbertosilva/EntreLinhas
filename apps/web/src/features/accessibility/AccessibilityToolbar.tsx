@@ -146,8 +146,8 @@ export function AccessibilityToolbar({ className, floating = false }: Accessibil
           </div>
 
           <p className="text-[0.6875rem] leading-relaxed text-text-muted">
-            Com o áudio ativo, cada caixa de texto ganha um ícone de som. Clique nele para ouvir
-            somente aquele trecho.
+            Com o áudio ativo, cada bloco de conteúdo ganha um ícone de som. A+ e A- aumentam só
+            o texto de cada bloco — se passar do tamanho, role dentro da caixa.
           </p>
         </div>
       )}

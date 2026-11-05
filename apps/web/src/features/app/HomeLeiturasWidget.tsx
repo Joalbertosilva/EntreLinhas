@@ -1,4 +1,7 @@
 import { Link, useNavigate } from '@tanstack/react-router'
+import { Speakable } from '@/features/accessibility/Speakable'
+import { SpeakButton } from '@/features/accessibility/SpeakButton'
+import { useAccessibility } from '@/features/accessibility/AccessibilityProvider'
 import { AmbientCanvasField } from '@/components/layout/LoginAmbientBackground'
 import { ChevronDown, ChevronRight, Loader2, X } from 'lucide-react'
 import { useEffect, useId, useRef, useState } from 'react'
@@ -16,6 +19,7 @@ export function HomeLeiturasWidget({ userId }: HomeLeiturasWidgetProps) {
   const panelId = useId()
   const rootRef = useRef<HTMLDivElement>(null)
   const [expanded, setExpanded] = useState(false)
+  const { audioEnabled } = useAccessibility()
   const { data: leituras = [], isLoading } = useHomeContinueReading(userId)
 
   useEffect(() => {
@@ -46,38 +50,62 @@ export function HomeLeiturasWidget({ userId }: HomeLeiturasWidgetProps) {
   const countLabel =
     leituras.length === 1 ? '1 em andamento' : `${leituras.length} em andamento`
 
+  const widgetLabel = [
+    'Minhas leituras',
+    !isLoading && leituras.length > 0 ? countLabel : null,
+    !isLoading && leituras.length === 0 ? 'Retome de onde parou' : null,
+  ]
+    .filter(Boolean)
+    .join('. ')
+
   return (
     <div
       ref={rootRef}
       className={cn('home-leituras-widget', expanded && 'home-leituras-widget--expanded')}
     >
-      <AmbientCanvasField compact className="home-leituras-widget__ambient ambient-canvas-field" />
+      <div className="home-leituras-widget__header">
+        <AmbientCanvasField compact className="home-leituras-widget__ambient ambient-canvas-field" />
+        <Speakable hideButton label={widgetLabel} className="home-leituras-widget__trigger-speakable">
+          <button
+            type="button"
+            className="home-leituras-widget__trigger"
+            aria-expanded={expanded}
+            aria-controls={panelId}
+            onClick={() => setExpanded((open) => !open)}
+          >
+            <span className="home-leituras-widget__trigger-text">
+              <span className="home-leituras-widget__trigger-label">Minhas leituras</span>
+              {!isLoading && leituras.length > 0 && (
+                <span className="home-leituras-widget__trigger-meta">{countLabel}</span>
+              )}
+              {isLoading && (
+                <span className="home-leituras-widget__trigger-meta">Carregando…</span>
+              )}
+              {!isLoading && leituras.length === 0 && (
+                <span className="home-leituras-widget__trigger-meta">Retome de onde parou</span>
+              )}
+            </span>
+          </button>
+        </Speakable>
 
-      <button
-        type="button"
-        className="home-leituras-widget__trigger"
-        aria-expanded={expanded}
-        aria-controls={panelId}
-        onClick={() => setExpanded((open) => !open)}
-      >
-        <span className="home-leituras-widget__trigger-text">
-          <span className="home-leituras-widget__trigger-label">Minhas leituras</span>
-          {!isLoading && leituras.length > 0 && (
-            <span className="home-leituras-widget__trigger-meta">{countLabel}</span>
-          )}
-          {isLoading && (
-            <span className="home-leituras-widget__trigger-meta">Carregando…</span>
-          )}
-          {!isLoading && leituras.length === 0 && (
-            <span className="home-leituras-widget__trigger-meta">Retome de onde parou</span>
-          )}
-        </span>
-        {expanded ? (
-          <X className="home-leituras-widget__chev" aria-hidden />
-        ) : (
-          <ChevronDown className="home-leituras-widget__chev" aria-hidden />
-        )}
-      </button>
+        <div className="home-leituras-widget__header-actions">
+          {audioEnabled === true && <SpeakButton label={widgetLabel} />}
+          <button
+            type="button"
+            className="home-leituras-widget__toggle-btn"
+            aria-expanded={expanded}
+            aria-controls={panelId}
+            aria-label={expanded ? 'Fechar minhas leituras' : 'Abrir minhas leituras'}
+            onClick={() => setExpanded((open) => !open)}
+          >
+            {expanded ? (
+              <X className="home-leituras-widget__chev" aria-hidden />
+            ) : (
+              <ChevronDown className="home-leituras-widget__chev" aria-hidden />
+            )}
+          </button>
+        </div>
+      </div>
 
       <div
         id={panelId}
@@ -129,25 +157,35 @@ function LeituraWidgetItem({
     void navigate({ to: '/app/conteudos/$conteudoId', params: { conteudoId: conteudo.id } })
   }
 
+  const itemLabel = [TIPO_CONTEUDO_LABEL[conteudo.tipo], conteudo.titulo, conteudo.autor]
+    .filter(Boolean)
+    .join('. ')
+
   return (
     <li>
-      <button type="button" className="home-leituras-widget__item" onClick={open}>
-        <div className="home-leituras-widget__item-cover">
-          {coverUrl ? (
-            <img src={coverUrl} alt="" loading="lazy" decoding="async" />
-          ) : (
-            <span className="home-leituras-widget__item-cover-fallback" aria-hidden />
-          )}
+      <article className="home-leituras-widget__card group flex gap-2.5">
+        <div className="home-leituras-widget__card-main min-w-0 flex-1">
+          <button type="button" className="home-leituras-widget__item-cover-btn" onClick={open}>
+            <div className="home-leituras-widget__item-cover">
+              {coverUrl ? (
+                <img src={coverUrl} alt="" loading="lazy" decoding="async" />
+              ) : (
+                <span className="home-leituras-widget__item-cover-fallback" aria-hidden />
+              )}
+            </div>
+          </button>
+          <Speakable label={itemLabel} className="content-card__speakable mt-1.5 px-0.5">
+            <button type="button" className="home-leituras-widget__item-text" onClick={open}>
+              <span className="home-leituras-widget__item-tipo">{TIPO_CONTEUDO_LABEL[conteudo.tipo]}</span>
+              <span className="home-leituras-widget__item-titulo">{conteudo.titulo}</span>
+              {conteudo.autor && (
+                <span className="home-leituras-widget__item-autor">{conteudo.autor}</span>
+              )}
+            </button>
+          </Speakable>
         </div>
-        <span className="home-leituras-widget__item-body">
-          <span className="home-leituras-widget__item-tipo">{TIPO_CONTEUDO_LABEL[conteudo.tipo]}</span>
-          <span className="home-leituras-widget__item-titulo">{conteudo.titulo}</span>
-          {conteudo.autor && (
-            <span className="home-leituras-widget__item-autor">{conteudo.autor}</span>
-          )}
-        </span>
-        <ChevronRight className="home-leituras-widget__item-chev" aria-hidden />
-      </button>
+        <ChevronRight className="home-leituras-widget__item-chev self-center" aria-hidden />
+      </article>
     </li>
   )
 }

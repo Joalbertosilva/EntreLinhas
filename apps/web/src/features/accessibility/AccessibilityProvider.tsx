@@ -47,7 +47,11 @@ const FONT_ORDER: FontScale[] = ['normal', 'large', 'xlarge', 'xxlarge']
 
 function applyFontScale(scale: FontScale) {
   document.documentElement.dataset.a11yFont = scale
-  document.documentElement.style.fontSize = `${FONT_SCALE_PERCENT[scale]}%`
+  document.documentElement.style.removeProperty('font-size')
+  document.documentElement.style.setProperty(
+    '--a11y-text-scale',
+    String(FONT_SCALE_PERCENT[scale] / 100),
+  )
 }
 
 export function AccessibilityProvider({ children }: { children: ReactNode }) {

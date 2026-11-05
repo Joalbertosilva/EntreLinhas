@@ -1,3 +1,5 @@
+import { Speakable } from '@/features/accessibility/Speakable'
+import { SectionSpeakHeader } from '@/features/accessibility/SectionSpeakHeader'
 import { ContentCarousel } from '@/features/app/ContentCarousel'
 import { HomeObraStrip } from '@/features/app/HomeObraStrip'
 import { HomeProgressCard } from '@/features/app/HomeProgressCard'
@@ -28,15 +30,26 @@ export function HomeHero({ userId, firstName }: HomeHeroProps) {
     <>
       <section className="home-hero-band" aria-labelledby="home-greeting">
         <div className="home-hero-inner">
-          <header className="home-hero-greeting">
-            <h1 id="home-greeting" className="home-hero-title">
-              {getTimeGreeting()}, {firstName}
-            </h1>
-            <p className="home-hero-deck">
-              Leia obras da comunidade, escreva a sua e acompanhe sua jornada — tudo num só lugar.
-            </p>
-            {personalLine && <p className="home-hero-subtitle">{personalLine}</p>}
-          </header>
+          <Speakable
+            className="home-hero-greeting-speakable"
+            label={[
+              `${getTimeGreeting()}, ${firstName}`,
+              'Leia obras da comunidade, escreva a sua e acompanhe sua jornada — tudo num só lugar.',
+              personalLine,
+            ]
+              .filter(Boolean)
+              .join('. ')}
+          >
+            <header className="home-hero-greeting">
+              <h1 id="home-greeting" className="home-hero-title">
+                {getTimeGreeting()}, {firstName}
+              </h1>
+              <p className="home-hero-deck">
+                Leia obras da comunidade, escreva a sua e acompanhe sua jornada — tudo num só lugar.
+              </p>
+              {personalLine && <p className="home-hero-subtitle">{personalLine}</p>}
+            </header>
+          </Speakable>
 
           <div className="home-hero-priority">
             <HomeObraStrip
@@ -53,12 +66,15 @@ export function HomeHero({ userId, firstName }: HomeHeroProps) {
 
       <section className="home-editorial" aria-label="Destaques e obras da comunidade">
         <div className="home-editorial__inner home-editorial__inner--highlights">
-          <div className="home-editorial__section-head">
+          <SectionSpeakHeader
+            label="Destaques do EntreLinhas. Livros, crônicas, poemas e músicas mais curtidos — até doze itens em filas de quatro."
+            className="home-editorial__section-head"
+          >
             <h2 className="home-editorial__section-title">Destaques do EntreLinhas</h2>
             <p className="home-editorial__section-deck">
               Livros, crônicas, poemas e músicas mais curtidos — até doze itens em filas de quatro.
             </p>
-          </div>
+          </SectionSpeakHeader>
           <ContentCarousel section={destaques} showViewAll variant="hero" fadeTone="catalog" />
         </div>
 

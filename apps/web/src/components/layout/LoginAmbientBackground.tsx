@@ -1,4 +1,4 @@
-import { useEffect, useRef } from 'react'
+import { useLayoutEffect, useRef } from 'react'
 
 interface BlobNode {
   offsetX: number
@@ -151,21 +151,22 @@ function drawLivingField(
   height: number,
   time: number,
   scale = 1,
+  driftBoost = 1,
 ) {
   ctx.clearRect(0, 0, width, height)
 
   for (const organism of ORGANISMS) {
     const anchorX =
       organism.anchorX * width +
-      Math.sin(time * organism.driftSpeed + organism.driftPhase) * width * 0.07
+      Math.sin(time * organism.driftSpeed * driftBoost + organism.driftPhase) * width * 0.09
     const anchorY =
       organism.anchorY * height +
-      Math.cos(time * organism.driftSpeed * 0.85 + organism.driftPhase) * height * 0.06
+      Math.cos(time * organism.driftSpeed * 0.85 * driftBoost + organism.driftPhase) * height * 0.08
 
     for (const node of organism.nodes) {
-      const pulse = 1 + Math.sin(time * node.speed + node.phase) * 0.12
-      const wobbleX = Math.sin(time * node.speed * 1.15 + node.phase) * 52 * scale
-      const wobbleY = Math.cos(time * node.speed * 0.92 + node.phase * 1.3) * 44 * scale
+      const pulse = 1 + Math.sin(time * node.speed * driftBoost + node.phase) * 0.14
+      const wobbleX = Math.sin(time * node.speed * 1.15 * driftBoost + node.phase) * 58 * scale
+      const wobbleY = Math.cos(time * node.speed * 0.92 * driftBoost + node.phase * 1.3) * 48 * scale
       const x = anchorX + node.offsetX * scale + wobbleX
       const y = anchorY + node.offsetY * scale + wobbleY
       const radius = node.radius * pulse * scale
@@ -180,9 +181,9 @@ function drawLivingField(
       ctx.ellipse(
         x,
         y,
-        radius * (1 + Math.sin(time * 0.35 + node.phase) * 0.08),
-        radius * (1 + Math.cos(time * 0.28 + node.phase) * 0.1),
-        Math.sin(time * 0.15 + node.phase) * 0.35,
+        radius * (1 + Math.sin(time * 0.35 * driftBoost + node.phase) * 0.1),
+        radius * (1 + Math.cos(time * 0.28 * driftBoost + node.phase) * 0.12),
+        Math.sin(time * 0.15 * driftBoost + node.phase) * 0.35,
         0,
         Math.PI * 2,
       )
@@ -202,7 +203,7 @@ export function AmbientCanvasField({ className, compact = false }: AmbientCanvas
   const rootRef = useRef<HTMLDivElement>(null)
   const canvasRef = useRef<HTMLCanvasElement>(null)
 
-  useEffect(() => {
+  useLayoutEffect(() => {
     const root = rootRef.current
     const canvas = canvasRef.current
     if (!root || !canvas) return
@@ -210,50 +211,90 @@ export function AmbientCanvasField({ className, compact = false }: AmbientCanvas
     const ctx = canvas.getContext('2d')
     if (!ctx) return
 
-    const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches
-    const scale = compact ? 0.44 : 1
+    const motionQuery = window.matchMedia('(prefers-reduced-motion: reduce)')
+    const scale = compact ? 0.82 : 1
+    const timeScale = compact ? 2.1 : 1
+    const driftBoost = compact ? 1.65 : 1
     let raf = 0
     const start = performance.now()
+    let running = false
 
     const resize = () => {
       const dpr = Math.min(window.devicePixelRatio || 1, 2)
       const { width, height } = root.getBoundingClientRect()
-      if (width < 1 || height < 1) return
+      if (width < 1 || height < 1) return false
       canvas.width = Math.floor(width * dpr)
       canvas.height = Math.floor(height * dpr)
       ctx.setTransform(dpr, 0, 0, dpr, 0, 0)
+      return true
     }
 
     const paint = (elapsed: number) => {
       const { width, height } = root.getBoundingClientRect()
       if (width < 1 || height < 1) return
-      drawLivingField(ctx, width, height, elapsed, scale)
+      drawLivingField(ctx, width, height, elapsed, scale, driftBoost)
     }
-
-    resize()
-
-    const observer = new ResizeObserver(() => {
-      resize()
-      if (reducedMotion) paint(0)
-    })
-    observer.observe(root)
-    window.addEventListener('resize', resize)
 
     const frame = (now: number) => {
-      paint((now - start) / 1000)
-      if (!reducedMotion) raf = requestAnimationFrame(frame)
+      paint(((now - start) / 1000) * timeScale)
+      if (running) raf = requestAnimationFrame(frame)
     }
 
-    if (reducedMotion) {
-      paint(0)
-    } else {
+    const startLoop = () => {
+      if (motionQuery.matches || running) return
+      running = true
       raf = requestAnimationFrame(frame)
     }
 
-    return () => {
-      observer.disconnect()
-      window.removeEventListener('resize', resize)
+    const stopLoop = () => {
+      running = false
       cancelAnimationFrame(raf)
+    }
+
+    const syncMotion = () => {
+      if (motionQuery.matches) {
+        stopLoop()
+        paint(0)
+        return
+      }
+      startLoop()
+    }
+
+    const repaintNow = () => {
+      paint(((performance.now() - start) / 1000) * timeScale)
+    }
+
+    const observer = new ResizeObserver(() => {
+      resize()
+      if (motionQuery.matches) {
+        paint(0)
+        return
+      }
+      repaintNow()
+    })
+    observer.observe(root)
+    window.addEventListener('resize', repaintNow)
+
+    const onVisibility = () => {
+      if (document.visibilityState === 'hidden') {
+        stopLoop()
+      } else {
+        syncMotion()
+      }
+    }
+    document.addEventListener('visibilitychange', onVisibility)
+    motionQuery.addEventListener('change', syncMotion)
+
+    resize()
+    paint(0)
+    syncMotion()
+
+    return () => {
+      stopLoop()
+      observer.disconnect()
+      window.removeEventListener('resize', repaintNow)
+      document.removeEventListener('visibilitychange', onVisibility)
+      motionQuery.removeEventListener('change', syncMotion)
     }
   }, [compact])
 

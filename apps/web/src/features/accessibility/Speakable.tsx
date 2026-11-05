@@ -10,50 +10,51 @@ import { cn } from '@/lib/utils'
 interface SpeakableProps extends HTMLAttributes<HTMLDivElement> {
   label: string
   children: ReactNode
-  buttonPosition?: 'top-right' | 'top-left'
+  /** Exibe o botão de som no canto superior do bloco. */
+  hideButton?: boolean
+  /** Reserva espaço à direita para não cobrir ícones de fechar ou navegar. */
+  reserveEnd?: boolean
 }
 
 export function Speakable({
   label,
   children,
-  buttonPosition = 'top-right',
+  hideButton = false,
+  reserveEnd = false,
   className,
   ...props
 }: SpeakableProps) {
   const { audioEnabled } = useAccessibility()
-  const showSpeakButton = audioEnabled === true
+  const showSpeakButton = audioEnabled === true && !hideButton
   const regionId = useId()
 
   useEffect(() => {
-    if (!showSpeakButton) {
+    if (audioEnabled !== true) {
       unregisterScreenAudioRegion(regionId)
       return
     }
     registerScreenAudioRegion(regionId, () => label)
     return () => unregisterScreenAudioRegion(regionId)
-  }, [label, regionId, showSpeakButton])
-
-  if (!showSpeakButton) {
-    return (
-      <div className={className} {...props}>
-        {children}
-      </div>
-    )
-  }
+  }, [audioEnabled, label, regionId])
 
   return (
-    <div className={cn('relative', className)} {...props}>
-      {children}
-      <div
-        className={cn(
-          'pointer-events-none absolute z-10',
-          buttonPosition === 'top-right' ? 'right-2 top-2' : 'left-2 top-2',
-        )}
-      >
-        <div className="pointer-events-auto">
+    <div
+      className={cn(
+        'a11y-speakable',
+        audioEnabled === true && 'a11y-speakable--audio',
+        reserveEnd && 'a11y-speakable--reserve-end',
+        className,
+      )}
+      {...props}
+    >
+      <div className={cn('a11y-speakable__content', 'a11y-scaled-text', 'a11y-scaled-text--block')}>
+        {children}
+      </div>
+      {showSpeakButton && (
+        <div className="a11y-speakable__fab">
           <SpeakButton label={label} />
         </div>
-      </div>
+      )}
     </div>
   )
 }

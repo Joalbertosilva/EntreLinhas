@@ -1,6 +1,7 @@
 import { useNavigate } from '@tanstack/react-router'
 import type { TipoConteudo } from '@tcc-sistema/types'
 import { BookMarked, FileText, Music, Play, Quote, Sparkles, Video } from 'lucide-react'
+import { Speakable } from '@/features/accessibility/Speakable'
 import { resolveConteudoCoverUrl } from '@/lib/conteudoCover'
 import { openVideoExternal } from '@/lib/openVideoUrl'
 import { ContentCardLeituraMenu } from '@/features/app/ContentCardLeituraMenu'
@@ -38,7 +39,7 @@ export function ContentCard({ conteudo, showTipo = false, fluid = false }: Conte
   const Icon = meta.icon
   const coverUrl = resolveConteudoCoverUrl(conteudo)
   const isVideo = conteudo.tipo === 'video'
-  const showMenu = conteudo.tipo === 'livro' && Boolean(profile)
+  const showMenu = Boolean(profile)
   const leituraStatus = leiturasMap?.[conteudo.id] ?? null
 
   const open = () => {
@@ -59,12 +60,12 @@ export function ContentCard({ conteudo, showTipo = false, fluid = false }: Conte
         type="button"
         onClick={open}
         className={cn(
-          'flex w-full flex-col rounded-xl text-left',
+          'block w-full rounded-xl text-left',
           'cursor-pointer border-0 bg-transparent p-0 text-inherit',
           'hover:ring-2 hover:ring-primary/25',
           'focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary',
         )}
-        aria-label={`Abrir ${conteudo.titulo}`}
+        aria-label={`Abrir capa de ${conteudo.titulo}`}
       >
         <div
           className={cn(
@@ -115,8 +116,19 @@ export function ContentCard({ conteudo, showTipo = false, fluid = false }: Conte
             </span>
           )}
         </div>
+      </button>
 
-        <div className="mt-2.5 space-y-0.5 px-0.5">
+      <Speakable
+        label={[conteudo.titulo, conteudo.autor, showTipo ? TIPO_CONTEUDO_LABEL[conteudo.tipo] : null]
+          .filter(Boolean)
+          .join('. ')}
+        className="content-card__speakable mt-2.5 px-0.5"
+      >
+        <button
+          type="button"
+          onClick={open}
+          className="w-full space-y-0.5 rounded-lg border-0 bg-transparent p-0 text-left text-inherit"
+        >
           <h3 className="line-clamp-2 text-sm font-semibold leading-snug text-text">{conteudo.titulo}</h3>
           {conteudo.autor && (
             <p className="line-clamp-1 text-xs text-text-muted">{conteudo.autor}</p>
@@ -126,8 +138,8 @@ export function ContentCard({ conteudo, showTipo = false, fluid = false }: Conte
               {TIPO_CONTEUDO_LABEL[conteudo.tipo]}
             </p>
           )}
-        </div>
-      </button>
+        </button>
+      </Speakable>
 
       {showMenu && (
         <ContentCardLeituraMenu
