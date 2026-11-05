@@ -328,6 +328,31 @@ export function usePublicarObra(userId: string | undefined) {
   })
 }
 
+export function useExcluirObra(userId: string | undefined) {
+  const queryClient = useQueryClient()
+
+  return useMutation({
+    mutationFn: async (obraId: string) => {
+      const { error: producoesError } = await supabase
+        .from('producoes')
+        .delete()
+        .eq('obra_id', obraId)
+        .eq('usuario_id', userId!)
+
+      if (producoesError) throw producoesError
+
+      const { error } = await supabase.from('obras').delete().eq('id', obraId).eq('usuario_id', userId!)
+
+      if (error) throw error
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['minha-obra', userId] })
+      queryClient.invalidateQueries({ queryKey: ['minha-obra-editor', userId] })
+      queryClient.invalidateQueries({ queryKey: ['obras-publicas'] })
+    },
+  })
+}
+
 export function useDespublicarObra(userId: string | undefined) {
   const queryClient = useQueryClient()
 

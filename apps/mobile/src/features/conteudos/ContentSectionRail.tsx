@@ -1,4 +1,6 @@
-import { FlatList, Text, View } from 'react-native'
+import { useRouter } from 'expo-router'
+import { FlatList, Pressable, Text, View } from 'react-native'
+import { ChevronRight } from 'lucide-react-native'
 import { Speakable } from '@/features/accessibility/Speakable'
 import type { HomeSectionConfig } from '@/features/conteudos/homeSections'
 import { ContentCard } from '@/features/conteudos/ContentCard'
@@ -23,20 +25,34 @@ function SectionSkeleton() {
 }
 
 export function ContentSectionRail({ section }: ContentSectionRailProps) {
+  const router = useRouter()
   const { data, isLoading, isError } = useSectionConteudos(section)
+  const showVerTudo = section.id !== 'destaques'
 
   return (
     <View className="mb-8">
-      <Speakable
-        label={[section.title, section.subtitle].filter(Boolean).join('. ')}
+      <View
         style={{ paddingHorizontal: SCREEN_HORIZONTAL_PADDING }}
-        className="mb-3"
+        className="mb-3 flex-row items-start justify-between gap-3"
       >
-        <Text className="font-sans-bold text-lg text-brand-navy">{section.title}</Text>
-        {section.subtitle ? (
-          <Text className="mt-0.5 font-sans text-sm text-text-muted">{section.subtitle}</Text>
+        <Speakable label={[section.title, section.subtitle].filter(Boolean).join('. ')} className="min-w-0 flex-1">
+          <Text className="font-sans-bold text-lg text-brand-navy">{section.title}</Text>
+          {section.subtitle ? (
+            <Text className="mt-0.5 font-sans text-sm text-text-muted">{section.subtitle}</Text>
+          ) : null}
+        </Speakable>
+        {showVerTudo ? (
+          <Pressable
+            onPress={() => router.push(`/(aluno)/(tabs)/explorar?tipo=${section.tipo}`)}
+            className="mt-0.5 flex-row items-center gap-0.5 active:opacity-70"
+            accessibilityRole="button"
+            accessibilityLabel={`Ver todos os ${section.title.toLowerCase()}`}
+          >
+            <Text className="font-sans-semibold text-xs text-primary">Ver tudo</Text>
+            <ChevronRight color="#1c756a" size={16} />
+          </Pressable>
         ) : null}
-      </Speakable>
+      </View>
 
       {isLoading ? (
         <SectionSkeleton />

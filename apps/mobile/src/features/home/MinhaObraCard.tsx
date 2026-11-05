@@ -10,16 +10,18 @@ import { SCREEN_HORIZONTAL_PADDING } from '@/lib/layout'
 interface MinhaObraCardProps {
   obra: MinhaObraResumo | null
   isLoading?: boolean
+  /** Dentro da faixa hero (sem margem lateral extra). */
+  embedded?: boolean
 }
 
-export function MinhaObraCard({ obra, isLoading }: MinhaObraCardProps) {
+export function MinhaObraCard({ obra, isLoading, embedded = false }: MinhaObraCardProps) {
   const router = useRouter()
 
   if (isLoading) {
     return (
       <View
-        style={{ marginHorizontal: SCREEN_HORIZONTAL_PADDING }}
-        className="mb-5 h-28 rounded-3xl bg-sky-mid"
+        style={{ marginHorizontal: embedded ? 0 : SCREEN_HORIZONTAL_PADDING }}
+        className={embedded ? 'h-full min-h-[8.5rem] rounded-3xl bg-sky-mid' : 'mb-5 h-28 rounded-3xl bg-sky-mid'}
       />
     )
   }
@@ -35,8 +37,8 @@ export function MinhaObraCard({ obra, isLoading }: MinhaObraCardProps) {
       onPress={() => router.push('/(aluno)/minha-obra')}
       accessibilityRole="button"
       accessibilityLabel="Abrir editor da minha obra"
-      style={{ marginHorizontal: SCREEN_HORIZONTAL_PADDING }}
-      className="mb-5 overflow-hidden rounded-3xl active:opacity-95"
+      style={{ marginHorizontal: embedded ? 0 : SCREEN_HORIZONTAL_PADDING }}
+      className={embedded ? 'min-h-[8.5rem] flex-1 overflow-hidden rounded-3xl active:opacity-95' : 'mb-5 overflow-hidden rounded-3xl active:opacity-95'}
     >
       <LinearGradient
         colors={['#fef6e4', '#fff8ee', '#ffffff']}

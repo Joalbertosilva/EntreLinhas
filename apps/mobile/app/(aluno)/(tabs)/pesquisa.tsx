@@ -1,31 +1,22 @@
-import { useMemo, useRef, useState } from 'react'
+import { useRef, useState } from 'react'
 import { ActivityIndicator, Text, TextInput, View } from 'react-native'
+import type { NativeTextInputRef } from '@/lib/nativeRefs'
 import { LinearGradient } from 'expo-linear-gradient'
 import { PLATFORM_GRADIENT, PLATFORM_GRADIENT_LOCATIONS } from '@/lib/brandTheme'
 import { Search } from 'lucide-react-native'
 import { A11yScreen } from '@/components/layout/A11yScreen'
 import { TabScreenShell, TabScrollView } from '@/components/layout/TabScreenShell'
 import { ContentGrid } from '@/features/conteudos/ContentGrid'
-import { useAllConteudos } from '@/features/conteudos/useConteudos'
+import { useConteudoSearch } from '@/features/conteudos/useConteudoSearch'
 import { SCREEN_HORIZONTAL_PADDING } from '@/lib/layout'
 
 export default function PesquisaScreen() {
-  const inputRef = useRef<TextInput>(null)
+  const inputRef = useRef<NativeTextInputRef>(null)
   const [busca, setBusca] = useState('')
 
-  const { data: catalogo = [], isLoading } = useAllConteudos(80)
-
-  const items = useMemo(() => {
-    const q = busca.trim().toLowerCase()
-    if (!q) return []
-    return catalogo.filter(
-      (item) =>
-        item.titulo.toLowerCase().includes(q) ||
-        (item.autor?.toLowerCase().includes(q) ?? false),
-    )
-  }, [catalogo, busca])
-
-  const queryAtiva = busca.trim().length > 0
+  const trimmed = busca.trim()
+  const { data: items = [], isLoading, isFetching } = useConteudoSearch(busca)
+  const queryAtiva = trimmed.length >= 2
 
   return (
     <A11yScreen>
@@ -39,7 +30,7 @@ export default function PesquisaScreen() {
             <View style={{ paddingHorizontal: SCREEN_HORIZONTAL_PADDING }} className="mb-5">
               <Text className="font-sans-bold text-2xl text-brand-navy">Pesquisar</Text>
               <Text className="mt-1 font-sans text-sm text-text-muted">
-                Encontre livros, crônicas, poemas e músicas por título ou autor.
+                Encontre livros, crônicas, poemas, músicas e vídeos por título ou autor.
               </Text>
             </View>
 
@@ -64,10 +55,10 @@ export default function PesquisaScreen() {
             {!queryAtiva ? (
               <View style={{ paddingHorizontal: SCREEN_HORIZONTAL_PADDING }} className="py-8">
                 <Text className="text-center font-sans text-sm text-text-muted">
-                  Digite para buscar no catálogo completo.
+                  Digite pelo menos 2 caracteres para buscar no catálogo.
                 </Text>
               </View>
-            ) : isLoading ? (
+            ) : isLoading || isFetching ? (
               <View className="items-center py-12">
                 <ActivityIndicator color="#1c756a" size="large" />
                 <Text className="mt-3 font-sans text-sm text-text-muted">Buscando...</Text>
@@ -85,7 +76,8 @@ export default function PesquisaScreen() {
                 </View>
                 <ContentGrid
                   items={items}
-                  emptyMessage={`Nenhum resultado para "${busca.trim()}". Tente outro termo.`}
+                  showTipo
+                  emptyMessage={`Nenhum resultado para "${trimmed}". Tente outro termo.`}
                 />
               </>
             )}

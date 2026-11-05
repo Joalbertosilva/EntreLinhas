@@ -94,7 +94,9 @@ export function LoginScreen() {
                   label={isSubmitting ? 'Entrando...' : 'Entrar'}
                   loading={isSubmitting}
                   disabled={isSubmitting}
-                  onPress={submit}
+                  onPress={() => {
+                    void submit()
+                  }}
                   className="mt-1"
                 />
 

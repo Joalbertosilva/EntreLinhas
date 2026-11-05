@@ -12,6 +12,7 @@ import { A11yScreen } from '@/components/layout/A11yScreen'
 import { ScreenBackHeader } from '@/components/layout/ScreenBackHeader'
 import { capaImageUri } from '@/lib/imageUrl'
 import { DETAIL_COVER_HEIGHT, SCREEN_HORIZONTAL_PADDING } from '@/lib/layout'
+import type { NativeScrollViewRef, NativeViewRef } from '@/lib/nativeRefs'
 import { useKeyboardAwareScroll } from '@/lib/useKeyboardAwareScroll'
 import { useStackScreenInsets } from '@/lib/useStackScreenInsets'
 import { TIPO_OBRA_LABEL } from '@/lib/obraLabels'
@@ -21,8 +22,8 @@ export default function ObraDetailScreen() {
   const { insets, scrollPaddingBottom: stackScrollPadding } = useStackScreenInsets()
   const { profile } = useAuth()
   const { data, isLoading, isError } = useObraPublica(id)
-  const scrollRef = useRef<ScrollView>(null)
-  const scrollViewportRef = useRef<View>(null)
+  const scrollRef = useRef<NativeScrollViewRef>(null)
+  const scrollViewportRef = useRef<NativeViewRef>(null)
   const { scrollPaddingBottom, scrollToEnd } = useKeyboardAwareScroll(scrollRef, scrollViewportRef, {
     basePaddingBottom: stackScrollPadding,
   })

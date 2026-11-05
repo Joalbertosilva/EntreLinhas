@@ -1,7 +1,7 @@
 import { useRouter } from 'expo-router'
 import { Image } from 'expo-image'
 import type { TipoConteudo } from '@tcc-sistema/types'
-import { BookMarked, FileText, Music, Quote, Sparkles, Video } from 'lucide-react-native'
+import { BookMarked, FileText, Music, Play, Quote, Sparkles, Video } from 'lucide-react-native'
 import { Pressable, Text, View } from 'react-native'
 import { Speakable } from '@/features/accessibility/Speakable'
 import type { ConteudoCardData } from '@/features/conteudos/useConteudos'
@@ -10,6 +10,8 @@ import { ContentCardLeituraMenu } from '@/features/leituras/ContentCardLeituraMe
 import { useLeiturasMap } from '@/features/leituras/useLeiturasMap'
 import { TIPO_CONTEUDO_LABEL } from '@/lib/labels'
 import { CONTENT_CARD_WIDTH, CONTENT_COVER_HEIGHT } from '@/lib/layout'
+import { resolveConteudoCoverUrl } from '@/lib/conteudoCover'
+import { openVideoExternal } from '@/lib/openVideoUrl'
 import { cn } from '@/lib/cn'
 import { useAuth } from '@/providers/AuthProvider'
 
@@ -36,29 +38,36 @@ export function ContentCard({ conteudo, showTipo = false, width }: ContentCardPr
   const meta = TIPO_META[conteudo.tipo]
   const Icon = meta.icon
   const cardWidth = width ?? CONTENT_CARD_WIDTH
-  const coverHeight = Math.round(cardWidth * (CONTENT_COVER_HEIGHT / CONTENT_CARD_WIDTH))
-  const showMenu = conteudo.tipo === 'livro' && Boolean(profile)
+  const isVideo = conteudo.tipo === 'video'
+  const coverHeight = isVideo
+    ? Math.round(cardWidth * (9 / 16))
+    : Math.round(cardWidth * (CONTENT_COVER_HEIGHT / CONTENT_CARD_WIDTH))
+  const showMenu = Boolean(profile)
   const leituraStatus = leiturasMap?.[conteudo.id] ?? null
+  const coverUrl = resolveConteudoCoverUrl(conteudo)
 
-  const open = () => router.push(`/(aluno)/conteudo/${conteudo.id}`)
+  const open = async () => {
+    if (isVideo && (await openVideoExternal(conteudo.video_url))) return
+    router.push(`/(aluno)/conteudo/${conteudo.id}`)
+  }
 
   const speakLabel = contentCardSpeakLabel(conteudo, leituraStatus)
 
   return (
     <Speakable label={speakLabel} style={{ width: cardWidth }}>
-      <View style={{ width: cardWidth, height: coverHeight }} className="relative">
+      <View style={{ width: cardWidth }} className="relative">
         <Pressable
-          onPress={open}
+          onPress={() => void open()}
           accessibilityRole="button"
           accessibilityLabel={`Abrir ${conteudo.titulo}`}
           className="overflow-hidden rounded-xl border border-primary/10 bg-white shadow-sm"
           style={{ width: cardWidth, height: coverHeight }}
         >
-          {conteudo.capa_url ? (
+          {coverUrl ? (
             <Image
-              source={{ uri: conteudo.capa_url }}
+              source={{ uri: coverUrl }}
               style={{ width: cardWidth, height: coverHeight }}
-              contentFit="cover"
+              contentFit={isVideo ? 'cover' : 'cover'}
             />
           ) : (
             <View className={cn('flex-1 items-start justify-end p-2.5', meta.bgClass)}>
@@ -67,6 +76,14 @@ export function ContentCard({ conteudo, showTipo = false, width }: ContentCardPr
               </View>
             </View>
           )}
+
+          {isVideo ? (
+            <View className="absolute inset-0 items-center justify-center bg-brand-navy/15">
+              <View className="h-10 w-10 items-center justify-center rounded-full bg-white/90">
+                <Play color="#1c756a" size={18} fill="#1c756a" />
+              </View>
+            </View>
+          ) : null}
 
           {leituraStatus === 'em_andamento' ? (
             <View className="absolute bottom-1.5 left-1.5 rounded-full bg-primary px-2 py-0.5">
@@ -85,7 +102,7 @@ export function ContentCard({ conteudo, showTipo = false, width }: ContentCardPr
         ) : null}
       </View>
 
-      <Pressable onPress={open}>
+      <Pressable onPress={() => void open()}>
         <Text className="mt-2 font-sans-semibold text-sm leading-snug text-text" numberOfLines={2}>
           {conteudo.titulo}
         </Text>

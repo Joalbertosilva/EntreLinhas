@@ -1,14 +1,7 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
-import {
-  Dimensions,
-  Keyboard,
-  Platform,
-  type NativeScrollEvent,
-  type NativeSyntheticEvent,
-  type ScrollView,
-  type View,
-} from 'react-native'
+import { Dimensions, Keyboard, Platform, type NativeScrollEvent, type NativeSyntheticEvent } from 'react-native'
 import type { RefObject } from 'react'
+import type { NativeScrollViewRef, NativeViewRef } from '@/lib/nativeRefs'
 
 type ScrollTarget = number | 'end' | null
 
@@ -21,8 +14,8 @@ interface KeyboardAwareScrollOptions {
 
 /** Padding no fim do ScrollView; scroll só quando o campo focado pede. */
 export function useKeyboardAwareScroll(
-  scrollRef: RefObject<ScrollView | null>,
-  scrollViewportRef: RefObject<View | null>,
+  scrollRef: RefObject<NativeScrollViewRef | null>,
+  scrollViewportRef: RefObject<NativeViewRef | null>,
   options: KeyboardAwareScrollOptions = {},
 ) {
   const { basePaddingBottom = 32 } = options
@@ -31,7 +24,7 @@ export function useKeyboardAwareScroll(
   const scrollTargetRef = useRef<ScrollTarget>(null)
   const scrollOffsetY = useRef(0)
   const scrollViewWindowY = useRef(0)
-  const pendingFieldRef = useRef<View | null>(null)
+  const pendingFieldRef = useRef<NativeViewRef | null>(null)
 
   const performScroll = useCallback(() => {
     const target = scrollTargetRef.current
@@ -59,7 +52,7 @@ export function useKeyboardAwareScroll(
   }, [scrollViewportRef])
 
   const scrollToFieldY = useCallback(
-    (fieldRef: View) => {
+    (fieldRef: NativeViewRef) => {
       updateScrollViewPosition()
 
       fieldRef.measureInWindow((_x, fieldY, _w, fieldH) => {
@@ -85,7 +78,7 @@ export function useKeyboardAwareScroll(
   )
 
   const scrollFieldIntoView = useCallback(
-    (fieldRef: View | null) => {
+    (fieldRef: NativeViewRef | null) => {
       if (!fieldRef) return
       pendingFieldRef.current = fieldRef
       scrollToFieldY(fieldRef)

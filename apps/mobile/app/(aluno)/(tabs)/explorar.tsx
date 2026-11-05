@@ -25,7 +25,7 @@ const FILTROS: Array<{ id: FiltroExplorar; label: string }> = [
   })),
 ]
 
-const TIPOS_VALIDOS = new Set<TipoConteudo>(['livro', 'cronica', 'musica', 'poema'])
+const TIPOS_VALIDOS = new Set<TipoConteudo>(['livro', 'cronica', 'musica', 'poema', 'video'])
 
 export default function ExplorarScreen() {
   const { tipo } = useLocalSearchParams<{ tipo?: string }>()
@@ -43,12 +43,14 @@ export default function ExplorarScreen() {
   const cronicasQuery = useConteudosByTipo('cronica')
   const musicasQuery = useConteudosByTipo('musica')
   const poemasQuery = useConteudosByTipo('poema')
+  const videosQuery = useConteudosByTipo('video')
 
   const byTipo: Partial<Record<TipoConteudo, typeof livrosQuery>> = {
     livro: livrosQuery,
     cronica: cronicasQuery,
     musica: musicasQuery,
     poema: poemasQuery,
+    video: videosQuery,
   }
 
   const activeQuery =

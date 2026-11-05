@@ -3,6 +3,7 @@ import { Image } from 'expo-image'
 import { LinearGradient } from 'expo-linear-gradient'
 import { forwardRef } from 'react'
 import { Text, View } from 'react-native'
+import type { NativeViewRef } from '@/lib/nativeRefs'
 import {
   CATEGORIA_COVER_PALETTE,
   CATEGORIA_OBRA_KICKER,
@@ -21,7 +22,7 @@ export interface ObraCoverArtViewProps {
   width?: number
 }
 
-export const ObraCoverArtView = forwardRef<View, ObraCoverArtViewProps>(function ObraCoverArtView(
+export const ObraCoverArtView = forwardRef<NativeViewRef, ObraCoverArtViewProps>(function ObraCoverArtView(
   { photoUri, categoria, titulo, autorNome, width = OBRA_COVER_BASE_WIDTH },
   ref,
 ) {

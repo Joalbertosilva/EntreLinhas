@@ -4,7 +4,7 @@ import { LinearGradient } from 'expo-linear-gradient'
 import { useRef } from 'react'
 import { ActivityIndicator, Linking, Pressable, ScrollView, Text, View } from 'react-native'
 import { Speakable } from '@/features/accessibility/Speakable'
-import { ExternalLink, FileText } from 'lucide-react-native'
+import { ExternalLink, FileText, Play } from 'lucide-react-native'
 import { A11yScreen } from '@/components/layout/A11yScreen'
 import { ScreenBackHeader } from '@/components/layout/ScreenBackHeader'
 import {
@@ -21,8 +21,12 @@ import { LeituraActionsBar } from '@/features/leituras/LeituraActionsBar'
 import { useLeiturasMap } from '@/features/leituras/useLeiturasMap'
 import { BookPaginatedReader } from '@/features/reader/BookPaginatedReader'
 import { buildBookPages } from '@/features/reader/bookPagination'
+import { resolveConteudoCoverUrl } from '@/lib/conteudoCover'
+import { openVideoExternal } from '@/lib/openVideoUrl'
 import { DETAIL_COVER_HEIGHT, SCREEN_HORIZONTAL_PADDING } from '@/lib/layout'
+import { isYouTubeUrl } from '@/lib/youtube'
 import { TIPO_CONTEUDO_LABEL, TIPO_MATERIAL_LABEL } from '@/lib/labels'
+import type { NativeScrollViewRef, NativeViewRef } from '@/lib/nativeRefs'
 import { useKeyboardAwareScroll } from '@/lib/useKeyboardAwareScroll'
 import { useStackScreenInsets } from '@/lib/useStackScreenInsets'
 import { useAuth } from '@/providers/AuthProvider'
@@ -36,8 +40,11 @@ export default function ConteudoDetailScreen() {
   const { data: materiais = [] } = useConteudoMateriais(id)
   const { data: leiturasMap, isLoading: loadingLeitura } = useLeiturasMap(profile?.id)
 
-  const isLivro = data?.tipo === 'livro'
+  const isVideo = data?.tipo === 'video'
+  const usePaginatedReader =
+    data != null && ['livro', 'cronica', 'poema', 'musica'].includes(data.tipo)
   const leituraStatus = id ? (leiturasMap?.[id] ?? null) : null
+  const coverUrl = data ? resolveConteudoCoverUrl(data) : null
 
   const metaSections = data
     ? [
@@ -49,15 +56,15 @@ export default function ConteudoDetailScreen() {
       ]
     : []
 
-  const bookPages = data && isLivro ? buildBookPages(metaSections, data.conteudo_textual) : []
+  const bookPages = data && usePaginatedReader ? buildBookPages(metaSections, data.conteudo_textual) : []
 
   const tipoLabel = data ? TIPO_CONTEUDO_LABEL[data.tipo as keyof typeof TIPO_CONTEUDO_LABEL] : ''
   const heroSpeakLabel = data
     ? [tipoLabel, data.titulo, data.autor ? `de ${data.autor}` : null].filter(Boolean).join('. ')
     : ''
 
-  const scrollRef = useRef<ScrollView>(null)
-  const scrollViewportRef = useRef<View>(null)
+  const scrollRef = useRef<NativeScrollViewRef>(null)
+  const scrollViewportRef = useRef<NativeViewRef>(null)
   const { scrollPaddingBottom, scrollToEnd, scrollFieldIntoView, onScroll, updateScrollViewPosition } =
     useKeyboardAwareScroll(scrollRef, scrollViewportRef, { basePaddingBottom: stackScrollPadding })
 
@@ -95,15 +102,39 @@ export default function ConteudoDetailScreen() {
                   style={{ paddingHorizontal: SCREEN_HORIZONTAL_PADDING, paddingTop: 28, paddingBottom: 24 }}
                 >
                   <Speakable label={heroSpeakLabel}>
-                    {data.capa_url ? (
+                    {coverUrl ? (
                       <View className="mb-5 items-center pt-2">
                         <Image
-                          source={{ uri: data.capa_url }}
-                          style={{ width: 128, height: DETAIL_COVER_HEIGHT, borderRadius: 12 }}
+                          source={{ uri: coverUrl }}
+                          style={{
+                            width: isVideo ? 280 : 128,
+                            height: isVideo ? Math.round(280 * (9 / 16)) : DETAIL_COVER_HEIGHT,
+                            borderRadius: 12,
+                          }}
                           contentFit="cover"
                           accessibilityLabel={`Capa de ${data.titulo}`}
                         />
                       </View>
+                    ) : null}
+
+                    {isVideo && data.video_url ? (
+                      <Pressable
+                        onPress={() => void openVideoExternal(data.video_url)}
+                        className="mb-4 flex-row items-center justify-center gap-2 rounded-full bg-primary px-5 py-3 active:opacity-90"
+                      >
+                        <Play color="#fff" size={18} fill="#fff" />
+                        <Text className="font-sans-semibold text-sm text-white">Assistir vídeo</Text>
+                      </Pressable>
+                    ) : null}
+
+                    {data.tipo === 'musica' && data.video_url && isYouTubeUrl(data.video_url) ? (
+                      <Pressable
+                        onPress={() => void openVideoExternal(data.video_url)}
+                        className="mb-4 flex-row items-center justify-center gap-2 rounded-full border border-primary/30 bg-white px-5 py-3"
+                      >
+                        <Play color="#1c756a" size={18} />
+                        <Text className="font-sans-semibold text-sm text-primary">Ouvir / assistir</Text>
+                      </Pressable>
                     ) : null}
 
                     <Text className="font-sans-semibold text-xs uppercase tracking-wider text-primary">

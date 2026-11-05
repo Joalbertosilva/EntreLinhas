@@ -9,8 +9,8 @@ import {
   View,
   useWindowDimensions,
   type NativeSyntheticEvent,
-  type TextInputScrollEvent,
-  type TextInputSelectionChangeEventData,
+  type ScrollEvent,
+  type TextInputSelectionChangeEvent,
 } from 'react-native'
 import { useAccessibility } from '@/features/accessibility/AccessibilityProvider'
 import { Speakable } from '@/features/accessibility/Speakable'
@@ -105,7 +105,7 @@ export function BookPaginatedReader({ pages, conteudoId, titulo, storageKey: sto
     [pageIndex, pages.length],
   )
 
-  const onScroll = useCallback((event: TextInputScrollEvent) => {
+  const onScroll = useCallback((event: ScrollEvent) => {
     const offsetY = event.nativeEvent.contentOffset.y
     setScrollMetrics((metrics) => (metrics.offsetY === offsetY ? metrics : { ...metrics, offsetY }))
   }, [])
@@ -148,7 +148,7 @@ export function BookPaginatedReader({ pages, conteudoId, titulo, storageKey: sto
   const maxScrollOffset = Math.max(scrollMetrics.contentHeight - viewportHeight, 1)
   const hasMoreBelow = scrollOverflow && scrollMetrics.offsetY < maxScrollOffset - 8
 
-  const onSelectionChange = (event: NativeSyntheticEvent<TextInputSelectionChangeEventData>) => {
+  const onSelectionChange = (event: TextInputSelectionChangeEvent) => {
     selectionRef.current = event.nativeEvent.selection
   }
 

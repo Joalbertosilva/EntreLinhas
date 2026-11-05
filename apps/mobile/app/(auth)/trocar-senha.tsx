@@ -106,7 +106,9 @@ export default function TrocarSenhaScreen() {
               />
               <Button
                 label={isSubmitting ? 'Salvando...' : 'Continuar'}
-                onPress={handleSubmit(onSubmit)}
+                onPress={() => {
+                  void handleSubmit(onSubmit)()
+                }}
                 disabled={isSubmitting}
               />
             </View>

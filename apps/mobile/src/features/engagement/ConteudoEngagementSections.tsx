@@ -11,6 +11,7 @@ import {
   View,
 } from 'react-native'
 import { A11yText, useA11yFontSize } from '@/components/ui/A11yText'
+import type { NativeViewRef } from '@/lib/nativeRefs'
 import { CommentComposerBox } from '@/components/ui/CommentComposerBox'
 import {
   PublicCommentBubble,
@@ -73,7 +74,7 @@ export function ConteudoReflexoesSection({
   temas,
   scrollFieldIntoView,
 }: Pick<ConteudoEngagementSectionsProps, 'conteudoId' | 'usuarioId' | 'temas'> & {
-  scrollFieldIntoView?: (inputRef: View | null) => void
+  scrollFieldIntoView?: (inputRef: NativeViewRef | null) => void
 }) {
   const temasComFrase = temas.filter((t) => t.questionamento?.trim())
   if (!temasComFrase.length) return null
@@ -115,12 +116,12 @@ function ReflexaoCard({
   conteudoId: string
   usuarioId: string | undefined
   tema: Tema
-  scrollFieldIntoView?: (inputRef: View | null) => void
+  scrollFieldIntoView?: (inputRef: NativeViewRef | null) => void
 }) {
   const { data: minhas = [] } = useMinhasInteracoes(conteudoId, usuarioId)
   const salvar = useSalvarInteracao(conteudoId, usuarioId)
   const excluir = useExcluirInteracao(conteudoId, usuarioId)
-  const inputWrapRef = useRef<View>(null)
+  const inputWrapRef = useRef<NativeViewRef>(null)
   const existente = minhas.find((i) => i.tipo_interacao === 'reflexao_orientada' && i.tema_id === tema.id)
   const [texto, setTexto] = useState('')
 

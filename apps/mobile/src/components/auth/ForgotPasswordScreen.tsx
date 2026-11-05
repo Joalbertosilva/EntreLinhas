@@ -115,7 +115,9 @@ export function ForgotPasswordScreen() {
                       label={isSubmitting ? 'Enviando...' : 'Enviar pedido'}
                       loading={isSubmitting}
                       disabled={isSubmitting}
-                      onPress={submit}
+                      onPress={() => {
+                        void submit()
+                      }}
                     />
                   </View>
                 </>

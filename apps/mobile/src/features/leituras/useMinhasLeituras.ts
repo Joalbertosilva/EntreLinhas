@@ -3,7 +3,7 @@ import type { StatusLeitura } from '@tcc-sistema/types'
 import type { ConteudoCardData } from '@/features/conteudos/useConteudos'
 import { supabase } from '@/lib/supabase'
 
-const CARD_FIELDS = 'id, titulo, tipo, autor, capa_url'
+const CARD_FIELDS = 'id, titulo, tipo, autor, capa_url, video_url'
 
 export interface LeituraComConteudo {
   id: string

@@ -5,6 +5,7 @@ import type { StatusLeitura } from '@tcc-sistema/types'
 import { ContentCardLeituraMenu } from '@/features/leituras/ContentCardLeituraMenu'
 import type { LeituraComConteudo } from '@/features/leituras/useMinhasLeituras'
 import { TIPO_CONTEUDO_LABEL } from '@/lib/labels'
+import { resolveConteudoCoverUrl } from '@/lib/conteudoCover'
 
 const STATUS_LABEL: Record<StatusLeitura, string> = {
   em_andamento: 'Em andamento',
@@ -24,6 +25,7 @@ interface LeituraRowProps {
 
 export function LeituraRow({ item }: LeituraRowProps) {
   const router = useRouter()
+  const coverUrl = resolveConteudoCoverUrl(item.conteudo)
 
   return (
     <View className="mb-3 flex-row items-center gap-2 rounded-2xl border border-border bg-white p-3">
@@ -32,8 +34,8 @@ export function LeituraRow({ item }: LeituraRowProps) {
         className="min-w-0 flex-1 flex-row gap-3 active:opacity-80"
       >
         <View className="h-[72px] w-[54px] overflow-hidden rounded-lg bg-primary-light">
-          {item.conteudo.capa_url ? (
-            <Image source={{ uri: item.conteudo.capa_url }} style={{ width: 54, height: 72 }} contentFit="cover" />
+          {coverUrl ? (
+            <Image source={{ uri: coverUrl }} style={{ width: 54, height: 72 }} contentFit="cover" />
           ) : null}
         </View>
         <View className="min-w-0 flex-1 justify-center">
@@ -58,13 +60,11 @@ export function LeituraRow({ item }: LeituraRowProps) {
           </View>
         </View>
       </Pressable>
-      {item.conteudo.tipo === 'livro' ? (
-        <ContentCardLeituraMenu
-          conteudoId={item.conteudo.id}
-          status={item.status_leitura}
-          variant="list"
-        />
-      ) : null}
+      <ContentCardLeituraMenu
+        conteudoId={item.conteudo.id}
+        status={item.status_leitura}
+        variant="list"
+      />
     </View>
   )
 }

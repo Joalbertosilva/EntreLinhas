@@ -11,6 +11,7 @@ import {
   DRAWER_ACCOUNT_LINKS,
   DRAWER_CONTENT_LINKS,
   DRAWER_MAIN_LINKS,
+  SOBRE_DRAWER_LINK,
   PERFIL_LABELS,
   type DrawerNavItem,
 } from '@/features/app/accountMenu'
@@ -165,6 +166,10 @@ export function AppNavigationDrawer() {
                       setModeEnabled(true)
                     }}
                   />
+                </DrawerSection>
+
+                <DrawerSection title="Institucional">
+                  <DrawerRow item={SOBRE_DRAWER_LINK} onPress={() => navigate(SOBRE_DRAWER_LINK.href)} />
                 </DrawerSection>
 
                 <LinearGradient

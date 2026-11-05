@@ -3,6 +3,7 @@ import {
   BookOpen,
   ExternalLink,
   Home,
+  Info,
   Library,
   Lock,
   PenLine,
@@ -95,7 +96,15 @@ export const DRAWER_CONTENT_LINKS: DrawerNavItem[] = [
   { href: '/(aluno)/(tabs)/explorar?tipo=cronica', label: 'Crônicas', icon: BookOpen },
   { href: '/(aluno)/(tabs)/explorar?tipo=musica', label: 'Músicas', icon: BookOpen },
   { href: '/(aluno)/(tabs)/explorar?tipo=poema', label: 'Poemas', icon: BookOpen },
+  { href: '/(aluno)/(tabs)/explorar?tipo=video', label: 'Vídeos', icon: BookOpen },
 ]
+
+export const SOBRE_DRAWER_LINK: DrawerNavItem = {
+  href: '/(aluno)/sobre',
+  label: 'Sobre nós',
+  hint: 'O que é o EntreLinhas',
+  icon: Info,
+}
 
 export const DRAWER_ACCOUNT_LINKS: DrawerNavItem[] = [
   { href: '/(aluno)/progresso', label: 'Minha jornada', hint: 'XP e níveis', icon: Sparkles },

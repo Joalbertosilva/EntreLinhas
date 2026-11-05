@@ -12,6 +12,7 @@ import {
   PenLine,
   Plus,
   Quote,
+  Trash2,
 } from 'lucide-react-native'
 import { useEffect, useRef, useState } from 'react'
 import {
@@ -33,6 +34,7 @@ import {
   obraTemConteudo,
   useAdicionarCapitulo,
   useDespublicarObra,
+  useExcluirObra,
   useMinhaObraEditor,
   usePublicarObra,
   useSalvarMinhaObra,
@@ -58,6 +60,7 @@ import {
 import { capaImageUri } from '@/lib/imageUrl'
 import { uploadObraCoverFromBase64 } from '@/lib/storage'
 import { cn } from '@/lib/cn'
+import type { NativeViewRef } from '@/lib/nativeRefs'
 import { stackScrollPaddingBottom } from '@/lib/layout'
 import { useAuth } from '@/providers/AuthProvider'
 
@@ -79,6 +82,7 @@ export default function MinhaObraScreen() {
   const adicionarCapitulo = useAdicionarCapitulo(profile?.id)
   const publicar = usePublicarObra(profile?.id)
   const despublicar = useDespublicarObra(profile?.id)
+  const excluirObra = useExcluirObra(profile?.id)
 
   const [tituloObra, setTituloObra] = useState('')
   const [descricao, setDescricao] = useState('')
@@ -99,7 +103,7 @@ export default function MinhaObraScreen() {
   const salvarRef = useRef(salvar)
   salvarRef.current = salvar
   const obraIdRef = useRef<string | null>(null)
-  const coverCaptureRef = useRef<View>(null)
+  const coverCaptureRef = useRef<NativeViewRef>(null)
   const { width: screenWidth } = useWindowDimensions()
   const coverPreviewWidth = Math.min(screenWidth - 40, 300)
 
@@ -282,6 +286,26 @@ export default function MinhaObraScreen() {
   const paginas = estimatePaginas(palavras)
   const categoriasDisponiveis = isLivro ? CATEGORIAS_LIVRO : CATEGORIAS_TEXTO
 
+  const confirmarExcluirObra = () => {
+    if (!obra) return
+    Alert.alert(
+      'Apagar obra',
+      'Isso remove capítulos e publicação. Não dá para desfazer.',
+      [
+        { text: 'Cancelar', style: 'cancel' },
+        {
+          text: 'Apagar',
+          style: 'destructive',
+          onPress: () => {
+            void excluirObra.mutateAsync(obra.id).catch(() => {
+              Alert.alert('Erro', 'Não foi possível apagar a obra.')
+            })
+          },
+        },
+      ],
+    )
+  }
+
   return (
     <>
       <Stack.Screen options={{ headerShown: false, gestureEnabled: true, fullScreenGestureEnabled: true }} />
@@ -291,28 +315,38 @@ export default function MinhaObraScreen() {
           title="Minha obra"
           subtitle={TIPO_OBRA_HINT[tipoObra]}
           rightSlot={
-            isPublicada ? (
-              <Pressable
-                onPress={() => void despublicar.mutateAsync(obra!.id)}
-                disabled={despublicar.isPending}
-                className="rounded-full border border-border px-3 py-1.5"
-              >
-                <Text className="font-sans-semibold text-xs text-text-muted">Despublicar</Text>
-              </Pressable>
-            ) : (
-              <Pressable
-                onPress={() => void handlePublicar()}
-                disabled={publicar.isPending || dirty || salvar.isPending}
-              className="flex-row items-center gap-1 rounded-full bg-primary px-3 py-1.5"
-            >
-              {publicar.isPending ? (
-                <Loader2 color="#fff" size={14} />
+            <View className="flex-row items-center gap-2">
+              {isPublicada ? (
+                <Pressable
+                  onPress={() => void despublicar.mutateAsync(obra!.id)}
+                  disabled={despublicar.isPending}
+                  className="rounded-full border border-border px-3 py-1.5"
+                >
+                  <Text className="font-sans-semibold text-xs text-text-muted">Despublicar</Text>
+                </Pressable>
               ) : (
-                <Globe color="#fff" size={14} />
+                <Pressable
+                  onPress={() => void handlePublicar()}
+                  disabled={publicar.isPending || dirty || salvar.isPending}
+                  className="flex-row items-center gap-1 rounded-full bg-primary px-3 py-1.5"
+                >
+                  {publicar.isPending ? (
+                    <Loader2 color="#fff" size={14} />
+                  ) : (
+                    <Globe color="#fff" size={14} />
+                  )}
+                  <Text className="font-sans-semibold text-xs text-white">Publicar</Text>
+                </Pressable>
               )}
-              <Text className="font-sans-semibold text-xs text-white">Publicar</Text>
-            </Pressable>
-            )
+              <Pressable
+                onPress={confirmarExcluirObra}
+                disabled={excluirObra.isPending}
+                className="rounded-full border border-error/30 px-2.5 py-1.5"
+                accessibilityLabel="Apagar obra"
+              >
+                <Trash2 color="#b91c1c" size={16} />
+              </Pressable>
+            </View>
           }
         />
 

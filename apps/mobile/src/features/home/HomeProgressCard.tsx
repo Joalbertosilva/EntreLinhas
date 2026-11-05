@@ -10,17 +10,18 @@ import { useAlunoProgress } from '@/features/progress/useAlunoProgress'
 
 interface HomeProgressCardProps {
   userId: string | undefined
+  embedded?: boolean
 }
 
-export function HomeProgressCard({ userId }: HomeProgressCardProps) {
+export function HomeProgressCard({ userId, embedded = false }: HomeProgressCardProps) {
   const router = useRouter()
   const { data: progress, isLoading } = useAlunoProgress(userId)
 
   if (isLoading) {
     return (
       <View
-        style={{ marginHorizontal: SCREEN_HORIZONTAL_PADDING }}
-        className="mb-5 h-28 rounded-2xl bg-sky-mid"
+        style={{ marginHorizontal: embedded ? 0 : SCREEN_HORIZONTAL_PADDING }}
+        className={embedded ? 'min-h-[8.5rem] rounded-2xl bg-sky-mid' : 'mb-5 h-28 rounded-2xl bg-sky-mid'}
       />
     )
   }
@@ -33,7 +34,11 @@ export function HomeProgressCard({ userId }: HomeProgressCardProps) {
   const speakLabel = `Minha jornada. ${rotuloNivel(progress.nivel, progress.nivelMaximo)}. ${tituloJornada(progress.nivel)}. ${resumo}`
 
   return (
-    <Speakable label={speakLabel} style={{ marginHorizontal: SCREEN_HORIZONTAL_PADDING }} className="mb-5">
+    <Speakable
+      label={speakLabel}
+      style={{ marginHorizontal: embedded ? 0 : SCREEN_HORIZONTAL_PADDING }}
+      className={embedded ? 'min-h-[8.5rem] flex-1' : 'mb-5'}
+    >
     <Pressable
       onPress={() => router.push('/(aluno)/progresso')}
       accessibilityRole="button"
