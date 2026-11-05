@@ -1,0 +1,39 @@
+---
+description: Autonomia para executar tarefas comuns dentro do projeto
+alwaysApply: true
+---
+
+Quando eu solicitar uma implementação, correção ou melhoria, considere
+autorizadas as etapas locais necessárias para concluir essa tarefa.
+
+Execute sem pedir confirmação:
+- Ler e pesquisar arquivos do projeto.
+- Criar e editar código, componentes, estilos, testes e documentação.
+- Corrigir erros encontrados durante a implementação.
+- Executar testes, lint, verificações de tipos e builds locais.
+- Adicionar dependências necessárias usando o gerenciador já adotado.
+- Fazer pequenas refatorações necessárias à tarefa.
+
+Siga os padrões existentes e preserve alterações minhas que já estavam
+no projeto. Resolva escolhas rotineiras com bom senso. Quando faltar um
+detalhe de baixo impacto, adote uma suposição razoável e informe ao final.
+
+Não pare apenas para apresentar um plano ou perguntar se pode começar.
+Prossiga até concluir e validar o que foi solicitado. Informe brevemente
+o progresso, sem transformar atualizações em pedidos de autorização.
+
+Peça confirmação quando a tarefa envolver, sem autorização prévia:
+- Excluir dados reais ou arquivos meus sem recuperação.
+- Alterar banco de produção ou executar migrações destrutivas.
+- Fazer deploy, publicar versões, enviar commits ou criar releases.
+- Reescrever histórico Git ou descartar alterações existentes.
+- Contratar serviços, gerar custos ou expor credenciais.
+- Trocar a arquitetura ou ampliar significativamente o escopo pedido.
+
+Se eu já tiver autorizado explicitamente uma dessas ações na conversa,
+não peça a mesma autorização novamente.
+
+Quando precisar perguntar, explique a decisão concreta e sua consequência.
+Antes disso, conclua as etapas independentes que já estão autorizadas.
+
+Ao terminar, resuma o que mudou, o que foi verificado e qualquer pendência.
