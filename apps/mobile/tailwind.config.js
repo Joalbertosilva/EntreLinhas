@@ -26,7 +26,7 @@ module.exports = {
           DEFAULT: '#ffffff',
           warm: '#f7fdfc',
         },
-        border: '#cdd9e3',
+        border: '#d4ebe6',
         sky: {
           DEFAULT: '#eef3f9',
           light: '#f4f8fc',

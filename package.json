@@ -20,6 +20,7 @@
     "web:dev": "pnpm --filter web dev",
     "web:build": "pnpm --filter web build",
     "mobile:dev": "node scripts/mobile-start.mjs",
+    "mobile:dev:offline": "node scripts/mobile-start.mjs --offline",
     "mobile:dev:tunnel": "node scripts/mobile-start.mjs --tunnel",
     "mobile:dev:lan": "node scripts/mobile-start.mjs",
     "mobile:login": "node node_modules/expo/bin/cli login",

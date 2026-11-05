@@ -33,12 +33,37 @@ pnpm start
 
 Use **Expo Go 58.x** (Settings → Supported SDK **58**) no celular/emulador.
 
-No SDK 58, **`pnpm mobile:dev` usa só `--offline`** (já inclui LAN; não combine `--offline` com `--lan`). Isso assina o manifesto localmente e evita `HTTP 500 UnexpectedServerError` da API Expo. Login só é obrigatório para **tunnel**:
+### Expo Go logado no celular (seu caso)
+
+O CLI **já está logado** como a mesma conta (`pnpm mobile:whoami` → ex.: `137588`).
+
+**Não use `--offline`**: esse modo assina o manifesto como *anônimo* e o Expo Go logado recusa (`not signed in to Expo CLI`).
+
 ```bash
-pnpm mobile:dev              # LAN + offline (recomendado)
-pnpm mobile:dev -- --clear     # limpa cache do Metro se travar
-pnpm mobile:dev:tunnel         # outra Wi‑Fi — exige pnpm mobile:login
+pnpm mobile:dev              # LAN + conta (recomendado com Expo Go logado)
+pnpm mobile:dev -- --clear   # limpa cache do Metro
+pnpm mobile:dev:tunnel       # outra Wi‑Fi
 ```
+
+Só se quiser abrir **sem conta no Expo Go** no iPhone:
+
+```bash
+pnpm mobile:dev:offline      # manifesto anônimo — saia da conta no app Expo Go
+```
+
+Login no CLI (se `whoami` falhar):
+
+```bash
+pnpm mobile:login    # na raiz — usa o Expo do monorepo, não `npx expo` solto
+pnpm mobile:whoami
+```
+
+### Pasta `images/`
+
+O Metro atende URLs `/images/...` em `apps/mobile/images/`. O script `mobile-start.mjs` cria um link para `assets/images/` automaticamente.
+
+No celular físico, opcional: `EXPO_PUBLIC_WEB_URL=http://SEU_IP:5173` no `.env`.
+
 Se o PC avisar **memória cheia**, feche Chrome/VS Code extras antes de abrir no iPhone (o bundle iOS usa ~15 MB e pico de RAM).
 
 ### Erro “Project uses SDK 57 / Expo Go is SDK 58” (iPhone)
@@ -49,6 +74,6 @@ No **iOS não dá para instalar Expo Go antigo** — só a versão da App Store 
 
 1. Splash animado com logo
 2. Login (mesmo usuário/senha da web)
-3. Abas inferiores: Início · Explorar · Leituras · Perfil
+3. Abas inferiores: Início · Explorar · Leituras · Pesquisa
 
 Professores/administradores são redirecionados para aviso de uso web.

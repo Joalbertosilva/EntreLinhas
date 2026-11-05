@@ -7,13 +7,20 @@ export const BRAND = {
   primary: '#1c756a',
   primaryLight: '#e3f7f4',
   textMuted: '#5a7282',
-  border: '#cdd9e3',
-  borderSoft: '#dce6ee',
+  border: '#d4ebe6',
+  borderSoft: '#e8f7f4',
 } as const
 
-/** Fundo das telas principais — azul-acinzentado suave (como o site), não verde dominante. */
-export const PLATFORM_GRADIENT = ['#fafefd', '#eef3f9', '#e4edf6', '#ffffff'] as const
-export const PLATFORM_GRADIENT_LOCATIONS = [0, 0.38, 0.72, 1] as const
+/** Fundo das telas principais — alinhado a `--platform-bg-*` em `apps/web/src/index.css`. */
+export const PLATFORM_GRADIENT = [
+  '#fafefc',
+  '#e5f7f3',
+  '#c8ebe4',
+  '#e8f7f4',
+  '#f6fcfa',
+  '#ffffff',
+] as const
+export const PLATFORM_GRADIENT_LOCATIONS = [0, 0.22, 0.42, 0.62, 0.82, 1] as const
 
 /** Splash / abertura — mescla navy, azul claro e toque mint. */
 export const SPLASH_GRADIENT = ['#f8fbfe', '#e8f0f8', '#dceaf2', '#eef7f4', '#ffffff'] as const

@@ -1,10 +1,9 @@
 import { useLocalSearchParams } from 'expo-router'
 import { useEffect, useMemo, useState } from 'react'
 import { ActivityIndicator, Pressable, ScrollView, Text, View } from 'react-native'
-import { LinearGradient } from 'expo-linear-gradient'
-import { PLATFORM_GRADIENT, PLATFORM_GRADIENT_LOCATIONS } from '@/lib/brandTheme'
 import { Search } from 'lucide-react-native'
 import type { TipoConteudo } from '@tcc-sistema/types'
+import { ScreenPageHeader } from '@/components/layout/ScreenPageHeader'
 import { A11yScreen } from '@/components/layout/A11yScreen'
 import { TabScreenShell, TabScrollView } from '@/components/layout/TabScreenShell'
 import { Input } from '@/components/ui/Input'
@@ -53,8 +52,7 @@ export default function ExplorarScreen() {
     video: videosQuery,
   }
 
-  const activeQuery =
-    filtro === 'todos' ? todosQuery : (byTipo[filtro] ?? todosQuery)
+  const activeQuery = filtro === 'todos' ? todosQuery : (byTipo[filtro] ?? todosQuery)
   const rawItems = activeQuery.data ?? []
   const items = useMemo(() => {
     const q = busca.trim().toLowerCase()
@@ -67,27 +65,17 @@ export default function ExplorarScreen() {
   }, [rawItems, busca])
   const isLoading = activeQuery.isLoading
 
-  const sectionLabel =
-    filtro === 'todos' ? 'Catálogo completo' : TIPO_CONTEUDO_LABEL[filtro]
+  const sectionLabel = filtro === 'todos' ? 'Catálogo completo' : TIPO_CONTEUDO_LABEL[filtro]
 
   return (
     <A11yScreen>
       <TabScreenShell>
-        <LinearGradient
-          colors={[...PLATFORM_GRADIENT]}
-          locations={[...PLATFORM_GRADIENT_LOCATIONS]}
-          style={{ flex: 1 }}
-        >
-          <TabScrollView>
-            <View style={{ paddingHorizontal: SCREEN_HORIZONTAL_PADDING }} className="mb-5">
-            <Text className="font-sans-semibold text-xs uppercase tracking-wider text-text-muted">
-              Explorar
-            </Text>
-            <Text className="mt-1 font-sans-bold text-2xl text-brand-navy">Catálogo</Text>
-            <Text className="mt-2 font-sans text-sm leading-relaxed text-text-muted">
-              Livros, crônicas, poemas e músicas — escolha uma categoria ou veja tudo de uma vez.
-            </Text>
-          </View>
+        <TabScrollView>
+          <ScreenPageHeader
+            eyebrow="Explorar"
+            title="Catálogo"
+            description="Livros, crônicas, poemas e músicas — escolha uma categoria ou veja tudo de uma vez."
+          />
 
           <View style={{ paddingHorizontal: SCREEN_HORIZONTAL_PADDING }} className="mb-4">
             <Input
@@ -103,7 +91,11 @@ export default function ExplorarScreen() {
           <ScrollView
             horizontal
             showsHorizontalScrollIndicator={false}
-            contentContainerStyle={{ paddingHorizontal: SCREEN_HORIZONTAL_PADDING, gap: 8, paddingBottom: 16 }}
+            contentContainerStyle={{
+              paddingHorizontal: SCREEN_HORIZONTAL_PADDING,
+              gap: 8,
+              paddingBottom: 12,
+            }}
           >
             {FILTROS.map((chip) => {
               const active = filtro === chip.id
@@ -111,7 +103,7 @@ export default function ExplorarScreen() {
                 <Pressable
                   key={chip.id}
                   onPress={() => setFiltro(chip.id)}
-                  className={`rounded-full px-4 py-2 ${active ? 'bg-primary' : 'border border-border bg-white'}`}
+                  className={`rounded-full px-4 py-2.5 ${active ? 'bg-primary shadow-sm' : 'border border-border bg-white'}`}
                 >
                   <Text
                     className={`font-sans-semibold text-sm ${active ? 'text-white' : 'text-text-muted'}`}
@@ -125,7 +117,7 @@ export default function ExplorarScreen() {
 
           <View
             style={{ paddingHorizontal: SCREEN_HORIZONTAL_PADDING }}
-            className="mb-4 flex-row items-center justify-between"
+            className="mb-4 mt-2 flex-row items-center justify-between"
           >
             <Text className="font-sans-bold text-lg text-brand-navy">{sectionLabel}</Text>
             {!isLoading ? (
@@ -152,8 +144,7 @@ export default function ExplorarScreen() {
               <ObrasSectionRail />
             </View>
           )}
-          </TabScrollView>
-        </LinearGradient>
+        </TabScrollView>
       </TabScreenShell>
     </A11yScreen>
   )
