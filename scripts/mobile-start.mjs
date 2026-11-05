@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 /**
  * Sobe o Metro para Expo Go.
- * Padrão: LAN (estável na mesma Wi‑Fi — evita quedas do ngrok/tunnel).
+ * Padrão: LAN + offline (manifesto assinado localmente — evita HTTP 500 da API Expo).
  * Tunnel: pnpm mobile:dev:tunnel (outra rede / firewall).
  */
 import { spawnSync, spawn, execSync } from 'node:child_process'
@@ -51,33 +51,37 @@ function runExpo(args) {
   })
 }
 
+const useTunnel = process.argv.includes('--tunnel')
+const rawArgs = process.argv.slice(2).filter((arg) => arg !== '--tunnel' && arg !== '--lan')
+const wantsClear = rawArgs.includes('--clear') || rawArgs.includes('-c')
+const extraArgs = rawArgs.filter((arg) => arg !== '--clear' && arg !== '-c')
+
 const whoami = runExpo(['whoami'])
 const username = whoami.stdout?.trim()
+const loggedIn = whoami.status === 0 && username && username !== 'Not logged in'
 
-if (whoami.status !== 0 || !username || username === 'Not logged in') {
-  console.error('\n❌ Expo CLI não está logado.\n')
+if (useTunnel && !loggedIn) {
+  console.error('\n❌ Tunnel exige Expo CLI logado.\n')
   console.error('   Rode: pnpm mobile:login\n')
-  console.error('   Use a MESMA conta do Expo Go no iPhone.\n')
   process.exit(1)
 }
 
-const useTunnel = process.argv.includes('--tunnel')
-const extraArgs = process.argv.slice(2).filter((arg) => arg !== '--tunnel' && arg !== '--lan')
+// SDK 58: --offline já força LAN (não pode combinar --offline com --lan).
+const hostArgs = useTunnel ? ['--tunnel'] : ['--offline']
 
-const hostArgs = useTunnel ? ['--tunnel'] : ['--lan']
-
-console.log(`\n📱 EntreLinhas mobile — Expo SDK 57 — conta: ${username}`)
+console.log(`\n📱 EntreLinhas mobile — Expo SDK 58${loggedIn ? ` — conta: ${username}` : ''}`)
 if (useTunnel) {
   console.log('   Modo: TUNNEL (ngrok — use se iPhone estiver em outra rede)\n')
   console.log('   Se o tunnel cair, reinicie ou use LAN: pnpm mobile:dev\n')
 } else {
-  console.log('   Modo: LAN (iPhone e PC na mesma Wi‑Fi — recomendado)\n')
+  console.log('   Modo: LAN + offline (mesma Wi‑Fi — recomendado)\n')
   console.log('   Outra rede? pnpm mobile:dev:tunnel\n')
+  console.log('   RAM baixa? Feche apps pesados antes de abrir no iPhone.\n')
 }
 
 freePort8081()
 
-const args = ['start', ...hostArgs, '--clear', ...extraArgs]
+const args = ['start', ...hostArgs, ...(wantsClear ? ['--clear'] : []), ...extraArgs]
 
 const child = spawn(process.execPath, [expoCli, ...args], {
   cwd: mobileRoot,
@@ -85,6 +89,8 @@ const child = spawn(process.execPath, [expoCli, ...args], {
   env: {
     ...process.env,
     EXPO_NO_TELEMETRY: '1',
+    // Menos workers = menos pico de RAM ao empacotar para iOS (evita 500/OOM no Metro).
+    METRO_MAX_WORKERS: process.env.METRO_MAX_WORKERS ?? '2',
   },
 })
 

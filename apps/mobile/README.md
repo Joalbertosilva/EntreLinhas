@@ -4,7 +4,7 @@ Aplicativo React Native + Expo para **alunos**.
 
 ## Stack
 
-- Expo SDK **57** + Expo Router (compatível com Expo Go 57 no iPhone)
+- Expo SDK **58** + Expo Router (compatível com Expo Go 58 no iPhone — App Store)
 - NativeWind (tokens alinhados ao web)
 - Supabase Auth (`expo-secure-store`)
 - TanStack Query + schemas compartilhados (`@tcc-sistema/schemas`)
@@ -31,15 +31,19 @@ Ou dentro de `apps/mobile`:
 pnpm start
 ```
 
-Use **Expo Go 57.x** (Settings → Supported SDK **57**) no celular/emulador.
+Use **Expo Go 58.x** (Settings → Supported SDK **58**) no celular/emulador.
 
-Expo CLI e Expo Go precisam estar na **mesma conta**:
+No SDK 58, **`pnpm mobile:dev` usa só `--offline`** (já inclui LAN; não combine `--offline` com `--lan`). Isso assina o manifesto localmente e evita `HTTP 500 UnexpectedServerError` da API Expo. Login só é obrigatório para **tunnel**:
 ```bash
-pnpm mobile:login    # login no PC (use conta do Expo Go)
-pnpm mobile:whoami   # deve mostrar o mesmo usuário do iPhone
-pnpm mobile:dev      # sobe Metro em LAN autenticado
+pnpm mobile:dev              # LAN + offline (recomendado)
+pnpm mobile:dev -- --clear     # limpa cache do Metro se travar
+pnpm mobile:dev:tunnel         # outra Wi‑Fi — exige pnpm mobile:login
 ```
-Não use `npx expo login` na raiz — use `pnpm mobile:login` (Expo SDK 57 local).
+Se o PC avisar **memória cheia**, feche Chrome/VS Code extras antes de abrir no iPhone (o bundle iOS usa ~15 MB e pico de RAM).
+
+### Erro “Project uses SDK 57 / Expo Go is SDK 58” (iPhone)
+
+No **iOS não dá para instalar Expo Go antigo** — só a versão da App Store (hoje SDK 58). O projeto precisa estar em **SDK 58** também (`expo ~58` no `package.json`). Depois de atualizar: `pnpm install` na raiz e `pnpm mobile:dev`.
 
 ## Fluxo inicial
 
