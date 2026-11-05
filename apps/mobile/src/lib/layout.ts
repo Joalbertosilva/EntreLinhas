@@ -2,7 +2,16 @@ import { Platform } from 'react-native'
 import type { EdgeInsets } from 'react-native-safe-area-context'
 
 /** Padding horizontal padrão das telas (evita texto colado na borda). */
-export const SCREEN_HORIZONTAL_PADDING = 24
+export const SCREEN_HORIZONTAL_PADDING = 20
+
+/** Ritmo vertical compartilhado entre abas (paridade com rails da web). */
+export const SECTION_GAP = 28
+export const RAIL_ITEM_GAP = 12
+export const CARD_RADIUS = 16
+export const PANEL_RADIUS = 20
+
+/** Altura mínima dos painéis obra + jornada na home (paridade `--home-obra-panel-min-h` na web). */
+export const HOME_HERO_PANEL_MIN_HEIGHT = 190
 
 /** Larguras fixas — NativeWind nem sempre aplica w-* em listas horizontais. */
 export const CONTENT_CARD_WIDTH = 108

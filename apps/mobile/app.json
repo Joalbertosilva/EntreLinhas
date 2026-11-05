@@ -2,6 +2,7 @@
   "expo": {
     "name": "EntreLinhas",
     "slug": "entrelinhas",
+    "owner": "137588",
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/images/favicon.png",

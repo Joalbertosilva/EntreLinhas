@@ -62,8 +62,8 @@ export const ACCOUNT_MENU_ITEMS: AccountMenuItem[] = [
   },
   {
     href: '/(aluno)/perfil',
-    label: 'Dados da conta',
-    hint: 'Nome, usuário e perfil de acesso',
+    label: 'Minha conta',
+    hint: 'Resumo, leituras e preferências',
     icon: User,
   },
   {

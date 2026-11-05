@@ -1,11 +1,17 @@
 import { useRouter } from 'expo-router'
 import { FlatList, Pressable, Text, View } from 'react-native'
 import { ChevronRight } from 'lucide-react-native'
-import { Speakable } from '@/features/accessibility/Speakable'
 import type { HomeSectionConfig } from '@/features/conteudos/homeSections'
 import { ContentCard } from '@/features/conteudos/ContentCard'
 import { useSectionConteudos } from '@/features/conteudos/useConteudos'
-import { CONTENT_CARD_WIDTH, CONTENT_COVER_HEIGHT, SCREEN_HORIZONTAL_PADDING } from '@/lib/layout'
+import { ScreenSectionHeader } from '@/components/layout/ScreenPageHeader'
+import {
+  CONTENT_CARD_WIDTH,
+  CONTENT_COVER_HEIGHT,
+  RAIL_ITEM_GAP,
+  SCREEN_HORIZONTAL_PADDING,
+  SECTION_GAP,
+} from '@/lib/layout'
 
 interface ContentSectionRailProps {
   section: HomeSectionConfig
@@ -30,29 +36,24 @@ export function ContentSectionRail({ section }: ContentSectionRailProps) {
   const showVerTudo = section.id !== 'destaques'
 
   return (
-    <View className="mb-8">
-      <View
-        style={{ paddingHorizontal: SCREEN_HORIZONTAL_PADDING }}
-        className="mb-3 flex-row items-start justify-between gap-3"
-      >
-        <Speakable label={[section.title, section.subtitle].filter(Boolean).join('. ')} className="min-w-0 flex-1">
-          <Text className="font-sans-bold text-lg text-brand-navy">{section.title}</Text>
-          {section.subtitle ? (
-            <Text className="mt-0.5 font-sans text-sm text-text-muted">{section.subtitle}</Text>
-          ) : null}
-        </Speakable>
-        {showVerTudo ? (
-          <Pressable
-            onPress={() => router.push(`/(aluno)/(tabs)/explorar?tipo=${section.tipo}`)}
-            className="mt-0.5 flex-row items-center gap-0.5 active:opacity-70"
-            accessibilityRole="button"
-            accessibilityLabel={`Ver todos os ${section.title.toLowerCase()}`}
-          >
-            <Text className="font-sans-semibold text-xs text-primary">Ver tudo</Text>
-            <ChevronRight color="#1c756a" size={16} />
-          </Pressable>
-        ) : null}
-      </View>
+    <View style={{ marginBottom: SECTION_GAP }}>
+      <ScreenSectionHeader
+        title={section.title}
+        subtitle={section.subtitle}
+        action={
+          showVerTudo ? (
+            <Pressable
+              onPress={() => router.push(`/(aluno)/(tabs)/explorar?tipo=${section.tipo}`)}
+              className="-mb-0.5 flex-row items-center gap-0.5 active:opacity-70"
+              accessibilityRole="button"
+              accessibilityLabel={`Ver todos os ${section.title.toLowerCase()}`}
+            >
+              <Text className="font-sans-semibold text-sm text-text-muted">Ver tudo</Text>
+              <ChevronRight color="#5a7282" size={16} />
+            </Pressable>
+          ) : null
+        }
+      />
 
       {isLoading ? (
         <SectionSkeleton />
@@ -70,7 +71,7 @@ export function ContentSectionRail({ section }: ContentSectionRailProps) {
           data={data}
           keyExtractor={(item) => item.id}
           showsHorizontalScrollIndicator={false}
-          contentContainerStyle={{ paddingHorizontal: SCREEN_HORIZONTAL_PADDING, gap: 12 }}
+          contentContainerStyle={{ paddingHorizontal: SCREEN_HORIZONTAL_PADDING, gap: RAIL_ITEM_GAP }}
           renderItem={({ item }) => <ContentCard conteudo={item} />}
         />
       )}

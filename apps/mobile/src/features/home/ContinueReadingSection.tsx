@@ -1,8 +1,8 @@
-import { FlatList, Text, View } from 'react-native'
-import { Speakable } from '@/features/accessibility/Speakable'
+import { FlatList, View } from 'react-native'
+import { ScreenSectionHeader } from '@/components/layout/ScreenPageHeader'
 import { ContentCard } from '@/features/conteudos/ContentCard'
 import { useMinhasLeituras } from '@/features/leituras/useMinhasLeituras'
-import { SCREEN_HORIZONTAL_PADDING } from '@/lib/layout'
+import { RAIL_ITEM_GAP, SCREEN_HORIZONTAL_PADDING, SECTION_GAP } from '@/lib/layout'
 
 interface ContinueReadingSectionProps {
   userId: string | undefined
@@ -16,21 +16,14 @@ export function ContinueReadingSection({ userId }: ContinueReadingSectionProps) 
   if (!items.length) return null
 
   return (
-    <View className="mb-6">
-      <Speakable
-        label="Continue lendo. Retome de onde parou."
-        style={{ paddingHorizontal: SCREEN_HORIZONTAL_PADDING }}
-        className="mb-3"
-      >
-        <Text className="font-sans-bold text-lg text-brand-navy">Continue lendo</Text>
-        <Text className="mt-0.5 font-sans text-sm text-text-muted">Retome de onde parou</Text>
-      </Speakable>
+    <View style={{ marginBottom: SECTION_GAP }}>
+      <ScreenSectionHeader title="Continue lendo" subtitle="Retome de onde parou" />
       <FlatList
         horizontal
         data={items}
         keyExtractor={(item) => item.id}
         showsHorizontalScrollIndicator={false}
-        contentContainerStyle={{ paddingHorizontal: SCREEN_HORIZONTAL_PADDING, gap: 12 }}
+        contentContainerStyle={{ paddingHorizontal: SCREEN_HORIZONTAL_PADDING, gap: RAIL_ITEM_GAP }}
         renderItem={({ item }) => <ContentCard conteudo={item.conteudo} />}
       />
     </View>

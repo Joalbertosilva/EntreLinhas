@@ -1,10 +1,10 @@
 import { LinearGradient } from 'expo-linear-gradient'
-import { DRAWER_GRADIENT, DRAWER_GRADIENT_LOCATIONS } from '@/lib/brandTheme'
 import { useRouter, type Href } from 'expo-router'
 import { ChevronRight, LogOut, X } from 'lucide-react-native'
 import { Alert, Linking, Modal, Pressable, ScrollView, Text, View } from 'react-native'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
 import { Avatar } from '@/components/ui/Avatar'
+import { ProfileMenuItem } from '@/components/ui/ProfileMenuItem'
 import { useAppShell } from '@/components/layout/AppShellProvider'
 import { useAccessibility } from '@/features/accessibility/AccessibilityProvider'
 import {
@@ -66,69 +66,68 @@ export function AccountSheet() {
 
   return (
     <Modal visible={accountOpen} animationType="slide" transparent onRequestClose={closeAccount}>
-      <Pressable className="flex-1 justify-end bg-black/55" onPress={closeAccount}>
-        <Pressable onPress={(e) => e.stopPropagation()} className="max-h-[88%] overflow-hidden rounded-t-3xl">
+      <Pressable className="flex-1 justify-end bg-brand-navy/45" onPress={closeAccount}>
+        <Pressable
+          onPress={(e) => e.stopPropagation()}
+          className="max-h-[90%] overflow-hidden rounded-t-[28px] bg-[#f4f8f7]"
+        >
           <LinearGradient
-            colors={[...DRAWER_GRADIENT]}
-            locations={[...DRAWER_GRADIENT_LOCATIONS]}
-            style={{ paddingBottom: insets.bottom + 8 }}
+            colors={['#dcefea', '#eef9f6', '#f4f8f7']}
+            locations={[0, 0.55, 1]}
+            style={{ paddingTop: 12, paddingBottom: insets.bottom + 10 }}
           >
-            <View className="items-end px-4 pt-3">
+            <View className="flex-row items-center justify-between px-5 pb-1 pt-1">
+              <Text className="font-sans-bold text-lg text-brand-navy">Minha conta</Text>
               <Pressable
                 onPress={closeAccount}
                 accessibilityLabel="Fechar"
-                className="h-9 w-9 items-center justify-center rounded-full bg-white/10"
+                className="h-9 w-9 items-center justify-center rounded-full bg-white/80 active:opacity-80"
               >
-                <X color="#ffffff" size={18} />
+                <X color="#1a3342" size={18} strokeWidth={2} />
               </Pressable>
             </View>
 
-            <View className="items-center px-6 pb-5 pt-2">
-              <Avatar name={profile.nome} size={72} />
-              <Text className="mt-3 text-center font-sans-bold text-xl text-white">{profile.nome}</Text>
-              <Text className="mt-0.5 font-sans text-sm text-white/75">@{profile.nome_usuario}</Text>
-              <View className="mt-2 rounded-full bg-white/15 px-3 py-1">
-                <Text className="font-sans-semibold text-[10px] uppercase tracking-wide text-white/90">
-                  {perfilLabel}
+            <View className="mx-4 mt-3 flex-row items-center gap-3.5 rounded-2xl border border-white/80 bg-white/90 px-4 py-4">
+              <Avatar name={profile.nome} size={56} />
+              <View className="min-w-0 flex-1">
+                <Text className="font-sans-bold text-[17px] text-brand-navy" numberOfLines={2}>
+                  {profile.nome}
                 </Text>
+                <Text className="mt-0.5 font-sans text-sm text-text-muted" numberOfLines={1}>
+                  @{profile.nome_usuario}
+                </Text>
+                <View className="mt-2 self-start rounded-full bg-primary-light px-2.5 py-0.5">
+                  <Text className="font-sans-semibold text-[10px] uppercase tracking-wide text-primary">
+                    {perfilLabel}
+                  </Text>
+                </View>
               </View>
             </View>
 
             <ScrollView
               showsVerticalScrollIndicator={false}
-              contentContainerStyle={{ paddingHorizontal: 16, paddingBottom: 12 }}
+              contentContainerStyle={{ paddingHorizontal: 16, paddingTop: 16, paddingBottom: 8 }}
             >
-              <View className="overflow-hidden rounded-2xl bg-white/8">
+              <View className="overflow-hidden rounded-2xl border border-border/70 bg-white">
                 {menuItems.map((item, index) => (
-                  <Pressable
+                  <ProfileMenuItem
                     key={item.label}
+                    variant="list"
+                    icon={item.icon}
+                    label={item.label}
+                    hint={item.hint}
                     onPress={() => handleItem(item)}
-                    className={`flex-row items-center gap-3 px-4 py-3.5 active:bg-white/10 ${
-                      index < menuItems.length - 1 ? 'border-b border-white/10' : ''
-                    }`}
-                  >
-                    <View className="h-9 w-9 items-center justify-center rounded-lg bg-white/12">
-                      <item.icon color="#ffffff" size={18} strokeWidth={1.75} />
-                    </View>
-                    <View className="min-w-0 flex-1">
-                      <Text className="font-sans-semibold text-[15px] text-white">{item.label}</Text>
-                      {item.hint ? (
-                        <Text className="mt-0.5 font-sans text-xs text-white/60" numberOfLines={1}>
-                          {item.hint}
-                        </Text>
-                      ) : null}
-                    </View>
-                    <ChevronRight color="#ffffff99" size={16} />
-                  </Pressable>
+                    isLast={index === menuItems.length - 1}
+                  />
                 ))}
               </View>
 
               <Pressable
                 onPress={() => void handleSignOut()}
-                className="mt-4 flex-row items-center justify-center gap-2 rounded-2xl border border-white/15 py-3.5 active:bg-white/8"
+                className="mt-4 flex-row items-center justify-center gap-2 rounded-2xl border border-border/80 bg-white py-3.5 active:bg-primary-light/25"
               >
-                <LogOut color="#ffffffb3" size={18} strokeWidth={1.75} />
-                <Text className="font-sans-semibold text-sm text-white/85">Sair da conta</Text>
+                <LogOut color="#5a7282" size={18} strokeWidth={1.75} />
+                <Text className="font-sans-semibold text-sm text-text-muted">Sair da conta</Text>
               </Pressable>
             </ScrollView>
           </LinearGradient>
