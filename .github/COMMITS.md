@@ -72,8 +72,10 @@ feat(mobile): descrever a mudança aqui
 EOF
 )"
 
-# 4. Enviar (quando estiver pronto)
-git push origin main
+# 4. Enviar feature → develop (comando /git no Cursor)
+# Ver .cursor/skills/git/SKILL.md
+
+# 5. Release: PR develop → main (manual)
 ```
 
 ## Agrupamento
@@ -86,4 +88,6 @@ git push origin main
 
 - `.github/CONTRIBUTING.md` — fluxo completo
 - `.cursor/rules/git-conventional-commits.mdc` — regra para o agente Cursor
-- `.cursor/skills/github-workflow/SKILL.md` — skill de commit/push
+- `.cursor/skills/git/SKILL.md` — **`/git`**: commit, push, merge em `develop`
+- `.cursor/skills/github-workflow/SKILL.md` — commit sem fluxo develop
+- `.cursor/rules/git-branch-workflow.mdc` — nomes de branch automáticos

@@ -1,0 +1,76 @@
+---
+description: Branches feature a partir de develop — nome tipo/escopo automático
+alwaysApply: true
+---
+
+# Git — branches e início de tarefa
+
+## Troncos
+
+| Branch | Uso |
+|--------|-----|
+| `main` | Estável; integração só via PR **develop → main** (humano) |
+| `develop` | Integração diária; recebe features via `/git` |
+| `<tipo>/<escopo>-<slug>` | Trabalho em andamento |
+
+**Proibido** commitar diretamente em `main`. Evitar commits em `develop` sem passar por branch de feature (exceto merge pós-`/git`).
+
+## Quando criar branch
+
+Antes de **implementar, corrigir ou refatorar** código (não em perguntas puramente explicativas):
+
+1. Inferir **tipo**, **escopo** e **slug** a partir do pedido do usuário e dos arquivos afetados.
+2. Garantir base em `develop` atualizada (`git fetch origin develop`; `git checkout develop`; `git pull origin develop` quando o remoto existir).
+3. Criar e usar: `git checkout -b <tipo>/<escopo>-<slug>`.
+
+Se já estiver em uma branch de feature **do mesmo assunto**, não criar outra.
+
+Se estiver em `main` ou `develop` com o **mesmo** pedido novo, criar a branch (mudanças não commitadas acompanham o checkout).
+
+## Nome da branch
+
+```
+<tipo>/<escopo>-<slug>
+```
+
+- **tipo**: `feat`, `fix`, `docs`, `style`, `refactor`, `perf`, `test`, `build`, `ci`, `chore`, `revert` (mesmos de `.github/COMMITS.md`)
+- **escopo**: `mobile`, `web`, `supabase`, `schemas`, `github`, `deps` — ou `repo` se transversal
+- **slug**: kebab-case, português sem acentos, imperativo curto (3–6 palavras), só `a-z0-9-`
+
+### Inferência rápida
+
+| Sinais no pedido | tipo |
+|------------------|------|
+| novo, adicionar, implementar, tela, fluxo | `feat` |
+| corrigir, bug, erro, quebrado | `fix` |
+| documentar, readme, comentário de processo | `docs` |
+| refatorar, extrair, reorganizar sem mudar comportamento | `refactor` |
+| lint, formatação, prettier | `style` |
+| dependências, lockfile, bump | `build` ou `chore` |
+| workflow, actions | `ci` |
+| script, config, skill, rule | `chore` ou `docs(github)` |
+
+| Onde mexe | escopo |
+|-----------|--------|
+| `apps/mobile/` | `mobile` |
+| `apps/web/` | `web` |
+| `supabase/` | `supabase` |
+| `packages/schemas/` | `schemas` |
+| `.github/`, `.cursor/` | `github` |
+| só `package.json` / lock | `deps` |
+
+**Exemplos**
+
+- Pedido: “adicionar busca na listagem de conteúdos web” → `feat/web-adicionar-busca-conteudos`
+- Pedido: “corrigir login no Expo” → `fix/mobile-corrigir-login-expo`
+- Pedido: “skill de git e regra de branch” → `chore/github-fluxo-git-develop`
+
+## Commits na branch
+
+Mensagens: `tipo(escopo): descrição` — alinhadas ao nome da branch quando fizer sentido.
+
+## Enviar para o remoto
+
+- Pedido **`/git`** → skill `.cursor/skills/git/SKILL.md` (commit, push, integrar em `develop`).
+- Pedido genérico “commit” / “commitar” → `.cursor/skills/github-workflow/SKILL.md` (sem integrar em `develop` até pedir push ou `/git`).
+- **`main`**: nunca push de feature direto; lembrar PR **develop → main** quando o usuário quiser release.

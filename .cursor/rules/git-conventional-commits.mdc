@@ -23,8 +23,10 @@ Escopos: `mobile`, `web`, `supabase`, `schemas`, `github`, `deps`.
 2. Agrupar arquivos por área lógica — **um assunto por commit**
 3. Nunca commitar `.env`, credenciais, `node_modules`
 4. Mensagem via HEREDOC; foco no **porquê**
-5. **`git push` só se o usuário pedir explicitamente**
-6. Skill completa: `.cursor/skills/github-workflow/SKILL.md`
+5. **`git push` só se o usuário pedir explicitamente** — exceto **`/git`**, que inclui push e integração em `develop`
+6. Branches feature: `.cursor/rules/git-branch-workflow.mdc`
+7. **`/git`** (subir tudo em develop): `.cursor/skills/git/SKILL.md`
+8. Commit genérico: `.cursor/skills/github-workflow/SKILL.md`
 
 ## Exemplos
 

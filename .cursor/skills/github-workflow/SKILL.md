@@ -1,8 +1,9 @@
 ---
 name: github-workflow
 description: >-
-  Commitar e enviar alterações ao GitHub com Conventional Commits em português.
-  Use quando o usuário pedir commit, push, salvar no GitHub, ou seguir feat/fix/docs.
+  Commitar (e opcionalmente push) com Conventional Commits em português, sem
+  merge em develop. Use para commit/push genérico. Para publicar em develop use
+  /git (.cursor/skills/git/SKILL.md).
 disable-model-invocation: true
 ---
 
