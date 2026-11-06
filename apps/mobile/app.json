@@ -3,25 +3,26 @@
     "name": "EntreLinhas",
     "slug": "entrelinhas",
     "owner": "137588",
-    "version": "1.0.0",
+    "version": "1.0.6",
     "orientation": "portrait",
-    "icon": "./assets/images/favicon.png",
+    "icon": "./assets/images/app-icon-manifest.png",
     "scheme": "entrelinhas",
     "userInterfaceStyle": "light",
     "newArchEnabled": true,
     "splash": {
-      "image": "./assets/images/favicon.png",
+      "image": "./assets/images/entrelinhas-logo.png",
       "resizeMode": "contain",
-      "backgroundColor": "#e5f7f3"
+      "backgroundColor": "#f8fbfe"
     },
     "ios": {
       "supportsTablet": true,
-      "bundleIdentifier": "com.cesmac.entrelinhas"
+      "bundleIdentifier": "com.cesmac.entrelinhas",
+      "icon": "./assets/images/app-icon-manifest.png"
     },
     "android": {
       "adaptiveIcon": {
-        "foregroundImage": "./assets/images/favicon.png",
-        "backgroundColor": "#e5f7f3"
+        "foregroundImage": "./assets/images/app-icon-manifest.png",
+        "backgroundColor": "#f8fbfe"
       },
       "package": "com.cesmac.entrelinhas",
       "softwareKeyboardLayoutMode": "resize"
@@ -36,7 +37,15 @@
       "expo-font",
       "expo-audio",
       "expo-image",
-      "expo-splash-screen",
+      [
+        "expo-splash-screen",
+        {
+          "backgroundColor": "#f8fbfe",
+          "image": "./assets/images/entrelinhas-logo.png",
+          "imageWidth": 260,
+          "resizeMode": "contain"
+        }
+      ],
       "expo-status-bar"
     ],
     "experiments": {
