@@ -22,6 +22,9 @@ export const PLATFORM_GRADIENT = [
 ] as const
 export const PLATFORM_GRADIENT_LOCATIONS = [0, 0.22, 0.42, 0.62, 0.82, 1] as const
 
+/** Fundo da splash nativa e rotas iniciais — alinhado a `expo.splash.backgroundColor`. */
+export const SPLASH_NATIVE_BG = '#f8fbfe' as const
+
 /** Splash / abertura — mescla navy, azul claro e toque mint. */
 export const SPLASH_GRADIENT = ['#f8fbfe', '#e8f0f8', '#dceaf2', '#eef7f4', '#ffffff'] as const
 export const SPLASH_GRADIENT_LOCATIONS = [0, 0.28, 0.52, 0.78, 1] as const

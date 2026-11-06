@@ -58,7 +58,7 @@ export function SplashLoadingCaption({
   const opacity = useSharedValue(0)
 
   useEffect(() => {
-    opacity.value = withDelay(900, withTiming(visible ? 1 : 0, { duration: 500 }))
+    opacity.value = withDelay(200, withTiming(visible ? 1 : 0, { duration: 450 }))
   }, [opacity, visible])
 
   const wrapStyle = useAnimatedStyle(() => ({

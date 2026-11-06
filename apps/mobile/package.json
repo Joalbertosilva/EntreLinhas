@@ -8,7 +8,9 @@
     "start:online": "expo start --lan --clear",
     "android": "expo start --android",
     "ios": "expo start --ios",
-    "web": "expo start --web"
+    "web": "expo start --web",
+    "run:ios": "expo run:ios",
+    "run:android": "expo run:android"
   },
   "dependencies": {
     "@expo-google-fonts/plus-jakarta-sans": "^0.4.2",
