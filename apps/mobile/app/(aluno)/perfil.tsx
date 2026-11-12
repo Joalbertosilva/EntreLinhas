@@ -1,7 +1,8 @@
 import { Alert, Linking, Pressable, ScrollView, Text, View } from 'react-native'
 import { Stack, useRouter } from 'expo-router'
 import { LinearGradient } from 'expo-linear-gradient'
-import { BookOpen, ChevronRight, ExternalLink, Lock, PenLine, Sparkles, Type } from 'lucide-react-native'
+import { BookOpen, ChevronRight, ExternalLink, Info, Lock, PenLine, Sparkles, Type } from 'lucide-react-native'
+import { PLATFORM_APP_VERSION, PLATFORM_SUPPORT_EMAIL } from '@/lib/platformCredits'
 import { A11yScreen } from '@/components/layout/A11yScreen'
 import { PlatformBackground } from '@/components/layout/PlatformBackground'
 import { ScreenBackHeader } from '@/components/layout/ScreenBackHeader'
@@ -15,6 +16,7 @@ import { SCREEN_HORIZONTAL_PADDING } from '@/lib/layout'
 import { useStackScreenInsets } from '@/lib/useStackScreenInsets'
 import { isStaffPerfil, PERFIL_LABELS } from '@/lib/perfilLabels'
 import { getAdminWebUrl } from '@/lib/webAppUrl'
+import { PlatformInfoSection } from '@/features/about/PlatformInfoSection'
 import { useAuth } from '@/providers/AuthProvider'
 
 export default function PerfilScreen() {
@@ -204,6 +206,38 @@ export default function PerfilScreen() {
                 />
               ) : null}
             </View>
+
+            <Text className="mb-2.5 mt-7 font-sans-semibold text-[11px] uppercase tracking-wider text-text-muted">
+              Informações
+            </Text>
+
+            <View className="overflow-hidden rounded-2xl border border-border/80 bg-white">
+              <ProfileMenuItem
+                variant="list"
+                icon={Info}
+                label="Sobre o aplicativo"
+                hint="Créditos, versão e suporte"
+                onPress={() => router.push('/(aluno)/sobre')}
+              />
+              <View className="border-t border-border/70 px-4 py-3.5">
+                <View className="flex-row items-center justify-between gap-3">
+                  <Text className="font-sans-medium text-sm text-text-muted">Versão</Text>
+                  <Text className="font-sans-semibold text-sm text-brand-navy">{PLATFORM_APP_VERSION}</Text>
+                </View>
+                <Pressable
+                  onPress={() => void Linking.openURL(`mailto:${PLATFORM_SUPPORT_EMAIL}`)}
+                  accessibilityRole="link"
+                  className="mt-3 flex-row items-center justify-between gap-3"
+                >
+                  <Text className="font-sans-medium text-sm text-text-muted">Suporte</Text>
+                  <Text className="shrink text-right font-sans-semibold text-sm text-primary">
+                    {PLATFORM_SUPPORT_EMAIL}
+                  </Text>
+                </Pressable>
+              </View>
+            </View>
+
+            <PlatformInfoSection />
 
             <Pressable
               onPress={() => void handleSignOut()}
