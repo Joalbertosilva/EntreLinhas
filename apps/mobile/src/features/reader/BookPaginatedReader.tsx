@@ -22,12 +22,30 @@ import { useSpeechContext } from '@/features/accessibility/SpeechProvider'
 import type { BookPage } from '@/features/reader/bookPagination'
 import { getBookPageStorageKey } from '@/features/reader/bookPagination'
 import { SCREEN_HORIZONTAL_PADDING } from '@/lib/layout'
+import { READER_PARAGRAPH_STYLE } from '@/lib/readerTypography'
 
 interface BookPaginatedReaderProps {
   pages: BookPage[]
   conteudoId: string
   titulo: string
   storageKey?: string
+}
+
+/** Fallback quando o TextInput não reporta contentSize (comum no Android). */
+function estimateReaderContentHeight(
+  text: string,
+  lineHeight: number,
+  fontSize: number,
+  boxWidth: number,
+): number {
+  const innerWidth = Math.max(boxWidth - 32, 160)
+  const charsPerLine = Math.max(10, Math.floor(innerWidth / (fontSize * 0.48)))
+  const lines = text.split('\n').reduce((sum, paragraph) => {
+    const chunk = paragraph.trim()
+    if (!chunk) return sum + 1
+    return sum + Math.ceil(chunk.length / charsPerLine)
+  }, 0)
+  return lines * lineHeight + 32
 }
 
 export function BookPaginatedReader({ pages, conteudoId, titulo, storageKey: storageKeyProp }: BookPaginatedReaderProps) {
@@ -42,7 +60,7 @@ export function BookPaginatedReader({ pages, conteudoId, titulo, storageKey: sto
   })
   const { fontMultiplier } = useAccessibility()
   const { speak, stop, isSpeaking } = useSpeechContext()
-  const { height: windowHeight } = useWindowDimensions()
+  const { height: windowHeight, width: windowWidth } = useWindowDimensions()
 
   useEffect(() => {
     let cancelled = false
@@ -112,9 +130,10 @@ export function BookPaginatedReader({ pages, conteudoId, titulo, storageKey: sto
 
   const onContentSizeChange = useCallback(
     (event: NativeSyntheticEvent<{ contentSize: { width: number; height: number } }>) => {
-      const contentHeight = event.nativeEvent.contentSize.height
+      const nextHeight = event.nativeEvent.contentSize.height
+      if (nextHeight <= 0) return
       setScrollMetrics((metrics) =>
-        metrics.contentHeight === contentHeight ? metrics : { ...metrics, contentHeight },
+        metrics.contentHeight === nextHeight ? metrics : { ...metrics, contentHeight: nextHeight },
       )
     },
     [],
@@ -144,9 +163,24 @@ export function BookPaginatedReader({ pages, conteudoId, titulo, storageKey: sto
   )
 
   const viewportHeight = scrollMetrics.viewportHeight || textAreaMaxHeight
-  const scrollOverflow = scrollMetrics.contentHeight > viewportHeight + 2
-  const maxScrollOffset = Math.max(scrollMetrics.contentHeight - viewportHeight, 1)
-  const hasMoreBelow = scrollOverflow && scrollMetrics.offsetY < maxScrollOffset - 8
+  const readerBoxWidth = windowWidth - SCREEN_HORIZONTAL_PADDING * 2
+  const estimatedContentHeight = estimateReaderContentHeight(
+    current.body,
+    readerLineHeight,
+    readerFontSize,
+    readerBoxWidth,
+  )
+  const measuredOverflow =
+    scrollMetrics.contentHeight > 0 &&
+    scrollMetrics.contentHeight > viewportHeight + 6
+  const estimatedOverflow = estimatedContentHeight > textAreaMaxHeight + 4
+  const scrollOverflow = measuredOverflow || estimatedOverflow
+  const contentHeightForScroll = scrollMetrics.contentHeight || estimatedContentHeight
+  const maxScrollOffset = Math.max(contentHeightForScroll - viewportHeight, 0)
+  const scrollBottomThreshold = 16
+  const hasMoreBelow =
+    scrollOverflow && scrollMetrics.offsetY < Math.max(maxScrollOffset - scrollBottomThreshold, 0)
+  const readerBottomPadding = scrollOverflow ? 44 : 16
 
   const onSelectionChange = (event: TextInputSelectionChangeEvent) => {
     selectionRef.current = event.nativeEvent.selection
@@ -211,7 +245,7 @@ export function BookPaginatedReader({ pages, conteudoId, titulo, storageKey: sto
               minHeight: textAreaMinHeight,
               maxHeight: textAreaMaxHeight,
               paddingTop: 16,
-              paddingBottom: hasMoreBelow ? 40 : 16,
+              paddingBottom: readerBottomPadding,
               paddingLeft: 16,
               paddingRight: 16,
               fontFamily: 'PlusJakartaSans_400Regular',
@@ -219,6 +253,7 @@ export function BookPaginatedReader({ pages, conteudoId, titulo, storageKey: sto
               lineHeight: readerLineHeight,
               color: '#1a3342',
               textAlignVertical: 'top',
+              ...READER_PARAGRAPH_STYLE,
             }}
             className="w-full font-sans text-text"
           />
@@ -233,15 +268,16 @@ export function BookPaginatedReader({ pages, conteudoId, titulo, storageKey: sto
                   left: 0,
                   right: 0,
                   bottom: 0,
-                  height: 44,
+                  height: 48,
                 }}
               />
               <View
                 pointerEvents="none"
-                className="absolute bottom-2 left-0 right-0 flex-row items-center justify-center gap-1"
+                style={{ position: 'absolute', left: 0, right: 0, bottom: 8 }}
+                className="flex-row items-center justify-center gap-1"
               >
                 <ChevronDown color="#1c756a" size={14} />
-                <Text className="font-sans-semibold text-[11px] text-primary">Role para ver mais</Text>
+                <Text className="font-sans-semibold text-[11px] text-primary">Role para ler mais</Text>
               </View>
             </>
           ) : null}

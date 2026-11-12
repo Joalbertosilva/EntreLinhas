@@ -16,7 +16,7 @@ export function CommunityObraCard({ item, speakLabel }: CommunityObraCardProps) 
   const { audioEnabled } = useAccessibility()
 
   return (
-    <article className="home-community-card home-obra-card--hero-row group">
+    <article className="home-community-card group">
       <Link
         to="/app/obras/$obraId"
         params={{ obraId: item.id }}

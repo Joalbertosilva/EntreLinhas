@@ -1,6 +1,6 @@
 # Sessão atual — tcc-sistema / EntreLinhas
 
-> Última atualização: **2026-11-05**  
+> Última atualização: **2026-11-12**  
 > **Fase:** MVP completo (web + mobile) → **ensaio de apresentação**  
 > **Deploy:** pós-apresentação (site roda em `localhost` + Supabase nuvem)
 
@@ -12,7 +12,9 @@
 Backend ✅  →  Web ✅  →  Mobile ✅  →  Apresentação 🔄  →  Deploy ⏳
 ```
 
-**Foco imediato (retomar):** splash **nativa** mobile + handoff para `AnimatedSplash` — branch `feat/mobile-melhorar-splash-nativa` (**alterações locais, ainda sem commit**).
+**Foco imediato:** paridade mobile — foto de perfil, nível no avatar, **Sobre o aplicativo** — branch `feat/mobile-perfil-avatar-nivel-sobre` (em andamento).
+
+**Pendente retomar:** splash **nativa** (`feat/mobile-melhorar-splash-nativa`, alterações locais sem commit).
 
 **Foco geral:** ensaio com [`docs/roteiro-apresentacao.md`](../docs/roteiro-apresentacao.md); matriz em [`docs/validacao-requisitos.md`](../docs/validacao-requisitos.md).
 

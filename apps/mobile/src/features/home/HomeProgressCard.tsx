@@ -1,11 +1,17 @@
 import { useRouter } from 'expo-router'
-import { ArrowRight } from 'lucide-react-native'
+import { LinearGradient } from 'expo-linear-gradient'
+import { BookOpen, LineChart } from 'lucide-react-native'
 import { Pressable, Text, View } from 'react-native'
-import { JornadaBookAvatar } from '@/features/home/JornadaBookAvatar'
+import { ReaderProfileAvatar } from '@/features/app/ReaderProfileAvatar'
 import { Speakable } from '@/features/accessibility/Speakable'
-import { tituloJornada } from '@/lib/alunoProgress'
-import { HOME_HERO_PANEL_MIN_HEIGHT, SCREEN_HORIZONTAL_PADDING } from '@/lib/layout'
 import { useAlunoProgress } from '@/features/progress/useAlunoProgress'
+import {
+  JOURNEY_BTN_JORNADA,
+  JOURNEY_BTN_OBRAS,
+  JOURNEY_XP_GRADIENT,
+} from '@/lib/brandTheme'
+import { HOME_HERO_PANEL_MIN_HEIGHT, SCREEN_HORIZONTAL_PADDING } from '@/lib/layout'
+import { useAuth } from '@/providers/AuthProvider'
 
 interface HomeProgressCardProps {
   userId: string | undefined
@@ -14,30 +20,29 @@ interface HomeProgressCardProps {
 
 export function HomeProgressCard({ userId, embedded = false }: HomeProgressCardProps) {
   const router = useRouter()
+  const { profile } = useAuth()
   const { data: progress, isLoading } = useAlunoProgress(userId)
 
   if (isLoading) {
     return (
       <View style={{ marginHorizontal: embedded ? 0 : SCREEN_HORIZONTAL_PADDING }}>
-        <Text className="mb-2.5 font-sans-bold text-[11px] uppercase tracking-wider text-primary/80">
-          Sua jornada de leitura
-        </Text>
         <View
-          className="animate-pulse rounded-[20px] border border-primary/10 bg-white"
+          className="animate-pulse rounded-[20px] border border-primary/15 bg-white"
           style={{ minHeight: HOME_HERO_PANEL_MIN_HEIGHT }}
         />
       </View>
     )
   }
 
-  if (!progress) return null
+  if (!progress || !profile) return null
 
-  const faixaRotulo = tituloJornada(progress.nivel)
+  const displayName = profile.nome
+  const barPct = progress.nivelMaximo ? 100 : Math.max(0, Math.min(100, progress.progressoNivelPct))
+
   const journeyLabel = [
-    'Sua jornada de leitura',
+    displayName,
     `Nível ${progress.nivel}`,
-    faixaRotulo,
-    `${progress.xp} XP`,
+    `${progress.xpNoNivel} de ${progress.xpNecessarioNivel} XP neste nível`,
     progress.nivelMaximo
       ? 'Nível máximo alcançado'
       : progress.xpParaProximoNivel > 0
@@ -47,62 +52,83 @@ export function HomeProgressCard({ userId, embedded = false }: HomeProgressCardP
     .filter(Boolean)
     .join('. ')
 
-  const hint = progress.nivelMaximo
-    ? 'Nível máximo alcançado'
-    : progress.xpParaProximoNivel > 0
-      ? `Faltam ${progress.xpParaProximoNivel} XP para o nível ${progress.nivel + 1}`
-      : null
-
   return (
     <View style={{ marginHorizontal: embedded ? 0 : SCREEN_HORIZONTAL_PADDING }}>
-      <Text className="mb-2.5 font-sans-bold text-[11px] uppercase tracking-wider text-primary/80">
-        Sua jornada de leitura
-      </Text>
       <Speakable label={journeyLabel}>
-        <Pressable
-          onPress={() => router.push('/(aluno)/progresso')}
-          accessibilityRole="button"
-          accessibilityLabel={`${faixaRotulo}. Nível ${progress.nivel}. ${progress.xp} XP.`}
-          className="overflow-hidden rounded-[20px] border border-primary/15 bg-white active:opacity-95"
-          style={{ minHeight: HOME_HERO_PANEL_MIN_HEIGHT, shadowColor: '#1a3342', shadowOpacity: 0.06, shadowRadius: 8, shadowOffset: { width: 0, height: 2 }, elevation: 2 }}
+        <View
+          className="overflow-hidden rounded-[20px] border border-primary/15 bg-white"
+          style={{
+            minHeight: HOME_HERO_PANEL_MIN_HEIGHT,
+            shadowColor: '#1a3342',
+            shadowOpacity: 0.06,
+            shadowRadius: 10,
+            shadowOffset: { width: 0, height: 3 },
+            elevation: 2,
+          }}
+          accessibilityLabel={journeyLabel}
         >
-          <View className="flex-1 px-5 pb-5 pt-5">
-            <View className="flex-row items-center gap-3.5">
-              <JornadaBookAvatar />
-              <View className="min-w-0 flex-1 gap-1.5">
-                <Text className="self-start rounded-full bg-primary-light px-2.5 py-0.5 font-sans-bold text-[10px] uppercase tracking-wide text-primary">
-                  Nível {progress.nivel}
-                </Text>
-                <Text className="font-sans-bold text-[17px] leading-snug text-brand-navy">{faixaRotulo}</Text>
-              </View>
-            </View>
-
-            <View className="my-3.5 h-px bg-primary/10" />
-
-            <View className="flex-row items-end justify-between gap-3">
-              <Text className="font-sans-bold text-[22px] leading-none text-brand-navy">{progress.xp} XP</Text>
-              <Text className="font-sans-medium text-[13px] text-text-muted">
-                {progress.xpNoNivel} / {progress.xpNecessarioNivel} XP
+          <View className="px-5 pb-7 pt-5">
+            <View className="mb-4 flex-row items-center gap-3.5">
+              <ReaderProfileAvatar
+                name={displayName}
+                imageUrl={profile.avatar_url}
+                nivel={progress.nivel}
+                editable
+              />
+              <Text
+                className="min-w-0 flex-1 font-sans-bold text-[17px] leading-snug text-brand-navy"
+                numberOfLines={2}
+              >
+                {displayName}
               </Text>
             </View>
 
-            <View className="mt-3 h-2.5 overflow-hidden rounded-full border border-primary/15 bg-[#e8eef0]">
-              <View
-                className="h-full rounded-full bg-accent"
-                style={{ width: `${progress.progressoNivelPct}%` }}
-              />
+            <View className="flex-row items-center gap-3">
+              <View className="h-[11px] min-w-0 flex-1 overflow-hidden rounded-full border border-primary/15 bg-[#e8eef0]">
+                <LinearGradient
+                  colors={[...JOURNEY_XP_GRADIENT]}
+                  start={{ x: 0, y: 0.5 }}
+                  end={{ x: 1, y: 0.5 }}
+                  style={{ width: `${barPct}%`, height: '100%', borderRadius: 999 }}
+                />
+              </View>
+              <Text className="shrink-0 font-sans-semibold text-[13px] text-text-muted">
+                {progress.xpNoNivel} / {progress.xpNecessarioNivel} xp
+              </Text>
             </View>
 
-            {hint ? (
-              <Text className="mt-2.5 font-sans text-xs leading-relaxed text-text-muted">{hint}</Text>
+            {progress.nivelMaximo ? (
+              <Text className="mt-2.5 font-sans text-[13px] text-text-muted">Nível máximo alcançado</Text>
+            ) : progress.xpParaProximoNivel > 0 ? (
+              <Text className="mt-2.5 font-sans text-[13px] leading-relaxed text-text-muted">
+                Faltam {progress.xpParaProximoNivel} XP para o nível {progress.nivel + 1}
+              </Text>
             ) : null}
 
-            <View className="mt-5 flex-row items-center justify-center gap-2 rounded-full bg-brand-navy py-3">
-              <Text className="font-sans-bold text-[13px] text-white">Ver minha jornada</Text>
-              <ArrowRight color="#ffffff" size={16} strokeWidth={2} />
+            <View className="mt-5 flex-row gap-2.5">
+              <Pressable
+                onPress={() => router.push('/(aluno)/progresso')}
+                className="min-w-0 flex-1 flex-row items-center justify-center gap-2 rounded-full py-3.5 active:opacity-90"
+                style={{ backgroundColor: JOURNEY_BTN_JORNADA }}
+                accessibilityRole="button"
+                accessibilityLabel="Minha jornada"
+              >
+                <LineChart color="#ffffff" size={16} strokeWidth={2} />
+                <Text className="font-sans-bold text-[13px] text-white">Minha jornada</Text>
+              </Pressable>
+              <Pressable
+                onPress={() => router.push('/(aluno)/minha-obra')}
+                className="min-w-0 flex-1 flex-row items-center justify-center gap-2 rounded-full py-3.5 active:opacity-90"
+                style={{ backgroundColor: JOURNEY_BTN_OBRAS }}
+                accessibilityRole="button"
+                accessibilityLabel="Minhas obras"
+              >
+                <BookOpen color="#ffffff" size={16} strokeWidth={2} />
+                <Text className="font-sans-bold text-[13px] text-white">Minhas obras</Text>
+              </Pressable>
             </View>
           </View>
-        </Pressable>
+        </View>
       </Speakable>
     </View>
   )

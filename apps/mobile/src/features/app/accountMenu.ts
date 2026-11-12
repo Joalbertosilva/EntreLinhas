@@ -61,6 +61,12 @@ export const ACCOUNT_MENU_ITEMS: AccountMenuItem[] = [
     icon: Lock,
   },
   {
+    href: '/(aluno)/sobre',
+    label: 'Sobre o aplicativo',
+    hint: 'Créditos, versão e suporte',
+    icon: Info,
+  },
+  {
     href: '/(aluno)/perfil',
     label: 'Minha conta',
     hint: 'Resumo, leituras e preferências',

@@ -43,7 +43,12 @@ export function ContentSectionRail({ section }: ContentSectionRailProps) {
         action={
           showVerTudo ? (
             <Pressable
-              onPress={() => router.push(`/(aluno)/(tabs)/explorar?tipo=${section.tipo}`)}
+              onPress={() =>
+                router.push({
+                  pathname: '/(aluno)/(tabs)/explorar',
+                  params: { tipo: section.tipo },
+                })
+              }
               className="-mb-0.5 flex-row items-center gap-0.5 active:opacity-70"
               accessibilityRole="button"
               accessibilityLabel={`Ver todos os ${section.title.toLowerCase()}`}

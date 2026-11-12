@@ -1,4 +1,4 @@
-import { FlatList, Text, View } from 'react-native'
+import { ScrollView, Text, View } from 'react-native'
 import { ScreenSectionHeader } from '@/components/layout/ScreenPageHeader'
 import { ObraCard } from '@/features/obras/ObraCard'
 import { useObrasPublicas } from '@/features/obras/useObrasPublicas'
@@ -28,14 +28,16 @@ export function ObrasSectionRail() {
         title="Obras da comunidade"
         subtitle="Textos publicados por outros alunos"
       />
-      <FlatList
+      <ScrollView
         horizontal
-        data={data}
-        keyExtractor={(item) => item.id}
+        nestedScrollEnabled
         showsHorizontalScrollIndicator={false}
         contentContainerStyle={{ paddingHorizontal: SCREEN_HORIZONTAL_PADDING, gap: RAIL_ITEM_GAP }}
-        renderItem={({ item }) => <ObraCard obra={item} />}
-      />
+      >
+        {data.map((item) => (
+          <ObraCard key={item.id} obra={item} />
+        ))}
+      </ScrollView>
     </View>
   )
 }

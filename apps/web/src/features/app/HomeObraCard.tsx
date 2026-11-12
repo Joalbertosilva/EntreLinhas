@@ -1,7 +1,9 @@
 import { Link } from '@tanstack/react-router'
 import type { ReactNode } from 'react'
 import type { TipoProducao } from '@tcc-sistema/types'
+import { isDefaultObraCoverUrl } from '@tcc-sistema/cover-motifs'
 import { BookMarked, Feather, FileText, PenLine, Quote, Sparkles } from 'lucide-react'
+import { ObraCoverThumbnail } from '@/components/obras/ObraCoverThumbnail'
 import { useAccessibility } from '@/features/accessibility/AccessibilityProvider'
 import { Speakable } from '@/features/accessibility/Speakable'
 import { SpeakButton } from '@/features/accessibility/SpeakButton'
@@ -22,6 +24,8 @@ const TIPO_META: Record<
 }
 
 interface HomeObraCardProps {
+  userId?: string
+  autorNome?: string
   obra: MinhaObraResumo | null
   isLoading?: boolean
   /** Capa + áudio abaixo + texto ao lado (painel da home). */
@@ -35,12 +39,14 @@ function ObraCoverImage({
   badge,
   tipoLabel,
   compact,
+  conceptual,
 }: {
   src: string
   alt: string
   badge?: string
   tipoLabel?: string
   compact?: boolean
+  conceptual?: boolean
 }) {
   return (
     <div
@@ -54,13 +60,18 @@ function ObraCoverImage({
       <img
         src={src}
         alt={alt}
-        className="h-full w-full object-contain object-center"
+        className={cn(
+          'h-full w-full',
+          conceptual ? 'object-cover object-center' : 'object-contain object-center',
+        )}
         loading="lazy"
       />
-      <div
-        className="pointer-events-none absolute inset-0 bg-gradient-to-t from-brand-navy/75 via-brand-navy/15 to-transparent"
-        aria-hidden
-      />
+      {!conceptual ? (
+        <div
+          className="pointer-events-none absolute inset-0 bg-gradient-to-t from-brand-navy/75 via-brand-navy/15 to-transparent"
+          aria-hidden
+        />
+      ) : null}
       {badge && (
         <span className="absolute left-2.5 top-2.5 rounded-full bg-white/92 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-primary shadow-sm">
           {badge}
@@ -71,11 +82,67 @@ function ObraCoverImage({
           {tipoLabel}
         </span>
       )}
-      <div className="absolute inset-x-0 bottom-0 p-3">
-        <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-white/90 text-primary shadow-sm">
-          <PenLine className="h-4 w-4" strokeWidth={1.75} aria-hidden />
+      {!conceptual ? (
+        <div className="absolute inset-x-0 bottom-0 p-3">
+          <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-white/90 text-primary shadow-sm">
+            <PenLine className="h-4 w-4" strokeWidth={1.75} aria-hidden />
+          </div>
         </div>
-      </div>
+      ) : null}
+    </div>
+  )
+}
+
+function MinhaObraCoverVisual({
+  obra,
+  userId,
+  autorNome,
+  alt,
+  badge,
+  tipoLabel,
+  compact,
+  showTipoBadge = true,
+}: {
+  obra: MinhaObraResumo
+  userId: string | undefined
+  autorNome?: string
+  alt: string
+  badge?: string
+  tipoLabel?: string
+  compact?: boolean
+  showTipoBadge?: boolean
+}) {
+  return (
+    <div
+      className={cn(
+        'home-obra-cover relative aspect-[2/3] w-full overflow-hidden rounded-xl',
+        'border border-primary/12 shadow-[var(--shadow-card)]',
+        'transition-transform duration-300 group-hover:-translate-y-1 group-hover:shadow-[var(--shadow-card),0_12px_28px_rgb(0_51_102_/_0.12)]',
+        compact ? 'max-w-[7.25rem]' : 'max-w-[11.5rem]',
+        !showTipoBadge && 'home-obra-cover--hero-thumb',
+      )}
+    >
+      <ObraCoverThumbnail
+        userId={userId}
+        obraId={obra.id}
+        capaUrl={obra.capa_url}
+        categoria={obra.categoria}
+        titulo={obra.titulo}
+        autorNome={autorNome}
+        updatedAt={obra.updated_at}
+        className="h-full w-full border-0 shadow-none"
+      />
+      {badge ? (
+        <span className="absolute left-2.5 top-2.5 rounded-full bg-white/92 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-primary shadow-sm">
+          {badge}
+        </span>
+      ) : null}
+      {showTipoBadge && tipoLabel ? (
+        <span className="absolute right-2.5 top-2.5 rounded-full bg-white/92 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-text-muted shadow-sm">
+          {tipoLabel}
+        </span>
+      ) : null}
+      <span className="sr-only">{alt}</span>
     </div>
   )
 }
@@ -110,6 +177,8 @@ function HeroRowLayout({ to, label, cover, body }: HeroRowLayoutProps) {
 }
 
 export function HomeObraCard({
+  userId,
+  autorNome,
   obra,
   isLoading,
   variant = 'default',
@@ -215,14 +284,30 @@ export function HomeObraCard({
 
   const tipo = obra.ultimaProducao?.tipo ?? 'outro'
   const meta = TIPO_META[tipo]
-  const coverSrc = obra.capa_url ?? DEFAULT_OBRA_COVER
-  const coverAlt = obra.capa_url ? `Capa de ${obra.titulo}` : `Capa padrão de ${obra.titulo}`
+  const coverAlt = `Capa de ${obra.titulo}`
+  const badgePadrao = isDefaultObraCoverUrl(obra.capa_url) ? 'Sua obra' : undefined
   const label =
     speakLabel ??
     [obra.titulo, obra.descricao ?? obra.ultimaProducao?.titulo].filter(Boolean).join('. ')
 
+  const coverNode = (
+    <MinhaObraCoverVisual
+      obra={obra}
+      userId={userId}
+      autorNome={autorNome}
+      alt={coverAlt}
+      badge={badgePadrao}
+      tipoLabel={meta.label}
+      compact={!isHeroRow && !isRow}
+      showTipoBadge={!isHeroRow}
+    />
+  )
+
   const bodyContent = (
     <>
+      {isHeroRow ? (
+        <p className="mb-1 text-[10px] font-bold uppercase tracking-wider text-primary/80">{meta.label}</p>
+      ) : null}
       <h3 className="line-clamp-2 text-base font-semibold leading-snug text-text group-hover:text-primary">
         {obra.titulo}
       </h3>
@@ -240,14 +325,7 @@ export function HomeObraCard({
       <HeroRowLayout
         to="/app/minha-obra"
         label={label}
-        cover={
-          <ObraCoverImage
-            src={coverSrc}
-            alt={coverAlt}
-            badge={!obra.capa_url ? 'Capa padrão' : undefined}
-            tipoLabel={meta.label}
-          />
-        }
+        cover={coverNode}
         body={bodyContent}
       />
     )
@@ -256,12 +334,7 @@ export function HomeObraCard({
   if (isRow) {
     return (
       <Link to="/app/minha-obra" className="home-obra-card home-obra-card--row group block no-underline">
-        <ObraCoverImage
-          src={coverSrc}
-          alt={coverAlt}
-          badge={!obra.capa_url ? 'Capa padrão' : undefined}
-          tipoLabel={meta.label}
-        />
+        {coverNode}
         <div className="home-obra-card__body mt-4">{bodyContent}</div>
       </Link>
     )
@@ -270,13 +343,7 @@ export function HomeObraCard({
   return (
     <article className={cn('home-obra-card group flex flex-col', cardWidth)}>
       <Link to="/app/minha-obra" className="block no-underline">
-        <ObraCoverImage
-          src={coverSrc}
-          alt={coverAlt}
-          badge={!obra.capa_url ? 'Capa padrão' : undefined}
-          tipoLabel={meta.label}
-          compact
-        />
+        {coverNode}
       </Link>
       <Speakable label={label} className="content-card__speakable mt-2.5 px-0.5">
         <Link to="/app/minha-obra" className="home-obra-card__body block no-underline">
