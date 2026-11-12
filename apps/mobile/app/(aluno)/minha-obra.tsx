@@ -14,7 +14,7 @@ import {
   Quote,
   Trash2,
 } from 'lucide-react-native'
-import { useEffect, useRef, useState } from 'react'
+import { useCallback, useEffect, useRef, useState } from 'react'
 import {
   ActivityIndicator,
   Alert,
@@ -43,6 +43,7 @@ import {
   type ObraCapitulo,
 } from '@/features/obras/useMinhaObra'
 import {
+  CATEGORIA_COVER_PALETTE,
   CATEGORIA_OBRA_LABEL,
   CATEGORIAS_LIVRO,
   CATEGORIAS_TEXTO,
@@ -53,13 +54,12 @@ import {
   TIPO_OBRA_LABEL,
 } from '@/lib/obraLabels'
 import { LoadingOverlay } from '@/components/ui/LoadingOverlay'
+import { isDefaultObraCoverUrl } from '@tcc-sistema/cover-motifs'
 import { captureObraCoverArt } from '@/features/obras/generateObraCoverImage'
-import {
-  OBRA_COVER_BASE_WIDTH,
-  ObraCoverArtView,
-} from '@/features/obras/ObraCoverArtView'
+import { ObraCoverArtView } from '@/features/obras/ObraCoverArtView'
 import { capaImageUri } from '@/lib/imageUrl'
-import { uploadObraCoverFromBase64 } from '@/lib/storage'
+import { resolveObraCapaFotoUri } from '@/lib/obraCapaFoto'
+import { uploadObraCapaFotoFromUri, uploadObraCoverFromBase64 } from '@/lib/storage'
 import { cn } from '@/lib/cn'
 import type { NativeViewRef } from '@/lib/nativeRefs'
 import { stackScrollPaddingBottom } from '@/lib/layout'
@@ -94,6 +94,7 @@ export default function MinhaObraScreen() {
   const [texto, setTexto] = useState('')
   const [dirty, setDirty] = useState(false)
   const [capaUrl, setCapaUrl] = useState<string | null>(null)
+  const [capaFotoUri, setCapaFotoUri] = useState<string | null>(null)
   const [capaPreviewUri, setCapaPreviewUri] = useState<string | null>(null)
   const [capaPreviewMeta, setCapaPreviewMeta] = useState<{
     mimeType: string
@@ -104,7 +105,8 @@ export default function MinhaObraScreen() {
   const salvarRef = useRef(salvar)
   salvarRef.current = salvar
   const obraIdRef = useRef<string | null>(null)
-  const coverCaptureRef = useRef<NativeViewRef>(null)
+  const coverPreviewRef = useRef<NativeViewRef>(null)
+  const coverJobRef = useRef(0)
   const { width: screenWidth } = useWindowDimensions()
   const coverPreviewWidth = Math.min(screenWidth - 40, 300)
 
@@ -122,7 +124,6 @@ export default function MinhaObraScreen() {
     setTipoObra(obra.tipo)
     setCategoriaObra(obra.categoria ?? 'outro')
     if (!capaPreviewUri) setCapaUrl(obra.capa_url)
-
     if (!capituloAtivoId && obra.capitulos[0]) {
       const cap = obra.capitulos[0]
       setCapituloAtivoId(cap.id)
@@ -130,6 +131,17 @@ export default function MinhaObraScreen() {
       setTexto(cap.texto)
     }
   }, [obra?.id, obra?.capa_url, isLoading, capituloAtivoId, obra, capaPreviewUri])
+
+  useEffect(() => {
+    if (!obra || !profile?.id || capaPreviewUri) return
+    let cancelled = false
+    void resolveObraCapaFotoUri(profile.id, obra.id).then((uri) => {
+      if (!cancelled) setCapaFotoUri(uri)
+    })
+    return () => {
+      cancelled = true
+    }
+  }, [obra?.id, profile?.id, capaPreviewUri])
 
   useEffect(() => {
     if (!dirty || !obra || !capituloAtivoId || isLoading) return
@@ -177,8 +189,39 @@ export default function MinhaObraScreen() {
     }
   }
 
+  const regerarCapaComFoto = useCallback(
+    async (photoUri: string, categoria: CategoriaObra) => {
+      if (!obra || !profile) return
+      setCapaPreviewUri(photoUri)
+      await new Promise((resolve) => setTimeout(resolve, 550))
+      const job = ++coverJobRef.current
+      setUploadingCapa(true)
+      try {
+        const artBase64 = await captureObraCoverArt(coverPreviewRef, { delayMs: 450 })
+        if (job !== coverJobRef.current) return
+        const url = await uploadObraCoverFromBase64(artBase64, profile.id, obra.id)
+        await salvarMeta.mutateAsync({
+          obraId: obra.id,
+          titulo: tituloObra.trim() || defaultTitle,
+          descricao: descricao.trim() || null,
+          capa_url: url,
+        })
+        if (job !== coverJobRef.current) return
+        setCapaUrl(url)
+        setCapaFotoUri(photoUri)
+        setCapaPreviewUri(null)
+        setCapaPreviewMeta(null)
+      } catch (e) {
+        Alert.alert('Erro', e instanceof Error ? e.message : 'Não foi possível atualizar a capa.')
+      } finally {
+        if (job === coverJobRef.current) setUploadingCapa(false)
+      }
+    },
+    [defaultTitle, descricao, obra, profile, salvarMeta, tituloObra],
+  )
+
   const handleCategoriaChange = async (next: CategoriaObra) => {
-    if (!obra || next === categoriaObra) return
+    if (!obra || !profile || next === categoriaObra || uploadingCapa) return
     try {
       await salvarMeta.mutateAsync({
         obraId: obra.id,
@@ -187,6 +230,21 @@ export default function MinhaObraScreen() {
         categoria: next,
       })
       setCategoriaObra(next)
+
+      let fotoUri = capaPreviewUri ?? capaFotoUri
+      if (!fotoUri) {
+        fotoUri = await resolveObraCapaFotoUri(profile.id, obra.id)
+        if (fotoUri) setCapaFotoUri(fotoUri)
+      }
+
+      if (fotoUri) {
+        await regerarCapaComFoto(fotoUri, next)
+      } else if (capaUrl) {
+        Alert.alert(
+          'Atualizar capa',
+          'Para aplicar o novo gênero na capa, toque em “Enviar foto · capa conceitual” e escolha a imagem de novo.',
+        )
+      }
     } catch {
       Alert.alert('Erro', 'Não foi possível alterar a categoria')
     }
@@ -205,8 +263,52 @@ export default function MinhaObraScreen() {
     }
   }
 
+  const gerarCapaConceitual = useCallback(async () => {
+    if (!obra || !profile || !capaPreviewUri) return
+    const job = ++coverJobRef.current
+    setUploadingCapa(true)
+    try {
+      const artBase64 = await captureObraCoverArt(coverPreviewRef, { delayMs: 450 })
+      if (job !== coverJobRef.current) return
+      const url = await uploadObraCoverFromBase64(artBase64, profile.id, obra.id)
+      let capaFotoUrl: string | undefined
+      if (capaPreviewMeta && capaPreviewUri) {
+        capaFotoUrl = await uploadObraCapaFotoFromUri(
+          capaPreviewUri,
+          profile.id,
+          obra.id,
+          capaPreviewMeta.mimeType,
+          capaPreviewMeta.fileSize,
+        )
+      }
+      await salvarMeta.mutateAsync({
+        obraId: obra.id,
+        titulo: tituloObra.trim() || defaultTitle,
+        descricao: descricao.trim() || null,
+        capa_url: url,
+        ...(capaFotoUrl
+          ? { capa_foto_url: capaFotoUrl.split('?')[0] ?? capaFotoUrl }
+          : {}),
+      })
+      if (job !== coverJobRef.current) return
+      setCapaUrl(url)
+      if (capaPreviewUri) setCapaFotoUri(capaPreviewUri)
+      setCapaPreviewUri(null)
+      setCapaPreviewMeta(null)
+      Alert.alert('Capa pronta', 'Sua foto foi colocada na capa do tema escolhido.')
+    } catch (e) {
+      Alert.alert('Erro', e instanceof Error ? e.message : 'Não foi possível gerar a capa.')
+    } finally {
+      if (job === coverJobRef.current) setUploadingCapa(false)
+    }
+  }, [capaPreviewUri, defaultTitle, descricao, obra, profile, salvarMeta, tituloObra])
+
+  const handleFotoCarregada = useCallback(() => {
+    void gerarCapaConceitual()
+  }, [gerarCapaConceitual])
+
   const handleEscolherCapa = async () => {
-    if (!obra || !profile) return
+    if (!obra || !profile || uploadingCapa) return
     const perm = await ImagePicker.requestMediaLibraryPermissionsAsync()
     if (!perm.granted) {
       Alert.alert('Permissão', 'Precisamos de acesso à galeria para enviar a capa.')
@@ -214,13 +316,14 @@ export default function MinhaObraScreen() {
     }
     const result = await ImagePicker.launchImageLibraryAsync({
       mediaTypes: ['images'],
-      quality: 0.85,
+      quality: 0.9,
       allowsEditing: true,
-      aspect: [3, 4],
+      aspect: [1, 1],
     })
     if (result.canceled || !result.assets[0]) return
 
     const asset = result.assets[0]
+    coverJobRef.current += 1
     setCapaPreviewUri(asset.uri)
     setCapaPreviewMeta({
       mimeType: asset.mimeType ?? 'image/jpeg',
@@ -229,37 +332,19 @@ export default function MinhaObraScreen() {
   }
 
   const handleCancelarCapa = () => {
+    coverJobRef.current += 1
+    setUploadingCapa(false)
     setCapaPreviewUri(null)
     setCapaPreviewMeta(null)
   }
 
-  const handleSalvarCapa = async () => {
-    if (!obra || !profile || !capaPreviewUri || !capaPreviewMeta) return
-
-    setUploadingCapa(true)
-    try {
-      await new Promise((resolve) => setTimeout(resolve, 400))
-      const artBase64 = await captureObraCoverArt(coverCaptureRef)
-      const url = await uploadObraCoverFromBase64(artBase64, profile.id, obra.id)
-      await salvarMeta.mutateAsync({
-        obraId: obra.id,
-        titulo: tituloObra.trim() || defaultTitle,
-        descricao: descricao.trim() || null,
-        capa_url: url,
-      })
-      setCapaUrl(url)
-      setCapaPreviewUri(null)
-      setCapaPreviewMeta(null)
-      Alert.alert('Capa salva', 'Capa conceitual criada com o tema da sua obra.')
-    } catch (e) {
-      Alert.alert('Erro', e instanceof Error ? e.message : 'Não foi possível gerar a capa.')
-    } finally {
-      setUploadingCapa(false)
-    }
-  }
-
-  const capaSalvaUri = capaImageUri(capaUrl, obra?.updated_at)
+  const capaSalvaUrl = capaUrl && !isDefaultObraCoverUrl(capaUrl) ? capaUrl : null
+  const capaSalvaUri = capaImageUri(capaSalvaUrl, obra?.updated_at)
   const capaPendente = Boolean(capaPreviewUri)
+  const fotoNaMoldura = capaPreviewUri ?? capaFotoUri
+  const mostrarCapaInterativa = Boolean(
+    fotoNaMoldura || !capaSalvaUrl || capaPendente || uploadingCapa,
+  )
   const tituloCapa = tituloObra.trim() || defaultTitle
 
   const handlePublicar = async () => {
@@ -310,16 +395,22 @@ export default function MinhaObraScreen() {
   const confirmarDespublicar = () => {
     if (!obra) return
     Alert.alert(
-      'Voltar para rascunho',
-      'Sua obra deixa de aparecer na comunidade. Você pode publicar de novo quando quiser.',
+      'Despublicar obra',
+      'A obra deixa de aparecer para outros alunos. Você pode publicar de novo quando quiser.',
       [
         { text: 'Cancelar', style: 'cancel' },
         {
-          text: 'Voltar para rascunho',
+          text: 'Despublicar',
+          style: 'destructive',
           onPress: () => {
-            void despublicar.mutateAsync(obra.id).catch(() => {
-              Alert.alert('Erro', 'Não foi possível despublicar.')
-            })
+            void despublicar
+              .mutateAsync(obra.id)
+              .then(() => {
+                Alert.alert('Despublicada', 'Sua obra voltou para rascunho.')
+              })
+              .catch(() => {
+                Alert.alert('Erro', 'Não foi possível despublicar.')
+              })
           },
         },
       ],
@@ -343,56 +434,58 @@ export default function MinhaObraScreen() {
             keyboardShouldPersistTaps="handled"
             contentContainerStyle={{ paddingBottom: stackScrollPaddingBottom(insets) }}
           >
-            {isPublicada ? (
-              <View className="mx-5 mt-4 overflow-hidden rounded-2xl border border-border/80 bg-white">
-                <View className="flex-row items-center gap-2.5 px-4 py-3.5">
-                  <View className="h-9 w-9 items-center justify-center rounded-full bg-success/12">
-                    <Globe color="#15803d" size={17} />
+            <View className="mx-5 mt-4">
+              <View className="flex-row flex-wrap items-center gap-2">
+                {isPublicada ? (
+                  <View className="flex-row items-center gap-1.5 rounded-full border border-success/25 bg-success/10 px-3 py-1.5">
+                    <Globe color="#15803d" size={15} strokeWidth={2} />
+                    <Text className="font-sans-semibold text-xs text-success">Publicada</Text>
                   </View>
-                  <View className="min-w-0 flex-1">
-                    <Text className="font-sans-semibold text-sm text-brand-navy">Publicada na comunidade</Text>
-                    <Text className="mt-0.5 font-sans text-xs text-text-muted">
-                      Outros alunos podem ler sua obra
-                    </Text>
-                  </View>
-                </View>
-                <Pressable
-                  onPress={confirmarDespublicar}
-                  disabled={despublicar.isPending}
-                  className="items-center border-t border-border/70 py-3 active:bg-primary-light/15"
-                  accessibilityRole="button"
-                  accessibilityLabel="Voltar obra para rascunho"
-                >
-                  {despublicar.isPending ? (
-                    <Loader2 color="#5a7282" size={16} />
-                  ) : (
-                    <Text className="font-sans-semibold text-sm text-text-muted">Voltar para rascunho</Text>
-                  )}
-                </Pressable>
-              </View>
-            ) : (
-              <View className="mx-5 mt-4">
-                <Pressable
-                  onPress={() => void handlePublicar()}
-                  disabled={publicar.isPending || dirty || salvar.isPending}
-                  className="flex-row items-center justify-center gap-2 rounded-2xl bg-primary py-3.5 active:opacity-90 disabled:opacity-50"
-                  accessibilityRole="button"
-                  accessibilityLabel="Publicar obra na comunidade"
-                >
-                  {publicar.isPending ? (
-                    <Loader2 color="#fff" size={18} />
-                  ) : (
-                    <Globe color="#fff" size={18} />
-                  )}
-                  <Text className="font-sans-semibold text-[15px] text-white">Publicar na comunidade</Text>
-                </Pressable>
-                {dirty || salvar.isPending ? (
-                  <Text className="mt-2 text-center font-sans text-xs text-text-muted">
-                    Aguarde o salvamento antes de publicar
-                  </Text>
                 ) : null}
+
+                {isPublicada ? (
+                  <Pressable
+                    onPress={confirmarDespublicar}
+                    disabled={despublicar.isPending}
+                    className="flex-row items-center gap-2 rounded-full border border-border bg-white px-4 py-2.5 active:bg-primary-light/15 disabled:opacity-50"
+                    accessibilityRole="button"
+                    accessibilityLabel="Despublicar obra"
+                  >
+                    {despublicar.isPending ? (
+                      <Loader2 color="#5a7282" size={16} />
+                    ) : (
+                      <Globe color="#5a7282" size={16} strokeWidth={1.75} />
+                    )}
+                    <Text className="font-sans-semibold text-sm text-brand-navy">Despublicar</Text>
+                  </Pressable>
+                ) : (
+                  <Pressable
+                    onPress={() => void handlePublicar()}
+                    disabled={publicar.isPending || dirty || salvar.isPending}
+                    className="min-w-0 flex-1 flex-row items-center justify-center gap-2 rounded-2xl bg-primary px-4 py-3.5 active:opacity-90 disabled:opacity-50"
+                    accessibilityRole="button"
+                    accessibilityLabel="Publicar obra na comunidade"
+                  >
+                    {publicar.isPending ? (
+                      <Loader2 color="#fff" size={18} />
+                    ) : (
+                      <Globe color="#fff" size={18} />
+                    )}
+                    <Text className="font-sans-semibold text-[15px] text-white">Publicar na comunidade</Text>
+                  </Pressable>
+                )}
               </View>
-            )}
+
+              {isPublicada ? (
+                <Text className="mt-2.5 font-sans text-xs leading-relaxed text-text-muted">
+                  Outros alunos podem ver e ler sua obra. Toque em Despublicar para voltar ao rascunho.
+                </Text>
+              ) : dirty || salvar.isPending ? (
+                <Text className="mt-2 text-center font-sans text-xs text-text-muted">
+                  Aguarde o salvamento antes de publicar
+                </Text>
+              ) : null}
+            </View>
 
             <View className="mx-5 mt-4">
               <Text className="mb-2 font-sans-semibold text-xs uppercase tracking-wide text-text-muted">
@@ -427,55 +520,52 @@ export default function MinhaObraScreen() {
                 Categoria
               </Text>
               <View className="flex-row flex-wrap gap-2">
-                {categoriasDisponiveis.map((cat) => (
-                  <Pressable
-                    key={cat}
-                    onPress={() => void handleCategoriaChange(cat)}
-                    className={cn(
-                      'rounded-full border px-3 py-1.5',
-                      categoriaObra === cat ? 'border-primary bg-primary-light' : 'border-border bg-white',
-                    )}
-                  >
-                    <Text
+                {categoriasDisponiveis.map((cat) => {
+                  const palette = CATEGORIA_COVER_PALETTE[cat]
+                  const active = categoriaObra === cat
+                  return (
+                    <Pressable
+                      key={cat}
+                      onPress={() => void handleCategoriaChange(cat)}
                       className={cn(
-                        'font-sans-medium text-xs',
-                        categoriaObra === cat ? 'text-primary' : 'text-text-muted',
+                        'flex-row items-center gap-1.5 rounded-full border px-3 py-1.5',
+                        active ? 'border-primary bg-primary-light' : 'border-border bg-white',
                       )}
                     >
-                      {CATEGORIA_OBRA_LABEL[cat]}
-                    </Text>
-                  </Pressable>
-                ))}
+                      <View
+                        className="h-2.5 w-2.5 rounded-full"
+                        style={{ backgroundColor: palette.mid, borderWidth: 1, borderColor: palette.frame }}
+                      />
+                      <Text
+                        className={cn(
+                          'font-sans-medium text-xs',
+                          active ? 'text-primary' : 'text-text-muted',
+                        )}
+                      >
+                        {CATEGORIA_OBRA_LABEL[cat]}
+                      </Text>
+                    </Pressable>
+                  )
+                })}
               </View>
             </View>
-
-            {capaPreviewUri ? (
-              <View
-                pointerEvents="none"
-                style={{ position: 'absolute', left: -OBRA_COVER_BASE_WIDTH * 2, top: 0, opacity: 0 }}
-              >
-                <ObraCoverArtView
-                  ref={coverCaptureRef}
-                  photoUri={capaPreviewUri}
-                  categoria={categoriaObra}
-                  titulo={tituloCapa}
-                  autorNome={profile?.nome}
-                  width={OBRA_COVER_BASE_WIDTH}
-                />
-              </View>
-            ) : null}
 
             <View className="mx-5 mt-5 overflow-hidden rounded-2xl border border-primary/15 bg-primary-light/30">
               <Text className="border-b border-primary/10 bg-white/80 px-4 py-2 font-sans-semibold text-xs uppercase tracking-wide text-primary">
                 Capa conceitual
+              </Text>
+              <Text className="border-b border-primary/10 bg-white/60 px-4 py-2 font-sans text-xs text-text-muted">
+                Cada tema tem cores e elementos (romance, biografia, ficção…). Sua foto entra no centro da arte.
               </Text>
 
               <Pressable
                 onPress={() => void handleEscolherCapa()}
                 disabled={uploadingCapa}
                 className="items-center py-4"
+                accessibilityRole="button"
+                accessibilityLabel="Enviar foto para capa conceitual"
               >
-                {capaPendente && capaPreviewUri ? (
+                {mostrarCapaInterativa ? (
                   <View
                     className="overflow-hidden rounded-xl border border-primary/15 shadow-sm"
                     style={{
@@ -484,67 +574,54 @@ export default function MinhaObraScreen() {
                     }}
                   >
                     <ObraCoverArtView
-                      photoUri={capaPreviewUri}
+                      ref={coverPreviewRef}
+                      photoUri={fotoNaMoldura}
                       categoria={categoriaObra}
                       titulo={tituloCapa}
-                      autorNome={profile?.nome}
                       width={coverPreviewWidth}
+                      onPhotoLoad={
+                        capaPreviewUri && capaPreviewMeta ? handleFotoCarregada : undefined
+                      }
                     />
                   </View>
-                ) : capaSalvaUri ? (
+                ) : (
                   <Image
-                    source={{ uri: capaSalvaUri }}
+                    source={{ uri: capaSalvaUri! }}
                     style={{ width: coverPreviewWidth, height: coverPreviewWidth * 1.5, borderRadius: 12 }}
                     contentFit="cover"
-                    recyclingKey={capaSalvaUri}
+                    recyclingKey={capaSalvaUri!}
                   />
-                ) : (
-                  <View
-                    className="items-center justify-center rounded-xl border border-dashed border-primary/25 bg-white/70"
-                    style={{ width: coverPreviewWidth, height: coverPreviewWidth * 1.5 }}
-                  >
-                    <ImagePlus color="#1c756a" size={28} />
-                    <Text className="mt-2 px-4 text-center font-sans-semibold text-sm text-primary">
-                      Enviar foto · capa conceitual
-                    </Text>
-                    <Text className="mt-1 px-6 text-center font-sans text-xs text-text-muted">
-                      Sua foto entra no layout do tema escolhido
-                    </Text>
-                  </View>
                 )}
-
               </Pressable>
 
-              {capaPendente ? (
-                <View className="flex-row gap-2 border-t border-primary/10 bg-white/90 p-3">
+              {capaPendente && uploadingCapa ? (
+                <View className="flex-row items-center justify-center gap-2 border-t border-primary/10 bg-white/90 py-3">
+                  <Loader2 color="#1c756a" size={16} />
+                  <Text className="font-sans-semibold text-sm text-primary">Montando capa do tema…</Text>
+                </View>
+              ) : capaPendente ? (
+                <View className="border-t border-primary/10 bg-white/90 p-3">
                   <Pressable
                     onPress={handleCancelarCapa}
-                    disabled={uploadingCapa}
-                    className="flex-1 items-center rounded-xl border border-border py-2.5 active:bg-primary-light/20"
+                    className="items-center rounded-xl border border-border py-2.5 active:bg-primary-light/20"
                   >
                     <Text className="font-sans-semibold text-sm text-text-muted">Cancelar</Text>
                   </Pressable>
-                  <Pressable
-                    onPress={() => void handleSalvarCapa()}
-                    disabled={uploadingCapa}
-                    className="flex-1 items-center rounded-xl bg-primary py-2.5 active:opacity-90"
-                  >
-                    <Text className="font-sans-semibold text-sm text-white">
-                      {uploadingCapa ? 'Gerando…' : 'Salvar capa'}
-                    </Text>
-                  </Pressable>
                 </View>
-              ) : capaUrl ? (
+              ) : (
                 <Pressable
                   onPress={() => void handleEscolherCapa()}
                   disabled={uploadingCapa}
-                  className="border-t border-primary/10 bg-white/90 py-2.5 active:bg-primary-light/20"
+                  className="border-t border-primary/10 bg-white/90 py-3 active:bg-primary-light/20"
                 >
-                  <Text className="text-center font-sans-semibold text-sm text-primary">
-                    Trocar foto · capa conceitual
-                  </Text>
+                  <View className="flex-row items-center justify-center gap-2">
+                    <ImagePlus color="#1c756a" size={16} />
+                    <Text className="font-sans-semibold text-sm text-primary">
+                      {capaUrl ? 'Trocar foto' : 'Enviar foto'} · capa conceitual
+                    </Text>
+                  </View>
                 </Pressable>
-              ) : null}
+              )}
             </View>
 
             <View className="mx-5 mt-5 gap-3">

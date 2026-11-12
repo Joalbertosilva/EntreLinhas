@@ -33,6 +33,14 @@ export function AppNavigationDrawer() {
 
   const navigate = (href: string) => {
     closeDrawer()
+    const explorarMatch = href.match(/^\/\(aluno\)\/\(tabs\)\/explorar\?tipo=(\w+)$/)
+    if (explorarMatch) {
+      router.push({
+        pathname: '/(aluno)/(tabs)/explorar',
+        params: { tipo: explorarMatch[1] },
+      })
+      return
+    }
     router.push(href as Href)
   }
 

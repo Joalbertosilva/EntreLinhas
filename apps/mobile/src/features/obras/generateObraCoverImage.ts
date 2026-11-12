@@ -3,8 +3,16 @@ import type { NativeViewRef } from '@/lib/nativeRefs'
 import { captureRef } from 'react-native-view-shot'
 import { OBRA_COVER_BASE_HEIGHT, OBRA_COVER_BASE_WIDTH } from '@/features/obras/ObraCoverArtView'
 
-export async function captureObraCoverArt(ref: RefObject<NativeViewRef | null>): Promise<string> {
+export async function captureObraCoverArt(
+  ref: RefObject<NativeViewRef | null>,
+  options?: { delayMs?: number },
+): Promise<string> {
   if (!ref.current) throw new Error('Prévia da capa indisponível')
+
+  const delayMs = options?.delayMs ?? 500
+  if (delayMs > 0) {
+    await new Promise((resolve) => setTimeout(resolve, delayMs))
+  }
 
   const base64 = await captureRef(ref, {
     format: 'jpg',

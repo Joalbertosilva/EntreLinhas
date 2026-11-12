@@ -25,6 +25,7 @@ export function TabScrollView({
     <ScrollView
       showsVerticalScrollIndicator={false}
       keyboardShouldPersistTaps="handled"
+      nestedScrollEnabled
       contentContainerStyle={[{ paddingTop: 16, paddingBottom: scrollPaddingBottom }, contentContainerStyle]}
       {...rest}
     >

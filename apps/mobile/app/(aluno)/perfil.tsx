@@ -1,13 +1,13 @@
 import { Alert, Linking, Pressable, ScrollView, Text, View } from 'react-native'
 import { Stack, useRouter } from 'expo-router'
 import { LinearGradient } from 'expo-linear-gradient'
-import { BookOpen, ChevronRight, ExternalLink, Info, Lock, PenLine, Sparkles, Type } from 'lucide-react-native'
-import { PLATFORM_APP_VERSION, PLATFORM_SUPPORT_EMAIL } from '@/lib/platformCredits'
+import { BookOpen, ChevronRight, ExternalLink, Lock, PenLine, Sparkles, Type } from 'lucide-react-native'
 import { A11yScreen } from '@/components/layout/A11yScreen'
 import { PlatformBackground } from '@/components/layout/PlatformBackground'
 import { ScreenBackHeader } from '@/components/layout/ScreenBackHeader'
 import { ProfileMenuItem } from '@/components/ui/ProfileMenuItem'
-import { Avatar } from '@/components/ui/Avatar'
+import { ReaderProfileAvatar } from '@/features/app/ReaderProfileAvatar'
+import { useProfileAvatarUpload } from '@/features/app/useProfileAvatarUpload'
 import { useAccessibility } from '@/features/accessibility/AccessibilityProvider'
 import { useAlunoProgress } from '@/features/progress/useAlunoProgress'
 import { useMinhasLeituras } from '@/features/leituras/useMinhasLeituras'
@@ -26,6 +26,7 @@ export default function PerfilScreen() {
   const { data: progress, isLoading } = useAlunoProgress(profile?.id)
   const { data: leituras } = useMinhasLeituras(profile?.id)
   const { setModeEnabled } = useAccessibility()
+  const { removeAvatar, isRemoving, isUploading } = useProfileAvatarUpload()
 
   const totalLeituras =
     (leituras?.em_andamento.length ?? 0) +
@@ -82,9 +83,15 @@ export default function PerfilScreen() {
                 paddingVertical: 18,
               }}
             >
-              <View className="flex-row items-center gap-3.5">
-                <Avatar name={profile?.nome ?? '?'} imageUrl={profile?.avatar_url} size={60} />
-                <View className="min-w-0 flex-1">
+              <View className="flex-row items-start gap-3.5">
+                <ReaderProfileAvatar
+                  name={profile?.nome ?? '?'}
+                  imageUrl={profile?.avatar_url}
+                  nivel={progress?.nivel ?? 1}
+                  size="lg"
+                  editable
+                />
+                <View className="min-w-0 flex-1 pt-1">
                   <Text className="font-sans-bold text-xl text-brand-navy" numberOfLines={2}>
                     {profile?.nome}
                   </Text>
@@ -96,6 +103,17 @@ export default function PerfilScreen() {
                       {perfilLabel}
                     </Text>
                   </View>
+                  {profile?.avatar_url ? (
+                    <Pressable
+                      onPress={() => removeAvatar()}
+                      disabled={isRemoving || isUploading}
+                      accessibilityRole="button"
+                      accessibilityLabel="Remover foto de perfil"
+                      className="mt-3 self-start rounded-full border border-border/80 px-3 py-1.5 active:bg-primary-light/20"
+                    >
+                      <Text className="font-sans-semibold text-xs text-text-muted">Remover foto</Text>
+                    </Pressable>
+                  ) : null}
                 </View>
               </View>
 
@@ -205,36 +223,6 @@ export default function PerfilScreen() {
                   isLast
                 />
               ) : null}
-            </View>
-
-            <Text className="mb-2.5 mt-7 font-sans-semibold text-[11px] uppercase tracking-wider text-text-muted">
-              Informações
-            </Text>
-
-            <View className="overflow-hidden rounded-2xl border border-border/80 bg-white">
-              <ProfileMenuItem
-                variant="list"
-                icon={Info}
-                label="Sobre o aplicativo"
-                hint="Créditos, versão e suporte"
-                onPress={() => router.push('/(aluno)/sobre')}
-              />
-              <View className="border-t border-border/70 px-4 py-3.5">
-                <View className="flex-row items-center justify-between gap-3">
-                  <Text className="font-sans-medium text-sm text-text-muted">Versão</Text>
-                  <Text className="font-sans-semibold text-sm text-brand-navy">{PLATFORM_APP_VERSION}</Text>
-                </View>
-                <Pressable
-                  onPress={() => void Linking.openURL(`mailto:${PLATFORM_SUPPORT_EMAIL}`)}
-                  accessibilityRole="link"
-                  className="mt-3 flex-row items-center justify-between gap-3"
-                >
-                  <Text className="font-sans-medium text-sm text-text-muted">Suporte</Text>
-                  <Text className="shrink text-right font-sans-semibold text-sm text-primary">
-                    {PLATFORM_SUPPORT_EMAIL}
-                  </Text>
-                </Pressable>
-              </View>
             </View>
 
             <PlatformInfoSection />

@@ -12,6 +12,7 @@ import { A11yScreen } from '@/components/layout/A11yScreen'
 import { ScreenBackHeader } from '@/components/layout/ScreenBackHeader'
 import { capaImageUri } from '@/lib/imageUrl'
 import { DETAIL_COVER_HEIGHT, SCREEN_HORIZONTAL_PADDING } from '@/lib/layout'
+import { READER_PARAGRAPH_STYLE } from '@/lib/readerTypography'
 import type { NativeScrollViewRef, NativeViewRef } from '@/lib/nativeRefs'
 import { useKeyboardAwareScroll } from '@/lib/useKeyboardAwareScroll'
 import { useStackScreenInsets } from '@/lib/useStackScreenInsets'
@@ -121,7 +122,7 @@ export default function ObraDetailScreen() {
 
                 {data.descricao ? (
                   <Text
-                    style={{ paddingHorizontal: SCREEN_HORIZONTAL_PADDING }}
+                    style={{ paddingHorizontal: SCREEN_HORIZONTAL_PADDING, ...READER_PARAGRAPH_STYLE }}
                     className="mt-4 font-sans text-base leading-relaxed text-text-muted"
                   >
                     {data.descricao}
