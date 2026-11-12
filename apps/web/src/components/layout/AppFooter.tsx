@@ -1,5 +1,6 @@
 import { Link } from '@tanstack/react-router'
 import { BRAND_INSTITUTION, BRAND_NAME, BRAND_TAGLINE } from '@/features/auth/brand'
+import { CESMAC_CENTRO_LOGO, CESMAC_CITEC_LOGO } from '@/features/auth/platformCredits'
 import { BrandLogo } from '@/features/auth/BrandLogo'
 
 const FOOTER_NAV = [
@@ -10,7 +11,7 @@ const FOOTER_NAV = [
 ] as const
 
 const FOOTER_LEGAL = [
-  { to: '/app/sobre', label: 'Sobre nós' },
+  { to: '/app/sobre', label: 'Sobre a plataforma' },
   { to: '/privacidade', label: 'Privacidade' },
 ] as const
 
@@ -71,8 +72,36 @@ export function AppFooter() {
           </div>
         </div>
 
-        <div className="mt-8 flex flex-col gap-1 border-t border-border/80 pt-5 text-xs text-text-muted sm:flex-row sm:items-center sm:justify-between">
-          <p>© {year} {BRAND_NAME}. Todos os direitos reservados.</p>
+        <div className="app-footer__institution mt-8 border-t border-border/80 pt-6">
+          <p className="mb-3 text-xs font-semibold uppercase tracking-wider text-text-muted">
+            Desenvolvido por
+          </p>
+          <div className="app-footer__partner-logos">
+            <img
+              src={CESMAC_CITEC_LOGO}
+              alt="CESMAC CITEC"
+              className="app-footer__partner-logo app-footer__partner-logo--citec"
+              width={160}
+              height={96}
+              loading="lazy"
+              decoding="async"
+            />
+            <img
+              src={CESMAC_CENTRO_LOGO}
+              alt="CESMAC Centro Universitário"
+              className="app-footer__partner-logo app-footer__partner-logo--centro"
+              width={176}
+              height={56}
+              loading="lazy"
+              decoding="async"
+            />
+          </div>
+        </div>
+
+        <div className="mt-6 flex flex-col gap-1 border-t border-border/80 pt-5 text-xs text-text-muted sm:flex-row sm:items-center sm:justify-between">
+          <p>
+            © {year} {BRAND_NAME}. Todos os direitos reservados.
+          </p>
           <p className="text-text-muted/90">
             Plataforma de leitura e formação — {BRAND_INSTITUTION}
           </p>

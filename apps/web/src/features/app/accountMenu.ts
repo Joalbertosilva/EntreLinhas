@@ -1,5 +1,5 @@
 import type { LucideIcon } from 'lucide-react'
-import { BookOpen, LayoutDashboard, Lock, PenLine, Sparkles, User } from 'lucide-react'
+import { BookOpen, Info, LayoutDashboard, Lock, PenLine, Sparkles, User } from 'lucide-react'
 
 export const PERFIL_LABELS = {
   administrador: 'Administrador',
@@ -16,6 +16,12 @@ export interface AccountMenuItem {
 }
 
 export const ACCOUNT_MENU_ITEMS: AccountMenuItem[] = [
+  {
+    to: '/app/perfil',
+    label: 'Minha conta',
+    description: 'Seus dados e preferências',
+    icon: User,
+  },
   {
     to: '/app/progresso',
     label: 'Minha jornada',
@@ -35,18 +41,20 @@ export const ACCOUNT_MENU_ITEMS: AccountMenuItem[] = [
     icon: PenLine,
   },
   {
-    to: '/app/perfil/senha',
-    label: 'Alterar senha',
-    description: 'Atualize sua senha de acesso',
-    icon: Lock,
-  },
-  {
-    to: '/app/perfil',
-    label: 'Minha conta',
-    description: 'Seus dados e preferências',
-    icon: User,
+    to: '/app/sobre',
+    label: 'Sobre a plataforma',
+    description: 'Créditos, versão e suporte',
+    icon: Info,
   },
 ]
+
+/** Atalho só na página Minha conta (fora do menu do avatar). */
+export const PERFIL_SENHA_MENU_ITEM: AccountMenuItem = {
+  to: '/app/perfil/senha',
+  label: 'Alterar senha',
+  description: 'Atualize sua senha de acesso',
+  icon: Lock,
+}
 
 export const ADMIN_ACCOUNT_ITEM: AccountMenuItem = {
   to: '/admin',
