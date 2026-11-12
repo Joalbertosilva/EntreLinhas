@@ -1,8 +1,19 @@
 import type { CategoriaObra } from '@tcc-sistema/types'
+import {
+  COVER_ART_BASE_HEIGHT,
+  COVER_ART_BASE_WIDTH,
+  COVER_FRAME,
+  COVER_PHOTO_STYLE,
+  coverTextOnGradient,
+  coverTextOnLightPanel,
+  scaledCoverLayout,
+} from '@tcc-sistema/cover-motifs'
 import { Image } from 'expo-image'
 import { LinearGradient } from 'expo-linear-gradient'
-import { forwardRef } from 'react'
-import { Text, View } from 'react-native'
+import { ImagePlus } from 'lucide-react-native'
+import { forwardRef, useEffect, useRef } from 'react'
+import { Platform, Text, View } from 'react-native'
+import { ObraCoverDecorations } from '@/features/obras/ObraCoverDecorations'
 import type { NativeViewRef } from '@/lib/nativeRefs'
 import {
   CATEGORIA_COVER_PALETTE,
@@ -10,38 +21,50 @@ import {
   CATEGORIA_OBRA_SUBTITLE,
 } from '@/lib/obraCategoriaLabels'
 
-export const OBRA_COVER_BASE_WIDTH = 720
-export const OBRA_COVER_BASE_HEIGHT = 1080
+export const OBRA_COVER_BASE_WIDTH = COVER_ART_BASE_WIDTH
+export const OBRA_COVER_BASE_HEIGHT = COVER_ART_BASE_HEIGHT
+
+const COVER_TITLE_FONT = Platform.select({
+  ios: 'Georgia',
+  android: 'serif',
+  default: 'Georgia',
+})
 
 export interface ObraCoverArtViewProps {
-  photoUri: string
+  photoUri?: string | null
   categoria: CategoriaObra
   titulo: string
-  autorNome?: string
-  /** Largura de render — 720 para exportação em alta resolução. */
   width?: number
+  onPhotoLoad?: () => void
 }
 
 export const ObraCoverArtView = forwardRef<NativeViewRef, ObraCoverArtViewProps>(function ObraCoverArtView(
-  { photoUri, categoria, titulo, autorNome, width = OBRA_COVER_BASE_WIDTH },
+  { photoUri, categoria, titulo, width = OBRA_COVER_BASE_WIDTH, onPhotoLoad },
   ref,
 ) {
   const palette = CATEGORIA_COVER_PALETTE[categoria]
   const kicker = CATEGORIA_OBRA_KICKER[categoria]
   const subtitle = CATEGORIA_OBRA_SUBTITLE[categoria]
-  const height = width * (OBRA_COVER_BASE_HEIGHT / OBRA_COVER_BASE_WIDTH)
-  const s = width / OBRA_COVER_BASE_WIDTH
+  const textGradient = coverTextOnGradient(palette)
+  const textPanel = coverTextOnLightPanel(palette)
+  const layout = scaledCoverLayout(width)
+  const { height, s, photo, framePad, frameInnerPad, panel, kicker: kick, blob } = layout
+  const photoLoadNotified = useRef(false)
 
-  const pad = 36 * s
-  const photoW = width * 0.72
-  const photoH = height * 0.48
-  const photoX = (width - photoW) / 2
-  const photoY = height * 0.12
-  const panelY = height * 0.68
-  const panelH = height * 0.26
+  useEffect(() => {
+    photoLoadNotified.current = false
+  }, [photoUri])
+
+  const handlePhotoLoad = () => {
+    if (!onPhotoLoad || photoLoadNotified.current) return
+    photoLoadNotified.current = true
+    onPhotoLoad()
+  }
+
+  const innerBorderPad = COVER_FRAME.inset * s
 
   return (
-    <View ref={ref} collapsable={false} style={{ width, height, overflow: 'hidden' }}>
+    <View ref={ref} collapsable={false} style={{ width, height, overflow: 'hidden', backgroundColor: palette.bottom }}>
       <LinearGradient
         colors={[palette.top, palette.mid, palette.bottom]}
         start={{ x: 0.35, y: 0.2 }}
@@ -52,11 +75,11 @@ export const ObraCoverArtView = forwardRef<NativeViewRef, ObraCoverArtViewProps>
       <View
         style={{
           position: 'absolute',
-          right: width * 0.12,
-          top: height * 0.18,
-          width: 140 * s,
-          height: 140 * s,
-          borderRadius: 999,
+          left: blob.cx - blob.r,
+          top: blob.cy - blob.r,
+          width: blob.r * 2,
+          height: blob.r * 2,
+          borderRadius: blob.r,
           backgroundColor: palette.accent,
           opacity: 0.18,
         }}
@@ -65,11 +88,11 @@ export const ObraCoverArtView = forwardRef<NativeViewRef, ObraCoverArtViewProps>
       <View
         style={{
           position: 'absolute',
-          left: pad,
-          top: pad,
-          right: pad,
-          bottom: pad,
-          borderWidth: 2.5 * s,
+          left: framePad,
+          top: framePad,
+          right: framePad,
+          bottom: framePad,
+          borderWidth: COVER_FRAME.outerBorder * s,
           borderColor: palette.frame,
           borderRadius: 2 * s,
         }}
@@ -77,13 +100,13 @@ export const ObraCoverArtView = forwardRef<NativeViewRef, ObraCoverArtViewProps>
       <View
         style={{
           position: 'absolute',
-          left: pad + 8 * s,
-          top: pad + 8 * s,
-          right: pad + 8 * s,
-          bottom: pad + 8 * s,
-          borderWidth: 1 * s,
+          left: frameInnerPad,
+          top: frameInnerPad,
+          right: frameInnerPad,
+          bottom: frameInnerPad,
+          borderWidth: COVER_FRAME.innerBorder * s,
           borderColor: palette.accent,
-          opacity: 0.35,
+          opacity: COVER_FRAME.innerOpacity,
           borderRadius: 2 * s,
         }}
       />
@@ -91,47 +114,75 @@ export const ObraCoverArtView = forwardRef<NativeViewRef, ObraCoverArtViewProps>
       <View
         style={{
           position: 'absolute',
-          left: photoX,
-          top: photoY,
-          width: photoW,
-          height: photoH,
-          borderRadius: 14 * s,
+          left: photo.x,
+          top: photo.y,
+          width: photo.width,
+          height: photo.height,
+          borderRadius: layout.photoRadius,
           overflow: 'hidden',
-          borderWidth: 2 * s,
-          borderColor: 'rgba(255,255,255,0.55)',
+          borderWidth: layout.photoBorder,
+          borderColor: COVER_PHOTO_STYLE.borderColor,
+          backgroundColor: palette.mid,
         }}
       >
-        <Image source={{ uri: photoUri }} style={{ width: '100%', height: '100%' }} contentFit="cover" />
-        <LinearGradient
-          colors={['rgba(0,0,0,0.08)', 'transparent', 'rgba(0,0,0,0.28)']}
-          style={{ position: 'absolute', inset: 0 }}
-        />
+        {photoUri?.trim() ? (
+          <>
+            <Image
+              source={{ uri: photoUri.trim() }}
+              style={{ width: '100%', height: '100%' }}
+              contentFit="cover"
+              onLoad={handlePhotoLoad}
+              onDisplay={() => handlePhotoLoad()}
+            />
+            <LinearGradient
+              colors={['rgba(0,0,0,0.08)', 'transparent', 'rgba(0,0,0,0.28)']}
+              style={{ position: 'absolute', inset: 0 }}
+            />
+          </>
+        ) : (
+          <View style={{ flex: 1, alignItems: 'center', justifyContent: 'center', gap: 8, paddingHorizontal: 16 }}>
+            <ImagePlus color={textGradient} size={28 * s} strokeWidth={1.75} />
+            <Text
+              style={{
+                textAlign: 'center',
+                fontSize: 11 * s,
+                fontFamily: 'PlusJakartaSans_500Medium',
+                color: textGradient,
+                opacity: 0.65,
+              }}
+            >
+              Sua foto entra neste espaço
+            </Text>
+          </View>
+        )}
       </View>
+
+      <ObraCoverDecorations width={width} height={height} palette={palette} categoria={categoria} />
 
       <Text
         style={{
           position: 'absolute',
-          top: 78 * s,
+          top: kick.y,
           left: 0,
           right: 0,
           textAlign: 'center',
-          fontSize: 13 * s,
+          fontSize: kick.fontSize,
           fontFamily: 'PlusJakartaSans_600SemiBold',
-          color: palette.text,
+          color: textGradient,
           opacity: 0.75,
-          letterSpacing: 2.5 * s,
+          letterSpacing: kick.letterSpacing,
         }}
       >
-        {kicker}
+        {kicker.split('').join('\u2009')}
       </Text>
 
       <View
         style={{
           position: 'absolute',
-          top: 92 * s,
-          left: width / 2 - 28 * s,
-          width: 56 * s,
-          height: 1.5 * s,
+          top: kick.ruleY,
+          left: width / 2 - kick.ruleHalfWidth,
+          width: kick.ruleHalfWidth * 2,
+          height: kick.ruleHeight,
           backgroundColor: palette.frame,
         }}
       />
@@ -140,10 +191,10 @@ export const ObraCoverArtView = forwardRef<NativeViewRef, ObraCoverArtViewProps>
         colors={['rgba(255,255,255,0)', 'rgba(255,255,255,0.72)', 'rgba(255,255,255,0.88)']}
         style={{
           position: 'absolute',
-          left: 48 * s,
-          top: panelY,
-          width: width - 96 * s,
-          height: panelH,
+          left: panel.x,
+          top: panel.y,
+          width: panel.width,
+          height: panel.height,
         }}
       />
 
@@ -151,14 +202,15 @@ export const ObraCoverArtView = forwardRef<NativeViewRef, ObraCoverArtViewProps>
         numberOfLines={3}
         style={{
           position: 'absolute',
-          left: 50 * s,
-          right: 50 * s,
-          top: panelY + 28 * s,
+          left: panel.titlePadX,
+          right: panel.titlePadX,
+          top: panel.titleY,
           textAlign: 'center',
-          fontSize: 32 * s,
-          lineHeight: 38 * s,
-          fontFamily: 'PlusJakartaSans_700Bold',
-          color: palette.text,
+          fontSize: panel.titleFontSize,
+          lineHeight: panel.titleLineHeight,
+          fontFamily: COVER_TITLE_FONT,
+          fontWeight: '600',
+          color: textPanel,
         }}
       >
         {titulo.trim() || 'Minha obra'}
@@ -167,9 +219,9 @@ export const ObraCoverArtView = forwardRef<NativeViewRef, ObraCoverArtViewProps>
       <View
         style={{
           position: 'absolute',
-          top: panelY + panelH * 0.55,
-          left: width / 2 - 50 * s,
-          width: 100 * s,
+          top: panel.dividerY,
+          left: width / 2 - panel.dividerHalfWidth,
+          width: panel.dividerHalfWidth * 2,
           height: 1 * s,
           backgroundColor: palette.frame,
         }}
@@ -178,53 +230,20 @@ export const ObraCoverArtView = forwardRef<NativeViewRef, ObraCoverArtViewProps>
       <Text
         style={{
           position: 'absolute',
-          left: 50 * s,
-          right: 50 * s,
-          top: panelY + panelH * 0.62,
+          left: panel.titlePadX,
+          right: panel.titlePadX,
+          top: panel.subtitleY,
           textAlign: 'center',
-          fontSize: 17 * s,
-          fontFamily: 'PlusJakartaSans_500Medium',
+          fontSize: panel.subtitleFontSize,
+          fontFamily: COVER_TITLE_FONT,
           fontStyle: 'italic',
-          color: palette.text,
+          color: textPanel,
           opacity: 0.82,
         }}
       >
         {subtitle}
       </Text>
 
-      {autorNome?.trim() ? (
-        <Text
-          style={{
-            position: 'absolute',
-            left: 40 * s,
-            right: 40 * s,
-            bottom: 52 * s,
-            textAlign: 'center',
-            fontSize: 14 * s,
-            fontFamily: 'PlusJakartaSans_500Medium',
-            color: palette.text,
-            opacity: 0.65,
-          }}
-        >
-          {autorNome.trim()}
-        </Text>
-      ) : null}
-
-      <Text
-        style={{
-          position: 'absolute',
-          left: 0,
-          right: 0,
-          bottom: 32 * s,
-          textAlign: 'center',
-          fontSize: 10 * s,
-          fontFamily: 'PlusJakartaSans_500Medium',
-          color: palette.text,
-          opacity: 0.45,
-        }}
-      >
-        EntreLinhas
-      </Text>
     </View>
   )
 })

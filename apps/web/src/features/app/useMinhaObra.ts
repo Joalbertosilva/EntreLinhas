@@ -250,20 +250,35 @@ export function useSalvarObraMeta(userId: string | undefined) {
       titulo: string
       descricao: string | null
       capa_url?: string | null
+      capa_foto_url?: string | null
       tipo?: TipoObra
       categoria?: CategoriaObra
     }) => {
-      const { error } = await supabase
+      const patch = {
+        titulo: input.titulo,
+        descricao: input.descricao,
+        ...(input.capa_url !== undefined ? { capa_url: input.capa_url } : {}),
+        ...(input.capa_foto_url !== undefined ? { capa_foto_url: input.capa_foto_url } : {}),
+        ...(input.tipo !== undefined ? { tipo: input.tipo } : {}),
+        ...(input.categoria !== undefined ? { categoria: input.categoria } : {}),
+      }
+
+      let { error } = await supabase
         .from('obras')
-        .update({
-          titulo: input.titulo,
-          descricao: input.descricao,
-          ...(input.capa_url !== undefined ? { capa_url: input.capa_url } : {}),
-          ...(input.tipo !== undefined ? { tipo: input.tipo } : {}),
-          ...(input.categoria !== undefined ? { categoria: input.categoria } : {}),
-        })
+        .update(patch)
         .eq('id', input.obraId)
         .eq('usuario_id', userId!)
+
+      if (error && input.capa_foto_url !== undefined) {
+        const { capa_foto_url: _drop, ...withoutFoto } = patch
+        void _drop
+        const retry = await supabase
+          .from('obras')
+          .update(withoutFoto)
+          .eq('id', input.obraId)
+          .eq('usuario_id', userId!)
+        error = retry.error
+      }
 
       if (error) throw error
     },

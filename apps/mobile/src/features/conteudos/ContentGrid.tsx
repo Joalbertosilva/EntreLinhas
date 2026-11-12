@@ -1,4 +1,4 @@
-import { FlatList, Text, useWindowDimensions, View } from 'react-native'
+import { Text, useWindowDimensions, View } from 'react-native'
 import type { ConteudoCardData } from '@/features/conteudos/useConteudos'
 import { ContentCard } from '@/features/conteudos/ContentCard'
 import { RAIL_ITEM_GAP, SCREEN_HORIZONTAL_PADDING } from '@/lib/layout'
@@ -13,6 +13,7 @@ interface ContentGridProps {
   emptyMessage?: string
 }
 
+/** Grade estática — evita FlatList dentro do ScrollView das abas (crash ao abrir catálogo). */
 export function ContentGrid({ items, showTipo = true, emptyMessage }: ContentGridProps) {
   const { width: screenWidth } = useWindowDimensions()
   const cardWidth = (screenWidth - H_PADDING * 2 - GAP * (NUM_COLS - 1)) / NUM_COLS
@@ -30,17 +31,20 @@ export function ContentGrid({ items, showTipo = true, emptyMessage }: ContentGri
     )
   }
 
+  const rows: ConteudoCardData[][] = []
+  for (let i = 0; i < items.length; i += NUM_COLS) {
+    rows.push(items.slice(i, i + NUM_COLS))
+  }
+
   return (
-    <FlatList
-      data={items}
-      keyExtractor={(item) => item.id}
-      numColumns={NUM_COLS}
-      scrollEnabled={false}
-      columnWrapperStyle={{ gap: GAP, paddingHorizontal: H_PADDING }}
-      contentContainerStyle={{ gap: GAP }}
-      renderItem={({ item }) => (
-        <ContentCard conteudo={item} showTipo={showTipo} width={cardWidth} />
-      )}
-    />
+    <View style={{ paddingHorizontal: H_PADDING, gap: GAP }}>
+      {rows.map((row, rowIndex) => (
+        <View key={`row-${rowIndex}`} style={{ flexDirection: 'row', gap: GAP }}>
+          {row.map((item) => (
+            <ContentCard key={item.id} conteudo={item} showTipo={showTipo} width={cardWidth} />
+          ))}
+        </View>
+      ))}
+    </View>
   )
 }

@@ -32,3 +32,10 @@ export const SPLASH_GRADIENT_LOCATIONS = [0, 0.28, 0.52, 0.78, 1] as const
 /** Menu lateral — navy profundo com leve transição (não verde sólido). */
 export const DRAWER_GRADIENT = ['#1a3342', '#243d4d', '#2a4f5e', '#1c756a'] as const
 export const DRAWER_GRADIENT_LOCATIONS = [0, 0.45, 0.82, 1] as const
+
+/** Paridade com `.reader-profile-avatar__ring` e botões `.jornada-card__action` (web). */
+export const AVATAR_RING_GRADIENT = ['#7eb8ff', '#4a9fd9', '#2a6fd4', '#5b7fd9'] as const
+export const LEVEL_BADGE_GRADIENT = ['#1a5fb4', '#003366', '#002244'] as const
+export const JOURNEY_XP_GRADIENT = ['#2a9d8f', '#3db8cf', '#5b6fd6', '#7c5fd4'] as const
+export const JOURNEY_BTN_JORNADA = '#0091d5' as const
+export const JOURNEY_BTN_OBRAS = '#1a3342' as const

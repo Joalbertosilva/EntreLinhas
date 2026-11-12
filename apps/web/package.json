@@ -15,6 +15,7 @@
     "@supabase/supabase-js": "^2.112.4",
     "@tanstack/react-query": "^5.102.2",
     "@tanstack/react-router": "^1.170.32",
+    "@tcc-sistema/cover-motifs": "workspace:*",
     "@tcc-sistema/schemas": "workspace:*",
     "@tcc-sistema/types": "workspace:*",
     "clsx": "^2.1.1",

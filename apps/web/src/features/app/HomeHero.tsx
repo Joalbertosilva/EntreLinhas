@@ -54,6 +54,8 @@ export function HomeHero({ userId, firstName, displayName }: HomeHeroProps) {
 
           <div className="home-hero-priority">
             <HomeObraStrip
+              userId={userId}
+              autorNome={displayName}
               obra={obra ?? null}
               isLoading={loadingObra}
               sectionLabel={obraSectionLabel}

@@ -62,13 +62,14 @@ async function uploadCoverBytes(
   userId: string,
   obraId: string,
   contentType: string,
+  fileBaseName: 'capa' | 'capa-foto' = 'capa',
 ): Promise<string> {
   if (arrayBuffer.byteLength > MAX_BYTES) {
     throw new Error('A imagem deve ter no máximo 5 MB')
   }
 
   const ext = extFromMime(contentType)
-  const path = `obras/${userId}/${obraId}/capa.${ext}`
+  const path = `obras/${userId}/${obraId}/${fileBaseName}.${ext}`
 
   const { error } = await supabase.storage.from(COVERS_BUCKET).upload(path, arrayBuffer, {
     upsert: true,
@@ -104,4 +105,91 @@ export async function uploadObraCoverFromUri(
 
   const arrayBuffer = await readUriAsArrayBuffer(uri)
   return uploadCoverBytes(arrayBuffer, userId, obraId, contentType)
+}
+
+/** Foto original (para regerar capa ao mudar o gênero). */
+export async function uploadObraCapaFotoFromUri(
+  uri: string,
+  userId: string,
+  obraId: string,
+  mimeType = 'image/jpeg',
+  fileSize?: number,
+): Promise<string> {
+  const contentType = resolveImageMime(uri, mimeType)
+  const validation = validateCoverUri(fileSize, contentType)
+  if (validation) throw new Error(validation)
+
+  const arrayBuffer = await readUriAsArrayBuffer(uri)
+  return uploadCoverBytes(arrayBuffer, userId, obraId, contentType, 'capa-foto')
+}
+
+export function withCacheBust(url: string, version?: number | string): string {
+  const v = version ?? Date.now()
+  const sep = url.includes('?') ? '&' : '?'
+  return `${url}${sep}v=${v}`
+}
+
+export function extractCoverStoragePath(url: string): string | null {
+  const patterns = [
+    `/storage/v1/object/public/${COVERS_BUCKET}/`,
+    `/storage/v1/object/sign/${COVERS_BUCKET}/`,
+    `/storage/v1/object/${COVERS_BUCKET}/`,
+  ]
+  for (const marker of patterns) {
+    const idx = url.indexOf(marker)
+    if (idx !== -1) {
+      return decodeURIComponent(url.slice(idx + marker.length).split('?')[0] ?? '')
+    }
+  }
+  return null
+}
+
+export async function deleteCoverByUrl(url: string | null | undefined): Promise<void> {
+  if (!url) return
+  const path = extractCoverStoragePath(url)
+  if (!path) return
+  const { error } = await supabase.storage.from(COVERS_BUCKET).remove([path])
+  if (error) throw new Error(error.message)
+}
+
+async function uploadAvatarBytes(
+  arrayBuffer: ArrayBuffer,
+  userId: string,
+  contentType: string,
+): Promise<string> {
+  if (arrayBuffer.byteLength > MAX_BYTES) {
+    throw new Error('A imagem deve ter no máximo 5 MB')
+  }
+
+  const ext = extFromMime(contentType)
+  const path = `avatars/${userId}/avatar.${ext}`
+
+  const { error } = await supabase.storage.from(COVERS_BUCKET).upload(path, arrayBuffer, {
+    upsert: true,
+    contentType,
+    cacheControl: '3600',
+  })
+  if (error) throw new Error(error.message)
+
+  const { data } = supabase.storage.from(COVERS_BUCKET).getPublicUrl(path)
+  return withCacheBust(data.publicUrl)
+}
+
+export async function uploadProfileAvatarFromUri(
+  uri: string,
+  userId: string,
+  mimeType = 'image/jpeg',
+  fileSize?: number,
+): Promise<string> {
+  const contentType = resolveImageMime(uri, mimeType)
+  const validation = validateCoverUri(fileSize, contentType)
+  if (validation) throw new Error(validation)
+
+  const arrayBuffer = await readUriAsArrayBuffer(uri)
+  return uploadAvatarBytes(arrayBuffer, userId, contentType)
+}
+
+export async function persistMyAvatarUrl(url: string | null): Promise<void> {
+  const { error } = await supabase.rpc('update_my_avatar_url', { p_avatar_url: url })
+  if (error) throw new Error(error.message)
 }

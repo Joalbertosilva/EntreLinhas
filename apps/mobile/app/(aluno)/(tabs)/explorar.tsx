@@ -1,6 +1,6 @@
 import { useLocalSearchParams } from 'expo-router'
 import { useEffect, useMemo, useState } from 'react'
-import { ActivityIndicator, Pressable, ScrollView, Text, View } from 'react-native'
+import { ActivityIndicator, Pressable, Text, View } from 'react-native'
 import { Search } from 'lucide-react-native'
 import type { TipoConteudo } from '@tcc-sistema/types'
 import { ScreenPageHeader } from '@/components/layout/ScreenPageHeader'
@@ -25,6 +25,42 @@ const FILTROS: Array<{ id: FiltroExplorar; label: string }> = [
 ]
 
 const TIPOS_VALIDOS = new Set<TipoConteudo>(['livro', 'cronica', 'musica', 'poema', 'video'])
+
+function FiltroChip({
+  label,
+  active,
+  onPress,
+}: {
+  label: string
+  active: boolean
+  onPress: () => void
+}) {
+  return (
+    <Pressable
+      onPress={onPress}
+      accessibilityRole="button"
+      accessibilityState={{ selected: active }}
+      style={{
+        borderRadius: 999,
+        paddingHorizontal: 16,
+        paddingVertical: 10,
+        backgroundColor: active ? '#1c756a' : '#ffffff',
+        borderWidth: active ? 0 : 1,
+        borderColor: '#d4ebe6',
+      }}
+    >
+      <Text
+        style={{
+          fontFamily: 'PlusJakartaSans_600SemiBold',
+          fontSize: 14,
+          color: active ? '#ffffff' : '#5a7282',
+        }}
+      >
+        {label}
+      </Text>
+    </Pressable>
+  )
+}
 
 export default function ExplorarScreen() {
   const { tipo } = useLocalSearchParams<{ tipo?: string }>()
@@ -77,7 +113,7 @@ export default function ExplorarScreen() {
             description="Livros, crônicas, poemas e músicas — escolha uma categoria ou veja tudo de uma vez."
           />
 
-          <View style={{ paddingHorizontal: SCREEN_HORIZONTAL_PADDING }} className="mb-4">
+          <View style={{ paddingHorizontal: SCREEN_HORIZONTAL_PADDING, marginBottom: 16 }}>
             <Input
               icon={Search}
               value={busca}
@@ -88,36 +124,34 @@ export default function ExplorarScreen() {
             />
           </View>
 
-          <ScrollView
-            horizontal
-            showsHorizontalScrollIndicator={false}
-            contentContainerStyle={{
-              paddingHorizontal: SCREEN_HORIZONTAL_PADDING,
+          <View
+            style={{
+              flexDirection: 'row',
+              flexWrap: 'wrap',
               gap: 8,
+              paddingHorizontal: SCREEN_HORIZONTAL_PADDING,
               paddingBottom: 12,
             }}
           >
-            {FILTROS.map((chip) => {
-              const active = filtro === chip.id
-              return (
-                <Pressable
-                  key={chip.id}
-                  onPress={() => setFiltro(chip.id)}
-                  className={`rounded-full px-4 py-2.5 ${active ? 'bg-primary shadow-sm' : 'border border-border bg-white'}`}
-                >
-                  <Text
-                    className={`font-sans-semibold text-sm ${active ? 'text-white' : 'text-text-muted'}`}
-                  >
-                    {chip.label}
-                  </Text>
-                </Pressable>
-              )
-            })}
-          </ScrollView>
+            {FILTROS.map((chip) => (
+              <FiltroChip
+                key={chip.id}
+                label={chip.label}
+                active={filtro === chip.id}
+                onPress={() => setFiltro(chip.id)}
+              />
+            ))}
+          </View>
 
           <View
-            style={{ paddingHorizontal: SCREEN_HORIZONTAL_PADDING }}
-            className="mb-4 mt-2 flex-row items-center justify-between"
+            style={{
+              paddingHorizontal: SCREEN_HORIZONTAL_PADDING,
+              marginBottom: 16,
+              marginTop: 8,
+              flexDirection: 'row',
+              alignItems: 'center',
+              justifyContent: 'space-between',
+            }}
           >
             <Text className="font-sans-bold text-lg text-brand-navy">{sectionLabel}</Text>
             {!isLoading ? (
@@ -139,11 +173,11 @@ export default function ExplorarScreen() {
             />
           )}
 
-          {(filtro === 'todos' || filtro === 'livro') && (
-            <View className="mt-8">
+          {filtro === 'todos' || filtro === 'livro' ? (
+            <View style={{ marginTop: 32 }}>
               <ObrasSectionRail />
             </View>
-          )}
+          ) : null}
         </TabScrollView>
       </TabScreenShell>
     </A11yScreen>

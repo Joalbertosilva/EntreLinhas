@@ -29,6 +29,7 @@ import { TIPO_CONTEUDO_LABEL, TIPO_MATERIAL_LABEL } from '@/lib/labels'
 import type { NativeScrollViewRef, NativeViewRef } from '@/lib/nativeRefs'
 import { useKeyboardAwareScroll } from '@/lib/useKeyboardAwareScroll'
 import { useStackScreenInsets } from '@/lib/useStackScreenInsets'
+import { READER_PARAGRAPH_TEXT_PROPS } from '@/lib/readerTypography'
 import { useAuth } from '@/providers/AuthProvider'
 
 export default function ConteudoDetailScreen() {
@@ -177,7 +178,7 @@ export default function ConteudoDetailScreen() {
                     className="mt-5"
                   >
                     <Text className="mb-2 font-sans-bold text-lg text-brand-navy">Texto</Text>
-                    <Text className="font-sans text-base leading-relaxed text-text">{data.conteudo_textual}</Text>
+                    <Text {...READER_PARAGRAPH_TEXT_PROPS}>{data.conteudo_textual}</Text>
                   </Speakable>
                 ) : data.resumo || data.descricao ? (
                   <Speakable
@@ -185,9 +186,7 @@ export default function ConteudoDetailScreen() {
                     style={{ paddingHorizontal: SCREEN_HORIZONTAL_PADDING }}
                     className="mt-5"
                   >
-                    <Text className="font-sans text-base leading-relaxed text-text">
-                      {data.resumo ?? data.descricao}
-                    </Text>
+                    <Text {...READER_PARAGRAPH_TEXT_PROPS}>{data.resumo ?? data.descricao}</Text>
                   </Speakable>
                 ) : null}
 

@@ -45,8 +45,14 @@ export default function HomeScreen() {
             ) : null}
           </ScreenPageHeader>
 
-          <View style={{ paddingHorizontal: SCREEN_HORIZONTAL_PADDING }} className="mb-7 gap-5">
-            <MinhaObraCard obra={minhaObra ?? null} isLoading={obraLoading} embedded />
+          <View style={{ paddingHorizontal: SCREEN_HORIZONTAL_PADDING }} className="mb-10 gap-6">
+            <MinhaObraCard
+              userId={profile?.id}
+              autorNome={profile?.nome}
+              obra={minhaObra ?? null}
+              isLoading={obraLoading}
+              embedded
+            />
             <HomeProgressCard userId={profile?.id} embedded />
           </View>
 
