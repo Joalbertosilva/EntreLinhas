@@ -88,7 +88,7 @@ export function AccountSheet() {
             </View>
 
             <View className="mx-4 mt-3 flex-row items-center gap-3.5 rounded-2xl border border-white/80 bg-white/90 px-4 py-4">
-              <Avatar name={profile.nome} size={56} />
+              <Avatar name={profile.nome} imageUrl={profile.avatar_url} size={56} />
               <View className="min-w-0 flex-1">
                 <Text className="font-sans-bold text-[17px] text-brand-navy" numberOfLines={2}>
                   {profile.nome}

@@ -1,7 +1,9 @@
+import { Image } from 'expo-image'
 import { Text, View } from 'react-native'
 
 interface AvatarProps {
   name: string
+  imageUrl?: string | null
   size?: number
   tone?: 'primary' | 'navy'
 }
@@ -11,7 +13,7 @@ const TONE_BG = {
   navy: '#1a3342',
 } as const
 
-export function Avatar({ name, size = 32, tone = 'primary' }: AvatarProps) {
+export function Avatar({ name, imageUrl, size = 32, tone = 'primary' }: AvatarProps) {
   const initials = name
     .split(' ')
     .slice(0, 2)
@@ -19,6 +21,18 @@ export function Avatar({ name, size = 32, tone = 'primary' }: AvatarProps) {
     .join('')
 
   const fontSize = size <= 28 ? 10 : size <= 40 ? 12 : size <= 56 ? 16 : 20
+
+  if (imageUrl?.trim()) {
+    return (
+      <Image
+        source={{ uri: imageUrl.trim() }}
+        accessibilityLabel=""
+        style={{ width: size, height: size, borderRadius: size / 2 }}
+        contentFit="cover"
+        cachePolicy="memory-disk"
+      />
+    )
+  }
 
   return (
     <View

@@ -83,7 +83,7 @@ export default function PerfilScreen() {
               }}
             >
               <View className="flex-row items-center gap-3.5">
-                <Avatar name={profile?.nome ?? '?'} size={60} />
+                <Avatar name={profile?.nome ?? '?'} imageUrl={profile?.avatar_url} size={60} />
                 <View className="min-w-0 flex-1">
                   <Text className="font-sans-bold text-xl text-brand-navy" numberOfLines={2}>
                     {profile?.nome}

@@ -208,7 +208,7 @@ export function AppNavigationDrawer() {
                         padding: 10,
                       }}
                     >
-                      <Avatar name={profile.nome} size={36} />
+                      <Avatar name={profile.nome} imageUrl={profile.avatar_url} size={36} />
                       <View style={{ flex: 1, minWidth: 0 }}>
                         <Text
                           style={{ fontFamily: 'PlusJakartaSans_600SemiBold', fontSize: 14, color: '#fff' }}
