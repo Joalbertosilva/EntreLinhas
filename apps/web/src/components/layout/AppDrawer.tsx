@@ -54,7 +54,11 @@ export function AppDrawer({ open, pathname, isStaff, profile, onClose, onSignOut
         {profile && (
           <div className="space-y-3 border-b border-border px-4 py-4">
             <div className="flex items-center gap-3">
-              <Avatar name={profile.nome} className="h-10 w-10 text-xs" />
+              <Avatar
+                name={profile.nome}
+                imageUrl={profile.avatar_url}
+                className="h-10 w-10 text-xs"
+              />
               <div className="min-w-0">
                 <p className="truncate text-sm font-semibold text-brand-navy">{profile.nome}</p>
                 <p className="truncate text-xs text-primary">@{profile.nome_usuario}</p>

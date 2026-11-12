@@ -101,8 +101,8 @@ export const DRAWER_CONTENT_LINKS: DrawerNavItem[] = [
 
 export const SOBRE_DRAWER_LINK: DrawerNavItem = {
   href: '/(aluno)/sobre',
-  label: 'Sobre nós',
-  hint: 'O que é o EntreLinhas',
+  label: 'Sobre o aplicativo',
+  hint: 'Créditos, versão e suporte',
   icon: Info,
 }
 

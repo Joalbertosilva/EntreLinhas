@@ -4,6 +4,7 @@ import { BookOpen, PenLine, Sparkles, TrendingUp } from 'lucide-react-native'
 import { A11yScreen } from '@/components/layout/A11yScreen'
 import { ScreenBackHeader } from '@/components/layout/ScreenBackHeader'
 import { Speakable } from '@/features/accessibility/Speakable'
+import { PlatformCreditsCard } from '@/features/about/PlatformCreditsCard'
 import { BRAND_INSTITUTION, BRAND_NAME, BRAND_TAGLINE } from '@/lib/brand'
 import { SCREEN_HORIZONTAL_PADDING, stackScrollPaddingBottom } from '@/lib/layout'
 import { useStackScreenInsets } from '@/lib/useStackScreenInsets'
@@ -39,7 +40,7 @@ export default function SobreScreen() {
       <Stack.Screen options={{ headerShown: false, gestureEnabled: true, fullScreenGestureEnabled: true }} />
       <A11yScreen>
         <View className="flex-1 bg-surface" style={{ paddingTop: insets.top }}>
-          <ScreenBackHeader title="Sobre nós" />
+          <ScreenBackHeader title="Sobre o aplicativo" />
           <ScrollView
             contentContainerStyle={{
               paddingHorizontal: SCREEN_HORIZONTAL_PADDING,
@@ -68,6 +69,8 @@ export default function SobreScreen() {
                 </Speakable>
               )
             })}
+
+            <PlatformCreditsCard />
           </ScrollView>
         </View>
       </A11yScreen>

@@ -86,3 +86,26 @@ export async function deleteCoverByUrl(url: string | null | undefined): Promise<
   if (!path) return
   await supabase.storage.from(COVERS_BUCKET).remove([path])
 }
+
+export async function uploadProfileAvatar(file: File, userId: string): Promise<string> {
+  const validation = validateCoverFile(file)
+  if (validation) throw new Error(validation)
+
+  const ext = file.type === 'image/png' ? 'png' : file.type === 'image/webp' ? 'webp' : 'jpg'
+  const path = `avatars/${userId}/avatar.${ext}`
+
+  const { error } = await supabase.storage.from(COVERS_BUCKET).upload(path, file, {
+    upsert: true,
+    contentType: file.type || 'image/jpeg',
+    cacheControl: '3600',
+  })
+  if (error) throw new Error(error.message)
+
+  const { data } = supabase.storage.from(COVERS_BUCKET).getPublicUrl(path)
+  return withCacheBust(data.publicUrl)
+}
+
+export async function persistMyAvatarUrl(url: string | null): Promise<void> {
+  const { error } = await supabase.rpc('update_my_avatar_url', { p_avatar_url: url })
+  if (error) throw new Error(error.message)
+}
