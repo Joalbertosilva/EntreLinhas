@@ -1,12 +1,27 @@
 import type { CategoriaObra } from '@tcc-sistema/types'
 import {
+  COVER_ART_BASE_HEIGHT,
+  COVER_ART_BASE_WIDTH,
+  COVER_BRAND,
+  COVER_FRAME,
+  COVER_KICKER,
+  COVER_PHOTO_RECT,
+  COVER_TITLE_PANEL,
+  COVER_TITLE_FONT_FAMILY,
+  COVER_UI_FONT_FAMILY,
+  coverTextOnGradient,
+  coverTextOnLightPanel,
+  drawCategoryCoverMotifs,
+  type CoverMotifPalette,
+} from '@tcc-sistema/cover-motifs'
+import {
   CATEGORIA_COVER_PALETTE,
   CATEGORIA_OBRA_KICKER,
   CATEGORIA_OBRA_SUBTITLE,
 } from '@/lib/obraCategoriaLabels'
 
-const COVER_WIDTH = 720
-const COVER_HEIGHT = 1080
+const COVER_WIDTH = COVER_ART_BASE_WIDTH
+const COVER_HEIGHT = COVER_ART_BASE_HEIGHT
 
 function loadImage(src: string): Promise<HTMLImageElement> {
   return new Promise((resolve, reject) => {
@@ -49,32 +64,6 @@ function wrapText(
   return currentY
 }
 
-function drawLeaf(
-  ctx: CanvasRenderingContext2D,
-  x: number,
-  y: number,
-  scale: number,
-  rotation: number,
-  color: string,
-) {
-  ctx.save()
-  ctx.translate(x, y)
-  ctx.rotate(rotation)
-  ctx.scale(scale, scale)
-  ctx.fillStyle = color
-  ctx.beginPath()
-  ctx.moveTo(0, 0)
-  ctx.bezierCurveTo(18, -8, 36, -4, 42, 12)
-  ctx.bezierCurveTo(28, 8, 12, 14, 0, 28)
-  ctx.bezierCurveTo(-12, 14, -28, 8, -42, 12)
-  ctx.bezierCurveTo(-36, -4, -18, -8, 0, 0)
-  ctx.fill()
-  ctx.strokeStyle = 'rgb(255 255 255 / 0.15)'
-  ctx.lineWidth = 1
-  ctx.stroke()
-  ctx.restore()
-}
-
 function drawSoftGrain(ctx: CanvasRenderingContext2D) {
   ctx.save()
   ctx.globalAlpha = 0.04
@@ -88,27 +77,29 @@ function drawSoftGrain(ctx: CanvasRenderingContext2D) {
 }
 
 function drawDecorativeFrame(ctx: CanvasRenderingContext2D, palette: { frame: string; accent: string }) {
-  const pad = 36
+  const pad = COVER_FRAME.pad
+  const inset = COVER_FRAME.inset
   ctx.strokeStyle = palette.frame
-  ctx.lineWidth = 2.5
+  ctx.lineWidth = COVER_FRAME.outerBorder
   ctx.strokeRect(pad, pad, COVER_WIDTH - pad * 2, COVER_HEIGHT - pad * 2)
 
   ctx.strokeStyle = palette.accent
-  ctx.globalAlpha = 0.35
-  ctx.lineWidth = 1
-  ctx.strokeRect(pad + 8, pad + 8, COVER_WIDTH - (pad + 8) * 2, COVER_HEIGHT - (pad + 8) * 2)
+  ctx.globalAlpha = COVER_FRAME.innerOpacity
+  ctx.lineWidth = COVER_FRAME.innerBorder
+  ctx.strokeRect(pad + inset, pad + inset, COVER_WIDTH - (pad + inset) * 2, COVER_HEIGHT - (pad + inset) * 2)
   ctx.globalAlpha = 1
 
+  const dot = COVER_FRAME.cornerInset
   const corners = [
-    [pad + 4, pad + 4],
-    [COVER_WIDTH - pad - 4, pad + 4],
-    [pad + 4, COVER_HEIGHT - pad - 4],
-    [COVER_WIDTH - pad - 4, COVER_HEIGHT - pad - 4],
+    [pad + dot, pad + dot],
+    [COVER_WIDTH - pad - dot, pad + dot],
+    [pad + dot, COVER_HEIGHT - pad - dot],
+    [COVER_WIDTH - pad - dot, COVER_HEIGHT - pad - dot],
   ] as const
   ctx.fillStyle = palette.frame
   for (const [cx, cy] of corners) {
     ctx.beginPath()
-    ctx.arc(cx, cy, 3, 0, Math.PI * 2)
+    ctx.arc(cx, cy, COVER_FRAME.cornerDot, 0, Math.PI * 2)
     ctx.fill()
   }
 }
@@ -180,6 +171,8 @@ export async function generateObraCoverArt(input: ObraCoverArtInput): Promise<Bl
   const kicker = CATEGORIA_OBRA_KICKER[input.categoria]
   const subtitle = CATEGORIA_OBRA_SUBTITLE[input.categoria]
   const titulo = input.titulo.trim() || 'Minha obra'
+  const textGradient = coverTextOnGradient(palette)
+  const textPanel = coverTextOnLightPanel(palette)
 
   const objectUrl = URL.createObjectURL(input.photoFile)
   try {
@@ -212,72 +205,79 @@ export async function generateObraCoverArt(input: ObraCoverArtInput): Promise<Bl
     ctx.fill()
     ctx.restore()
 
-    drawLeaf(ctx, 56, COVER_HEIGHT - 120, 1.1, -0.4, palette.bottom)
-    drawLeaf(ctx, COVER_WIDTH - 70, 140, 0.9, 2.2, palette.mid)
-    drawLeaf(ctx, 48, 180, 0.75, 0.6, palette.accent)
-    drawLeaf(ctx, COVER_WIDTH - 52, COVER_HEIGHT - 100, 1, -2.4, palette.bottom)
-
-    drawSoftGrain(ctx)
     drawDecorativeFrame(ctx, palette)
 
-    const photoW = COVER_WIDTH * 0.72
-    const photoH = COVER_HEIGHT * 0.48
-    const photoX = (COVER_WIDTH - photoW) / 2
-    const photoY = COVER_HEIGHT * 0.12
+    const photoX = COVER_PHOTO_RECT.left
+    const photoY = COVER_PHOTO_RECT.top
+    const photoW = COVER_PHOTO_RECT.right - COVER_PHOTO_RECT.left
+    const photoH = COVER_PHOTO_RECT.bottom - COVER_PHOTO_RECT.top
     drawRoundedPhoto(ctx, photo, photoX, photoY, photoW, photoH, 14)
+
+    const motifPalette: CoverMotifPalette = {
+      text: palette.text,
+      frame: palette.frame,
+      accent: palette.accent,
+      bottom: palette.bottom,
+      mid: palette.mid,
+    }
+    drawCategoryCoverMotifs(ctx, input.categoria, motifPalette, COVER_WIDTH)
+    drawSoftGrain(ctx)
 
     ctx.textAlign = 'center'
 
-    ctx.font = '600 13px "Plus Jakarta Sans", system-ui, sans-serif'
-    ctx.fillStyle = palette.text
-    ctx.globalAlpha = 0.75
+    const tp = COVER_TITLE_PANEL
+    const textPanelY = tp.top
+    const textPanelH = tp.height
+
+    ctx.font = `600 ${COVER_KICKER.fontSize}px ${COVER_UI_FONT_FAMILY}`
+    ctx.fillStyle = textGradient
+    ctx.globalAlpha = COVER_KICKER.opacity
     const kickerSpaced = kicker.split('').join('\u2009')
-    ctx.fillText(kickerSpaced, COVER_WIDTH / 2, 78)
+    ctx.fillText(kickerSpaced, COVER_WIDTH / 2, COVER_KICKER.y)
     ctx.globalAlpha = 1
 
     ctx.beginPath()
-    ctx.moveTo(COVER_WIDTH / 2 - 28, 92)
-    ctx.lineTo(COVER_WIDTH / 2 + 28, 92)
+    ctx.moveTo(COVER_WIDTH / 2 - COVER_KICKER.ruleHalfWidth, COVER_KICKER.ruleY)
+    ctx.lineTo(COVER_WIDTH / 2 + COVER_KICKER.ruleHalfWidth, COVER_KICKER.ruleY)
     ctx.strokeStyle = palette.frame
-    ctx.lineWidth = 1.5
+    ctx.lineWidth = COVER_KICKER.ruleHeight
     ctx.stroke()
 
-    const textPanelY = COVER_HEIGHT * 0.68
-    const textPanelH = COVER_HEIGHT * 0.26
     const panelGrad = ctx.createLinearGradient(0, textPanelY, 0, textPanelY + textPanelH)
     panelGrad.addColorStop(0, 'rgb(255 255 255 / 0)')
     panelGrad.addColorStop(0.25, 'rgb(255 255 255 / 0.72)')
     panelGrad.addColorStop(1, 'rgb(255 255 255 / 0.88)')
     ctx.fillStyle = panelGrad
-    ctx.fillRect(48, textPanelY, COVER_WIDTH - 96, textPanelH)
+    ctx.fillRect(tp.left, textPanelY, tp.width, textPanelH)
 
-    ctx.fillStyle = palette.text
-    ctx.font = '600 32px Georgia, "Times New Roman", serif'
-    const titleEndY = wrapText(ctx, titulo, COVER_WIDTH / 2, textPanelY + 44, COVER_WIDTH - 100, 38)
+    ctx.fillStyle = textPanel
+    ctx.font = `600 ${tp.titleFontSize}px ${COVER_TITLE_FONT_FAMILY}`
+    const titleEndY = wrapText(
+      ctx,
+      titulo,
+      COVER_WIDTH / 2,
+      textPanelY + tp.titleTopPad,
+      COVER_ART_BASE_WIDTH - 100,
+      tp.titleLineHeight,
+    )
 
-    const lineY = titleEndY + 14
+    const lineY = textPanelY + textPanelH * tp.dividerOffsetInPanel
     ctx.strokeStyle = palette.frame
     ctx.lineWidth = 1
     ctx.beginPath()
-    ctx.moveTo(COVER_WIDTH / 2 - 50, lineY)
-    ctx.lineTo(COVER_WIDTH / 2 + 50, lineY)
+    ctx.moveTo(COVER_WIDTH / 2 - tp.dividerHalfWidth, lineY)
+    ctx.lineTo(COVER_WIDTH / 2 + tp.dividerHalfWidth, lineY)
     ctx.stroke()
 
-    ctx.font = 'italic 17px Georgia, "Times New Roman", serif'
+    ctx.font = `italic ${tp.subtitleFontSize}px ${COVER_TITLE_FONT_FAMILY}`
     ctx.globalAlpha = 0.82
-    ctx.fillText(subtitle, COVER_WIDTH / 2, lineY + 30)
-    ctx.globalAlpha = 1
+    ctx.fillStyle = textPanel
+    ctx.fillText(subtitle, COVER_WIDTH / 2, textPanelY + textPanelH * tp.subtitleOffsetInPanel)
 
-    if (input.autorNome?.trim()) {
-      ctx.font = '500 14px "Plus Jakarta Sans", system-ui, sans-serif'
-      ctx.globalAlpha = 0.65
-      ctx.fillText(input.autorNome.trim(), COVER_WIDTH / 2, COVER_HEIGHT - 52)
-      ctx.globalAlpha = 1
-    }
-
-    ctx.font = '500 10px "Plus Jakarta Sans", system-ui, sans-serif'
+    ctx.font = `500 10px ${COVER_UI_FONT_FAMILY}`
     ctx.globalAlpha = 0.45
-    ctx.fillText('EntreLinhas', COVER_WIDTH / 2, COVER_HEIGHT - 32)
+    ctx.fillStyle = textGradient
+    ctx.fillText('EntreLinhas', COVER_WIDTH / 2, COVER_HEIGHT - COVER_BRAND.bottom)
     ctx.globalAlpha = 1
 
     return await new Promise<Blob>((resolve, reject) => {

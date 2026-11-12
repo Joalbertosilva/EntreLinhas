@@ -6,7 +6,6 @@ import {
   BookOpen,
   FileText,
   Globe,
-  ImagePlus,
   Loader2,
   PenLine,
   Plus,
@@ -36,13 +35,19 @@ import {
   TIPO_OBRA_LABEL,
 } from '@/lib/obraLabels'
 import {
+  CATEGORIA_COVER_PALETTE,
   CATEGORIA_OBRA_LABEL,
   CATEGORIAS_LIVRO,
   CATEGORIAS_TEXTO,
 } from '@/lib/obraCategoriaLabels'
+import { ObraCoverArtPreview } from '@/components/obras/ObraCoverArtPreview'
 import { generateObraCoverFile } from '@/lib/obraCoverArt'
-import { DEFAULT_OBRA_COVER } from '@/lib/obraCover'
-import { uploadObraCover, validateCoverFile } from '@/lib/storage'
+import { resolveObraCapaFotoUrl } from '@/lib/obraCapaFoto'
+import {
+  extractObraCoverPhotoFile,
+  obraCoverPhotoFileFromUrl,
+} from '@/lib/obraCoverPhoto'
+import { uploadObraCapaFoto, uploadObraCover, validateCoverFile } from '@/lib/storage'
 import { Badge } from '@/components/ui/Badge'
 import { Button } from '@/components/ui/Button'
 import { ConfirmDialog } from '@/components/ui/ConfirmDialog'
@@ -82,10 +87,12 @@ export function MinhaObraEditorPage() {
   const [dirty, setDirty] = useState(false)
   const [uploadingCapa, setUploadingCapa] = useState(false)
   const [capaPreview, setCapaPreview] = useState<string | null>(null)
+  const [capaFotoSrc, setCapaFotoSrc] = useState<string | null>(null)
 
   const salvarRef = useRef(salvar)
   salvarRef.current = salvar
   const fileRef = useRef<HTMLInputElement>(null)
+  const capaFotoFileRef = useRef<File | null>(null)
   const obraIdRef = useRef<string | null>(null)
 
   const isLivro = tipoObra === 'livro'
@@ -105,6 +112,13 @@ export function MinhaObraEditorPage() {
     if (obraMudou) {
       setCapaUrl(obra.capa_url)
       setCapaPreview(null)
+      capaFotoFileRef.current = null
+      setCapaFotoSrc(null)
+      if (profile?.id) {
+        void resolveObraCapaFotoUrl(profile.id, obra.id).then((url) => {
+          if (url) setCapaFotoSrc(url)
+        })
+      }
     }
 
     if (!capituloAtivoId && obra.capitulos[0]) {
@@ -173,8 +187,54 @@ export function MinhaObraEditorPage() {
     }
   }
 
+  const publicarCapaConceitual = async (photoFile: File, categoria: CategoriaObra) => {
+    if (!obra || !profile) return
+    setUploadingCapa(true)
+    try {
+      const fotoUrl = await uploadObraCapaFoto(photoFile, profile.id, obra.id)
+      const coverFile = await generateObraCoverFile({
+        photoFile,
+        categoria,
+        titulo: tituloObra.trim() || defaultTitle,
+        autorNome: profile.nome,
+      })
+      const url = await uploadObraCover(coverFile, profile.id, obra.id)
+      await salvarMeta.mutateAsync({
+        obraId: obra.id,
+        titulo: tituloObra.trim() || defaultTitle,
+        descricao: descricao.trim() || null,
+        capa_url: url.split('?')[0] ?? url,
+        capa_foto_url: fotoUrl.split('?')[0] ?? fotoUrl,
+      })
+      setCapaUrl(url)
+      setCapaFotoSrc(fotoUrl)
+      capaFotoFileRef.current = photoFile
+    } finally {
+      setUploadingCapa(false)
+    }
+  }
+
+  const resolverFotoParaCapa = async (): Promise<File | null> => {
+    if (capaFotoFileRef.current) return capaFotoFileRef.current
+    if (capaFotoSrc) {
+      try {
+        return await obraCoverPhotoFileFromUrl(capaFotoSrc)
+      } catch {
+        /* tenta legado */
+      }
+    }
+    if (capaUrl) {
+      try {
+        return await extractObraCoverPhotoFile(capaUrl)
+      } catch {
+        return null
+      }
+    }
+    return null
+  }
+
   const handleCategoriaChange = async (next: CategoriaObra) => {
-    if (!obra || next === categoriaObra) return
+    if (!obra || !profile || next === categoriaObra || uploadingCapa) return
     try {
       await salvarMeta.mutateAsync({
         obraId: obra.id,
@@ -183,6 +243,12 @@ export function MinhaObraEditorPage() {
         categoria: next,
       })
       setCategoriaObra(next)
+
+      const photoFile = await resolverFotoParaCapa()
+      if (!photoFile) return
+
+      await publicarCapaConceitual(photoFile, next)
+      toast.success('Capa atualizada para o novo gênero')
     } catch {
       toast.error('Não foi possível alterar a categoria')
     }
@@ -201,23 +267,10 @@ export function MinhaObraEditorPage() {
 
     const previewUrl = URL.createObjectURL(file)
     setCapaPreview(previewUrl)
-    setUploadingCapa(true)
+    capaFotoFileRef.current = file
 
     try {
-      const coverFile = await generateObraCoverFile({
-        photoFile: file,
-        categoria: categoriaObra,
-        titulo: tituloObra.trim() || defaultTitle,
-        autorNome: profile.nome,
-      })
-      const url = await uploadObraCover(coverFile, profile.id, obra.id)
-      await salvarMeta.mutateAsync({
-        obraId: obra.id,
-        titulo: tituloObra.trim() || defaultTitle,
-        descricao: descricao.trim() || null,
-        capa_url: url.split('?')[0] ?? url,
-      })
-      setCapaUrl(url)
+      await publicarCapaConceitual(file, categoriaObra)
       setCapaPreview(null)
       URL.revokeObjectURL(previewUrl)
       toast.success('Capa conceitual criada!')
@@ -230,12 +283,8 @@ export function MinhaObraEditorPage() {
       )
       setCapaPreview(null)
       URL.revokeObjectURL(previewUrl)
-    } finally {
-      setUploadingCapa(false)
     }
   }
-
-  const capaExibida = capaPreview ?? capaUrl
 
   const categoriasDisponiveis = isLivro ? CATEGORIAS_LIVRO : CATEGORIAS_TEXTO
 
@@ -388,21 +437,30 @@ export function MinhaObraEditorPage() {
                   Define o estilo da capa conceitual quando você enviar uma foto.
                 </p>
                 <div className="flex flex-wrap gap-2">
-                  {categoriasDisponiveis.map((cat) => (
-                    <button
-                      key={cat}
-                      type="button"
-                      className={cn(
-                        'inline-flex items-center rounded-full border px-3 py-1.5 text-xs font-medium transition-colors',
-                        categoriaObra === cat
-                          ? 'border-primary bg-primary-light text-primary'
-                          : 'border-border bg-elevated text-text-muted hover:border-primary/25 hover:text-text',
-                      )}
-                      onClick={() => void handleCategoriaChange(cat)}
-                    >
-                      {CATEGORIA_OBRA_LABEL[cat]}
-                    </button>
-                  ))}
+                  {categoriasDisponiveis.map((cat) => {
+                    const palette = CATEGORIA_COVER_PALETTE[cat]
+                    const active = categoriaObra === cat
+                    return (
+                      <button
+                        key={cat}
+                        type="button"
+                        className={cn(
+                          'inline-flex items-center gap-1.5 rounded-full border px-3 py-1.5 text-xs font-medium transition-colors',
+                          active
+                            ? 'border-primary bg-primary-light text-primary'
+                            : 'border-border bg-elevated text-text-muted hover:border-primary/25 hover:text-text',
+                        )}
+                        onClick={() => void handleCategoriaChange(cat)}
+                      >
+                        <span
+                          className="h-2.5 w-2.5 shrink-0 rounded-full border"
+                          style={{ backgroundColor: palette.mid, borderColor: palette.frame }}
+                          aria-hidden
+                        />
+                        {CATEGORIA_OBRA_LABEL[cat]}
+                      </button>
+                    )
+                  })}
                 </div>
               </div>
 
@@ -415,23 +473,12 @@ export function MinhaObraEditorPage() {
                     disabled={uploadingCapa}
                     aria-busy={uploadingCapa}
                   >
-                    {capaExibida ? (
-                      <img src={capaExibida} alt="" className="h-full w-full object-cover" />
-                    ) : (
-                      <>
-                        <img
-                          src={DEFAULT_OBRA_COVER}
-                          alt=""
-                          className="h-full w-full object-cover opacity-95"
-                        />
-                        <div className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-brand-navy/70 to-transparent p-3 pt-8">
-                          <span className="flex items-center justify-center gap-1.5 text-xs font-semibold text-white">
-                            <ImagePlus className="h-4 w-4" aria-hidden />
-                            Enviar foto
-                          </span>
-                        </div>
-                      </>
-                    )}
+                    <ObraCoverArtPreview
+                      categoria={categoriaObra}
+                      titulo={tituloObra.trim() || defaultTitle}
+                      photoSrc={capaPreview ?? capaFotoSrc}
+                      className="h-full w-full"
+                    />
                     <span className="minha-obra-cover-overlay">
                       {uploadingCapa ? (
                         <>
