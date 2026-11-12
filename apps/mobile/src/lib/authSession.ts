@@ -9,12 +9,13 @@ export interface AuthProfile {
   deve_trocar_senha: boolean
   nome: string
   nome_usuario: string
+  avatar_url?: string | null
 }
 
 export async function fetchAuthProfile(userId: string): Promise<AuthProfile | null> {
   const { data, error } = await supabase
     .from('profiles')
-    .select('id, perfil, status, deve_trocar_senha, nome, nome_usuario')
+    .select('id, perfil, status, deve_trocar_senha, nome, nome_usuario, avatar_url')
     .eq('id', userId)
     .single()
 

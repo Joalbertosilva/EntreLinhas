@@ -50,7 +50,7 @@ export function AppTopBar() {
           accessibilityLabel="Abrir menu da conta"
           className="rounded-full p-0.5 active:opacity-80"
         >
-          <Avatar name={profile?.nome ?? '?'} size={36} />
+          <Avatar name={profile?.nome ?? '?'} imageUrl={profile?.avatar_url} size={36} />
         </Pressable>
       </View>
     </View>

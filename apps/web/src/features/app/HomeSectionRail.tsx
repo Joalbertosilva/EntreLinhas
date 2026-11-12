@@ -1,6 +1,6 @@
 import { Link } from '@tanstack/react-router'
 import { ChevronRight } from 'lucide-react'
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { APP_NAV_SECTIONS, type AppSectionId } from '@/features/app/appNavigation'
 import { SectionIcon } from '@/features/app/SectionIcon'
 import { SiteWeaveArt } from '@/components/layout/SiteWeaveArt'
@@ -12,10 +12,67 @@ interface HomeSectionRailProps {
   videosZone?: boolean
 }
 
+function useCompactCatalogRail() {
+  const [compact, setCompact] = useState(false)
+
+  useEffect(() => {
+    const media = window.matchMedia('(max-width: 767px)')
+    const sync = () => setCompact(media.matches)
+    sync()
+    media.addEventListener('change', sync)
+    return () => media.removeEventListener('change', sync)
+  }, [])
+
+  return compact
+}
+
+function resolveContextSection(
+  activeSection: AppSectionId | null,
+  videosZone: boolean,
+): AppSectionId {
+  if (videosZone || activeSection === 'videos') return 'videos'
+  if (activeSection && APP_NAV_SECTIONS.some((item) => item.id === activeSection)) {
+    return activeSection
+  }
+  return 'livros'
+}
+
 export function HomeSectionRail({ activeSection = null, videosZone = false }: HomeSectionRailProps) {
   const [hoveredId, setHoveredId] = useState<AppSectionId | null>(null)
+  const compactRail = useCompactCatalogRail()
 
   const highlightedId = hoveredId ?? activeSection
+  const contextSection = resolveContextSection(activeSection, videosZone)
+  const contextItem = APP_NAV_SECTIONS.find((item) => item.id === contextSection)!
+
+  if (compactRail) {
+    return (
+      <div className="home-section-rail-wrap home-section-rail-wrap--context">
+        <nav
+          className="home-section-rail home-section-rail--context"
+          data-section={contextItem.id}
+          aria-label="Seção do catálogo em exibição"
+        >
+          <SiteWeaveArt variant="rail" className="home-section-rail__weave home-section-rail__weave--context" />
+          <p className="sr-only" aria-live="polite">
+            Seção atual: {contextItem.label}
+          </p>
+          <Link
+            to={contextItem.to}
+            data-section={contextItem.id}
+            className={cn(
+              'home-section-rail-item home-section-rail-item--solo is-active is-emphasis',
+              'flex items-center justify-center gap-2',
+              contextItem.id === 'videos' && videosZone && 'is-videos-zone-active',
+            )}
+          >
+            <SectionIcon section={contextItem.id} size="sm" active flat />
+            <span className="home-section-rail-item__label">{contextItem.label}</span>
+          </Link>
+        </nav>
+      </div>
+    )
+  }
 
   return (
     <div className="home-section-rail-wrap">

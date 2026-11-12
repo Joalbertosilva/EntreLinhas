@@ -4426,24 +4426,24 @@
     }
   }
 
-  .home-section-rail-item[data-section='livros'] {
-    background: #00008a;
-  }
-
-  .home-section-rail-item[data-section='cronicas'] {
+  .home-section-rail:not(.home-section-rail--context) .home-section-rail-item[data-section='livros'] {
     background: #003366;
   }
 
-  .home-section-rail-item[data-section='musicas'] {
+  .home-section-rail:not(.home-section-rail--context) .home-section-rail-item[data-section='cronicas'] {
+    background: #003366;
+  }
+
+  .home-section-rail:not(.home-section-rail--context) .home-section-rail-item[data-section='musicas'] {
     background: #0066cc;
   }
 
-  .home-section-rail-item[data-section='poemas'] {
+  .home-section-rail:not(.home-section-rail--context) .home-section-rail-item[data-section='poemas'] {
     background: #efb034;
     color: #003366;
   }
 
-  .home-section-rail-item[data-section='videos'] {
+  .home-section-rail:not(.home-section-rail--context) .home-section-rail-item[data-section='videos'] {
     background: #8b3a3a;
     color: #ffffff;
   }
@@ -4456,7 +4456,7 @@
 
   .home-section-rail-item[data-section='livros'].is-emphasis,
   .home-section-rail-item[data-section='livros'].is-active {
-    color: #00008a;
+    color: #003366;
   }
 
   .home-section-rail-item[data-section='cronicas'].is-emphasis,
@@ -4492,9 +4492,9 @@
 
   .home-section-rail-item[data-section='livros'].is-emphasis .section-icon--rail,
   .home-section-rail-item[data-section='livros'].is-active .section-icon--rail {
-    color: #00008a;
-    background: rgb(0 0 138 / 0.08);
-    --tw-ring-color: rgb(0 0 138 / 0.16);
+    color: #003366;
+    background: rgb(0 51 102 / 0.1);
+    --tw-ring-color: rgb(0 51 102 / 0.18);
   }
 
   .home-section-rail-item[data-section='cronicas'].is-emphasis .section-icon--rail,
@@ -4537,6 +4537,83 @@
     .home-section-rail-item {
       transition: none;
     }
+  }
+
+  /* Mobile / telas estreitas: só a seção visível no scroll (pill centralizada) */
+  .home-section-rail-wrap--context {
+    justify-content: center;
+    padding-inline: 1.25rem;
+  }
+
+  .home-section-rail--context {
+    position: relative;
+    width: fit-content;
+    max-width: min(100%, 20.5rem);
+    margin-inline: auto;
+    gap: 0;
+    padding: 0.18rem;
+    overflow: hidden;
+    border-radius: 9999px;
+    border: 1px solid rgb(0 51 102 / 0.18);
+    background: #efb034;
+    box-shadow:
+      0 4px 16px rgb(26 51 66 / 0.1),
+      0 1px 0 rgb(255 255 255 / 0.35) inset;
+  }
+
+  .home-section-rail__weave--context {
+    opacity: 0.55;
+  }
+
+  .home-section-rail-item--solo {
+    position: relative;
+    z-index: 1;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    width: 100%;
+    min-width: 10.5rem;
+    min-height: 2.75rem;
+    padding: 0.45rem 1.35rem 0.45rem 1.1rem;
+    font-size: 0.9375rem;
+    font-weight: 600;
+    letter-spacing: -0.01em;
+    line-height: 1.2;
+    text-align: center;
+    border-radius: 9999px;
+    background: #ffffff;
+    box-shadow: 0 1px 4px rgb(0 51 102 / 0.1);
+  }
+
+  .home-section-rail-item--solo .home-section-rail-item__label {
+    flex: 0 1 auto;
+    text-align: center;
+  }
+
+  .home-section-rail-item--solo .section-icon--rail {
+    height: 1.75rem;
+    width: 1.75rem;
+    flex-shrink: 0;
+  }
+
+  .home-section-rail-item--solo .section-icon--rail svg {
+    height: 0.9rem;
+    width: 0.9rem;
+  }
+
+  .home-section-rail--context .home-section-rail-item.is-active,
+  .home-section-rail--context .home-section-rail-item.is-emphasis {
+    background: #ffffff;
+  }
+
+  .home-section-rail-sticky.is-pinned .home-section-rail--context {
+    border-color: rgb(0 51 102 / 0.24);
+    box-shadow: 0 8px 22px rgb(26 51 66 / 0.14);
+  }
+
+  .home-section-rail--context .home-section-rail-chevron {
+    display: none;
   }
 
   .home-catalog-band {

@@ -11,7 +11,7 @@ disable-model-invocation: true
 
 Fluxo **obrigatório** quando o usuário invoca **`/git`** (ou pede explicitamente o fluxo develop).
 
-**Não** integrar em `main`. O usuário abre PR **develop → main** quando quiser.
+**Não** integrar em `main` neste fluxo padrão. Para **merge em `main`**, rodar antes `.cursor/skills/release-approval/SKILL.md` (meta **≥ 98/100**), salvo o usuário pedir merge em `main` na mesma mensagem e aceitar o relatório.
 
 ## Pré-checks
 
@@ -96,7 +96,17 @@ Opcional (só se o usuário pedir): apagar branch local/remota da feature após 
 - Alterar `git config`
 - Push direto para `main` neste fluxo
 
+## Merge em `main` (exceção)
+
+Só quando o usuário pedir **na mesma conversa** (ex.: "`/git` e main"):
+
+1. Concluir passos 1–4 desta skill em `develop`.
+2. Executar **release-approval** — precisa **≥ 98/100** (ver skill).
+3. `git checkout main && git pull origin main && git merge --no-ff develop -m "merge(develop): …" && git push origin main`
+4. Voltar para `develop`.
+
 ## Relacionado
 
 - Branches e nomes: `.cursor/rules/git-branch-workflow.mdc`
 - Commit sem integrar develop: `.cursor/skills/github-workflow/SKILL.md`
+- Gate para `main`: `.cursor/skills/release-approval/SKILL.md`
