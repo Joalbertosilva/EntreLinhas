@@ -16,8 +16,8 @@ export function AppTopBar() {
 
   return (
     <View
-      className="border-b border-sky-mid bg-white/95"
-      style={{ paddingTop: insets.top, paddingBottom: 10 }}
+      className="border-b border-border bg-white"
+      style={{ paddingTop: insets.top, paddingBottom: 12 }}
     >
       <View
         className="flex-row items-center"

@@ -4,10 +4,13 @@ import {
   ACCOUNT_MENU_ITEMS,
   ADMIN_ACCOUNT_ITEM,
   PERFIL_LABELS,
+  PERFIL_SENHA_MENU_ITEM,
 } from '@/features/app/accountMenu'
 import { ScrollReveal } from '@/features/app'
+import { PlatformInfoStrip } from '@/features/app/PlatformInfoStrip'
+import { ReaderProfileAvatar } from '@/features/app/ReaderProfileAvatar'
+import { useProfileAvatarUpload } from '@/features/app/useProfileAvatarUpload'
 import { useAuth } from '@/features/auth/AuthProvider'
-import { Avatar } from '@/components/ui/Avatar'
 
 export const Route = createFileRoute('/app/perfil')({
   component: PerfilRoute,
@@ -21,6 +24,7 @@ function PerfilRoute() {
 
 function AppPerfilPage() {
   const { profile, signOut, isStaff } = useAuth()
+  const { removeAvatar, isRemoving, isUploading } = useProfileAvatarUpload()
   const router = useRouter()
 
   const handleSignOut = async () => {
@@ -33,6 +37,7 @@ function AppPerfilPage() {
   const perfilLabel = PERFIL_LABELS[profile.perfil]
   const menuItems = [
     ...ACCOUNT_MENU_ITEMS.filter((item) => item.to !== '/app/perfil'),
+    PERFIL_SENHA_MENU_ITEM,
     ...(isStaff ? [ADMIN_ACCOUNT_ITEM] : []),
   ]
 
@@ -55,15 +60,31 @@ function AppPerfilPage() {
           <aside className="space-y-4 lg:sticky lg:top-24">
             <div className="overflow-hidden rounded-2xl border border-border/80 bg-white/90 shadow-[var(--shadow-soft)] backdrop-blur-sm">
               <div className="bg-gradient-to-br from-primary/12 via-primary-light/40 to-white px-5 py-6 sm:px-6">
-                <div className="flex items-start gap-4">
-                  <Avatar name={profile.nome} className="h-16 w-16 shrink-0 text-sm ring-2 ring-white/80" />
-                  <div className="min-w-0 pt-0.5">
+                <div className="flex flex-col gap-4 sm:flex-row sm:items-start">
+                  <ReaderProfileAvatar
+                    name={profile.nome}
+                    imageUrl={profile.avatar_url}
+                    showLevelBadge={false}
+                    editable
+                    className="reader-profile-avatar--page"
+                  />
+                  <div className="min-w-0 flex-1 pt-0.5">
                     <p className="text-lg font-semibold leading-snug text-brand-navy">{profile.nome}</p>
                     <p className="mt-0.5 text-sm text-primary">@{profile.nome_usuario}</p>
                     <span className="mt-2 inline-flex items-center gap-1 rounded-full bg-primary/10 px-2.5 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-primary">
                       <Shield className="h-3 w-3" aria-hidden />
                       {perfilLabel}
                     </span>
+                    {profile.avatar_url && (
+                      <button
+                        type="button"
+                        className="perfil-avatar-remove"
+                        disabled={isRemoving || isUploading}
+                        onClick={() => removeAvatar()}
+                      >
+                        Remover foto
+                      </button>
+                    )}
                   </div>
                 </div>
               </div>
@@ -85,6 +106,10 @@ function AppPerfilPage() {
                   <dd className="text-sm font-medium text-text">{perfilLabel}</dd>
                 </div>
               </dl>
+            </div>
+
+            <div className="overflow-hidden rounded-2xl border border-border/80 bg-white/90 px-5 py-4 shadow-[var(--shadow-soft)] backdrop-blur-sm sm:px-6">
+              <PlatformInfoStrip />
             </div>
 
             <button

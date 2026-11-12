@@ -62,8 +62,8 @@ export const ACCOUNT_MENU_ITEMS: AccountMenuItem[] = [
   },
   {
     href: '/(aluno)/perfil',
-    label: 'Dados da conta',
-    hint: 'Nome, usuário e perfil de acesso',
+    label: 'Minha conta',
+    hint: 'Resumo, leituras e preferências',
     icon: User,
   },
   {
@@ -101,8 +101,8 @@ export const DRAWER_CONTENT_LINKS: DrawerNavItem[] = [
 
 export const SOBRE_DRAWER_LINK: DrawerNavItem = {
   href: '/(aluno)/sobre',
-  label: 'Sobre nós',
-  hint: 'O que é o EntreLinhas',
+  label: 'Sobre o aplicativo',
+  hint: 'Créditos, versão e suporte',
   icon: Info,
 }
 

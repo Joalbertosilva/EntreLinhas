@@ -1,5 +1,6 @@
 import { Link } from '@tanstack/react-router'
 import { BookOpen, ChevronRight, PenLine, Sparkles, TrendingUp } from 'lucide-react'
+import { PlatformCreditsBlock } from '@/features/app/PlatformCreditsBlock'
 import { ScrollReveal } from '@/features/app/ScrollReveal'
 import { BRAND_INSTITUTION, BRAND_NAME, BRAND_TAGLINE } from '@/features/auth/brand'
 import { BrandLogo } from '@/features/auth/BrandLogo'
@@ -76,6 +77,10 @@ export function SobrePage() {
             )
           })}
         </div>
+      </ScrollReveal>
+
+      <ScrollReveal delayMs={90}>
+        <PlatformCreditsBlock className="sobre-platform-credits" />
       </ScrollReveal>
 
       <ScrollReveal delayMs={120}>

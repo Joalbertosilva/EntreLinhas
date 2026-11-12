@@ -20,6 +20,7 @@ function AppHomePage() {
   const { profile } = useAuth()
   const queryClient = useQueryClient()
   const firstName = profile?.nome.split(' ')[0] ?? 'Leitor'
+  const displayName = profile?.nome ?? 'Leitor'
   useHomeViewportGlow(true)
 
   useEffect(() => {
@@ -28,7 +29,7 @@ function AppHomePage() {
 
   return (
     <div className="home-page">
-      <HomeHero userId={profile?.id} firstName={firstName} />
+      <HomeHero userId={profile?.id} firstName={firstName} displayName={displayName} />
 
       <div className="home-catalog-shell">
         <div className="home-catalog-header">

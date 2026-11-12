@@ -16,11 +16,11 @@ export default function AlunoTabsLayout() {
     <Tabs
       screenOptions={{
         headerShown: false,
-        tabBarActiveTintColor: '#1a3342',
+        tabBarActiveTintColor: '#1c756a',
         tabBarInactiveTintColor: '#5a7282',
         tabBarStyle: {
           backgroundColor: '#ffffff',
-          borderTopColor: '#cdd9e3',
+          borderTopColor: '#d4ebe6',
           borderTopWidth: 1,
           height: tabContentHeight + TAB_BAR_PADDING_TOP + tabBarBottom,
           paddingBottom: tabBarBottom,

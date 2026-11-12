@@ -1,11 +1,12 @@
 #!/usr/bin/env node
 /**
  * Sobe o Metro para Expo Go.
- * Padrão: LAN + offline (manifesto assinado localmente — evita HTTP 500 da API Expo).
+ * Padrão (CLI logado): LAN com manifesto assinado pela sua conta Expo.
+ * --offline: manifesto anônimo — só use com Expo Go *sem* login no celular.
  * Tunnel: pnpm mobile:dev:tunnel (outra rede / firewall).
  */
 import { spawnSync, spawn, execSync } from 'node:child_process'
-import { existsSync } from 'node:fs'
+import { cpSync, existsSync, lstatSync, mkdirSync, symlinkSync } from 'node:fs'
 import { resolve, dirname } from 'node:path'
 import { fileURLToPath } from 'node:url'
 
@@ -52,7 +53,10 @@ function runExpo(args) {
 }
 
 const useTunnel = process.argv.includes('--tunnel')
-const rawArgs = process.argv.slice(2).filter((arg) => arg !== '--tunnel' && arg !== '--lan')
+const forceOffline = process.argv.includes('--offline')
+const rawArgs = process.argv.slice(2).filter(
+  (arg) => arg !== '--tunnel' && arg !== '--lan' && arg !== '--offline',
+)
 const wantsClear = rawArgs.includes('--clear') || rawArgs.includes('-c')
 const extraArgs = rawArgs.filter((arg) => arg !== '--clear' && arg !== '-c')
 
@@ -66,18 +70,57 @@ if (useTunnel && !loggedIn) {
   process.exit(1)
 }
 
-// SDK 58: --offline já força LAN (não pode combinar --offline com --lan).
-const hostArgs = useTunnel ? ['--tunnel'] : ['--offline']
+/** Metro serve `/images/*` como pasta na raiz do app — espelha `assets/images`. */
+function ensureMetroImagesDir() {
+  const imagesDir = resolve(mobileRoot, 'images')
+  const assetsImages = resolve(mobileRoot, 'assets/images')
+  if (!existsSync(assetsImages)) return
+
+  if (existsSync(imagesDir)) {
+    try {
+      const st = lstatSync(imagesDir)
+      if (st.isSymbolicLink() || st.isDirectory()) return
+    } catch {
+      // recria abaixo
+    }
+  }
+
+  try {
+    symlinkSync(assetsImages, imagesDir, 'dir')
+    console.log('   Pasta images/ → assets/images (Metro)\n')
+  } catch {
+    mkdirSync(imagesDir, { recursive: true })
+    cpSync(assetsImages, imagesDir, { recursive: true })
+    console.log('   Pasta images/ copiada de assets/images (Metro)\n')
+  }
+}
+
+let hostArgs
+if (useTunnel) {
+  hostArgs = ['--tunnel']
+} else if (forceOffline) {
+  hostArgs = ['--offline']
+} else if (loggedIn) {
+  hostArgs = ['--lan']
+} else {
+  hostArgs = ['--offline']
+}
 
 console.log(`\n📱 EntreLinhas mobile — Expo SDK 58${loggedIn ? ` — conta: ${username}` : ''}`)
 if (useTunnel) {
   console.log('   Modo: TUNNEL (ngrok — use se iPhone estiver em outra rede)\n')
   console.log('   Se o tunnel cair, reinicie ou use LAN: pnpm mobile:dev\n')
+} else if (hostArgs.includes('--offline')) {
+  console.log('   Modo: LAN + offline (manifesto anônimo)\n')
+  console.log('   ⚠️  No iPhone use Expo Go *sem* conta (ou outra sessão anônima).')
+  console.log('   Com conta no celular, rode sem --offline: pnpm mobile:dev\n')
 } else {
-  console.log('   Modo: LAN + offline (mesma Wi‑Fi — recomendado)\n')
+  console.log('   Modo: LAN (manifesto assinado pela conta do CLI — combine com Expo Go logado)\n')
   console.log('   Outra rede? pnpm mobile:dev:tunnel\n')
-  console.log('   RAM baixa? Feche apps pesados antes de abrir no iPhone.\n')
 }
+console.log('   RAM baixa? Feche apps pesados antes de abrir no iPhone.\n')
+
+ensureMetroImagesDir()
 
 freePort8081()
 

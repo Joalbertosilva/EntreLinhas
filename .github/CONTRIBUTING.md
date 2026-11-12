@@ -8,8 +8,11 @@
 
 ## Branches
 
-- `main` — estável, integrável
-- Features: `feat/nome-curto` ou `fix/nome-curto` (opcional em trabalho solo)
+- `main` — estável; integração via PR **develop → main**
+- `develop` — integração do dia a dia; recebe merges das features
+- Features: `<tipo>/<escopo>-<slug>` (ex.: `feat/web-adicionar-busca-conteudos`)
+
+Regra do agente: `.cursor/rules/git-branch-workflow.mdc`. Publicar com **`/git`** (skill `.cursor/skills/git/SKILL.md`): commit, push da feature, merge em `develop`, push de `develop`.
 
 ## Commits
 
@@ -45,6 +48,7 @@ git status && git diff   # antes de commitar
 Ao pedir commit ou push, o agente deve:
 
 1. Ler `.github/COMMITS.md`
-2. Seguir a skill `.cursor/skills/github-workflow/SKILL.md`
-3. Criar commits separados por área lógica
-4. Só dar `git push` quando você pedir explicitamente
+2. Trabalhar em branch `<tipo>/<escopo>-<slug>` a partir de `develop` (regra git-branch-workflow)
+3. **`/git`** → skill `.cursor/skills/git/SKILL.md` (commit + push + merge em `develop`)
+4. Commit/push avulso → `.cursor/skills/github-workflow/SKILL.md`
+5. PR **develop → main** quando for release

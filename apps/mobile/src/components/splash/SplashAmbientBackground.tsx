@@ -87,7 +87,7 @@ export function SplashAmbientBackground() {
   return (
     <View pointerEvents="none" style={StyleSheet.absoluteFill}>
       <LinearGradient
-        colors={['#f8fbfe', '#eef4fa', '#e6f3ef', '#fafefd']}
+        colors={['#e5f7f3', '#eef4fa', '#e6f3ef', '#fafefd']}
         locations={[0, 0.35, 0.72, 1]}
         style={StyleSheet.absoluteFill}
       />

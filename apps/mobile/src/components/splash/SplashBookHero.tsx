@@ -16,10 +16,17 @@ interface SplashBookHeroProps {
   size?: number
   exiting?: boolean
   style?: ViewStyle
+  /** Handoff da splash nativa: livro já visível no 1º frame, só loops de carregamento. */
+  launchHandoff?: boolean
 }
 
 /** Livro fechado com folha virando — mais limpo que o spread aberto em RN. */
-export function SplashBookHero({ size = 96, exiting = false, style }: SplashBookHeroProps) {
+export function SplashBookHero({
+  size = 96,
+  exiting = false,
+  style,
+  launchHandoff = false,
+}: SplashBookHeroProps) {
   const { width: screenW, height: screenH } = useWindowDimensions()
   const fillScale = (Math.max(screenW, screenH) / size) * 0.55
 
@@ -40,9 +47,15 @@ export function SplashBookHero({ size = 96, exiting = false, style }: SplashBook
   const flipW = pageW * 0.54
 
   useEffect(() => {
-    intro.value = withTiming(1, { duration: 520, easing: Easing.out(Easing.cubic) })
-    scale.value = withTiming(1, { duration: 720, easing: Easing.out(Easing.back(1.2)) })
-    opacity.value = withDelay(80, withTiming(1, { duration: 420 }))
+    if (launchHandoff) {
+      intro.value = 1
+      scale.value = 1
+      opacity.value = 1
+    } else {
+      intro.value = withTiming(1, { duration: 520, easing: Easing.out(Easing.cubic) })
+      scale.value = withTiming(1, { duration: 720, easing: Easing.out(Easing.back(1.2)) })
+      opacity.value = withDelay(80, withTiming(1, { duration: 420 }))
+    }
 
     bob.value = withRepeat(
       withSequence(
@@ -80,7 +93,7 @@ export function SplashBookHero({ size = 96, exiting = false, style }: SplashBook
       -1,
       false,
     )
-  }, [bob, breathe, glow, intro, opacity, pageTurn, scale])
+  }, [bob, breathe, glow, intro, launchHandoff, opacity, pageTurn, scale])
 
   useEffect(() => {
     if (!exiting) return

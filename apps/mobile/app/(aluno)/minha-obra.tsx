@@ -26,6 +26,7 @@ import {
   View,
 } from 'react-native'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
+import { PlatformBackground } from '@/components/layout/PlatformBackground'
 import { ScreenBackHeader } from '@/components/layout/ScreenBackHeader'
 import { Input } from '@/components/ui/Input'
 import {
@@ -306,49 +307,31 @@ export default function MinhaObraScreen() {
     )
   }
 
+  const confirmarDespublicar = () => {
+    if (!obra) return
+    Alert.alert(
+      'Voltar para rascunho',
+      'Sua obra deixa de aparecer na comunidade. Você pode publicar de novo quando quiser.',
+      [
+        { text: 'Cancelar', style: 'cancel' },
+        {
+          text: 'Voltar para rascunho',
+          onPress: () => {
+            void despublicar.mutateAsync(obra.id).catch(() => {
+              Alert.alert('Erro', 'Não foi possível despublicar.')
+            })
+          },
+        },
+      ],
+    )
+  }
+
   return (
     <>
       <Stack.Screen options={{ headerShown: false, gestureEnabled: true, fullScreenGestureEnabled: true }} />
       <LoadingOverlay visible={uploadingCapa} label="Gerando capa conceitual…" />
-      <View className="flex-1 bg-surface" style={{ paddingTop: insets.top }}>
-        <ScreenBackHeader
-          title="Minha obra"
-          subtitle={TIPO_OBRA_HINT[tipoObra]}
-          rightSlot={
-            <View className="flex-row items-center gap-2">
-              {isPublicada ? (
-                <Pressable
-                  onPress={() => void despublicar.mutateAsync(obra!.id)}
-                  disabled={despublicar.isPending}
-                  className="rounded-full border border-border px-3 py-1.5"
-                >
-                  <Text className="font-sans-semibold text-xs text-text-muted">Despublicar</Text>
-                </Pressable>
-              ) : (
-                <Pressable
-                  onPress={() => void handlePublicar()}
-                  disabled={publicar.isPending || dirty || salvar.isPending}
-                  className="flex-row items-center gap-1 rounded-full bg-primary px-3 py-1.5"
-                >
-                  {publicar.isPending ? (
-                    <Loader2 color="#fff" size={14} />
-                  ) : (
-                    <Globe color="#fff" size={14} />
-                  )}
-                  <Text className="font-sans-semibold text-xs text-white">Publicar</Text>
-                </Pressable>
-              )}
-              <Pressable
-                onPress={confirmarExcluirObra}
-                disabled={excluirObra.isPending}
-                className="rounded-full border border-error/30 px-2.5 py-1.5"
-                accessibilityLabel="Apagar obra"
-              >
-                <Trash2 color="#b91c1c" size={16} />
-              </Pressable>
-            </View>
-          }
-        />
+      <PlatformBackground style={{ paddingTop: insets.top }}>
+        <ScreenBackHeader title="Minha obra" subtitle={TIPO_OBRA_HINT[tipoObra]} />
 
         {isLoading ? (
           <View className="flex-1 items-center justify-center">
@@ -361,11 +344,55 @@ export default function MinhaObraScreen() {
             contentContainerStyle={{ paddingBottom: stackScrollPaddingBottom(insets) }}
           >
             {isPublicada ? (
-              <View className="mx-5 mt-4 flex-row items-center gap-2 rounded-xl bg-success/10 px-4 py-2">
-                <Globe color="#15803d" size={16} />
-                <Text className="font-sans-semibold text-sm text-success">Obra publicada na comunidade</Text>
+              <View className="mx-5 mt-4 overflow-hidden rounded-2xl border border-border/80 bg-white">
+                <View className="flex-row items-center gap-2.5 px-4 py-3.5">
+                  <View className="h-9 w-9 items-center justify-center rounded-full bg-success/12">
+                    <Globe color="#15803d" size={17} />
+                  </View>
+                  <View className="min-w-0 flex-1">
+                    <Text className="font-sans-semibold text-sm text-brand-navy">Publicada na comunidade</Text>
+                    <Text className="mt-0.5 font-sans text-xs text-text-muted">
+                      Outros alunos podem ler sua obra
+                    </Text>
+                  </View>
+                </View>
+                <Pressable
+                  onPress={confirmarDespublicar}
+                  disabled={despublicar.isPending}
+                  className="items-center border-t border-border/70 py-3 active:bg-primary-light/15"
+                  accessibilityRole="button"
+                  accessibilityLabel="Voltar obra para rascunho"
+                >
+                  {despublicar.isPending ? (
+                    <Loader2 color="#5a7282" size={16} />
+                  ) : (
+                    <Text className="font-sans-semibold text-sm text-text-muted">Voltar para rascunho</Text>
+                  )}
+                </Pressable>
               </View>
-            ) : null}
+            ) : (
+              <View className="mx-5 mt-4">
+                <Pressable
+                  onPress={() => void handlePublicar()}
+                  disabled={publicar.isPending || dirty || salvar.isPending}
+                  className="flex-row items-center justify-center gap-2 rounded-2xl bg-primary py-3.5 active:opacity-90 disabled:opacity-50"
+                  accessibilityRole="button"
+                  accessibilityLabel="Publicar obra na comunidade"
+                >
+                  {publicar.isPending ? (
+                    <Loader2 color="#fff" size={18} />
+                  ) : (
+                    <Globe color="#fff" size={18} />
+                  )}
+                  <Text className="font-sans-semibold text-[15px] text-white">Publicar na comunidade</Text>
+                </Pressable>
+                {dirty || salvar.isPending ? (
+                  <Text className="mt-2 text-center font-sans text-xs text-text-muted">
+                    Aguarde o salvamento antes de publicar
+                  </Text>
+                ) : null}
+              </View>
+            )}
 
             <View className="mx-5 mt-4">
               <Text className="mb-2 font-sans-semibold text-xs uppercase tracking-wide text-text-muted">
@@ -630,9 +657,22 @@ export default function MinhaObraScreen() {
                 </Text>
               </View>
             </View>
+
+            <View className="mx-5 mt-8 items-center pb-2">
+              <Pressable
+                onPress={confirmarExcluirObra}
+                disabled={excluirObra.isPending}
+                className="flex-row items-center gap-1.5 rounded-xl px-3 py-2 active:opacity-70"
+                accessibilityRole="button"
+                accessibilityLabel="Apagar obra"
+              >
+                <Trash2 color="#94a3b8" size={15} strokeWidth={1.75} />
+                <Text className="font-sans-medium text-sm text-text-muted">Apagar obra</Text>
+              </Pressable>
+            </View>
           </ScrollView>
         ) : null}
-      </View>
+      </PlatformBackground>
     </>
   )
 }

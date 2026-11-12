@@ -1,6 +1,6 @@
 # Sessão atual — tcc-sistema / EntreLinhas
 
-> Última atualização: **2026-09-29**  
+> Última atualização: **2026-11-05**  
 > **Fase:** MVP completo (web + mobile) → **ensaio de apresentação**  
 > **Deploy:** pós-apresentação (site roda em `localhost` + Supabase nuvem)
 
@@ -12,7 +12,81 @@
 Backend ✅  →  Web ✅  →  Mobile ✅  →  Apresentação 🔄  →  Deploy ⏳
 ```
 
-**Foco atual:** ensaiar demo com [`docs/roteiro-apresentacao.md`](../docs/roteiro-apresentacao.md); matriz atualizada em [`docs/validacao-requisitos.md`](../docs/validacao-requisitos.md).
+**Foco imediato (retomar):** splash **nativa** mobile + handoff para `AnimatedSplash` — branch `feat/mobile-melhorar-splash-nativa` (**alterações locais, ainda sem commit**).
+
+**Foco geral:** ensaio com [`docs/roteiro-apresentacao.md`](../docs/roteiro-apresentacao.md); matriz em [`docs/validacao-requisitos.md`](../docs/validacao-requisitos.md).
+
+---
+
+## 🔄 Em andamento — splash nativa mobile (EntreLinhas)
+
+### Objetivo do usuário
+
+Melhorar só a **launch screen nativa** (`expo-splash-screen`), **sem** reescrever a splash animada em `app/index.tsx` + `src/components/splash/*`. Ideal: sensação de que a **animação de carregamento** (livro + dots) começa na abertura.
+
+### Limite técnico (importante na próxima sessão)
+
+Antes do JavaScript carregar, iOS/Android só permitem **cor sólida ou imagem estática** — não roda Reanimated/Lottie na launch screen nativa. A animação real continua sendo a **`AnimatedSplash`** assim que o bundle sobe; a estratégia é **manter a nativa visível por cima** até a animação estar pintada e então `hideAsync`.
+
+### O que já foi feito (código local)
+
+| Área | Mudança |
+|------|---------|
+| `apps/mobile/src/lib/brandTheme.ts` | `SPLASH_NATIVE_BG = '#f8fbfe'` (topo do gradiente da splash animada) |
+| `apps/mobile/src/lib/nativeSplash.ts` | **Novo** — `hideNativeSplashOnce()`, `configureNativeSplashFade()` |
+| `apps/mobile/app.json` | `expo.splash` + plugin `expo-splash-screen` com logo e `#f8fbfe`; `icon` / manifest |
+| `apps/mobile/app/_layout.tsx` | `preventAutoHideAsync`; **não** chama mais `hideAsync` aqui; fundo `SPLASH_NATIVE_BG` |
+| `apps/mobile/app/index.tsx` | Fundo alinhado à handoff |
+| `AnimatedSplash.tsx` | `hideNativeSplashOnce` no `onLayout` da tela; fallback 8s |
+| `SplashBookHero.tsx` | Prop `launchHandoff` — livro visível no 1º frame + loops de carregamento |
+| `SplashLoadingCaption.tsx` | Dots/caption aparecem mais cedo (delay 200ms) |
+| `assets/images/app-icon-manifest.png` | Ícone 1024 para manifest (favicon sobre `#f8fbfe`) |
+
+### Problema reportado pelo usuário
+
+“Ainda não está indo” — quer animação na launch screen. Handoff foi ajustado; **falta validar cold start** no dispositivo (Expo Go vs dev build).
+
+**2026-11-06 — causa comum “tudo branco + EntreLinhas no meio”:** no **Expo Go** a splash **não** segue o `app.json` do projeto; o cliente mostra **ícone + nome do app** no centro. Para ver logo + cor da nativa, usar **dev build** (`expo prebuild` + `expo run:android` / `run:ios`). O `app.json` foi atualizado com **imagem** (`entrelinhas-logo.png`) + plugin para builds nativos.
+
+**2026-11-06 — ícone “invisível” no Expo Go:** `favicon.png` tem **muita transparência**; **`app-icon-manifest.png`** (favicon sobre **`#f8fbfe`**) para manifest. O Go ainda pode **cachear** — build nativo garante.
+
+**2026-11-06 — atraso Expo Go → `AnimatedSplash`:** o `_layout` bloqueava o **`Stack` até as fontes** — a rota `/` não montava. Corrigido com **`FontsProvider`** (fontes em paralelo, sem bloquear rotas).
+
+**2026-11-06 — ritmo final (pedido do usuário):** tela do **Expo Go** some **logo** ao montar `/` (`hideNativeSplashOnce`); **`AnimatedSplash` no mínimo 3 s** antes de `exiting` (`MIN_ANIMATED_SPLASH_VISIBLE_MS`); saída com **marca/textos mais rápidos** (`AnimatedSplash`).
+
+**2026-11-06 — Expo Go “tela branca + EntreLinhas”:** não é `splash.image`; o Go usa **`icon` do manifest** (nome muda sempre; ícone vem de **URL**, sujeito a **cache**). Asset **`app-icon-manifest.png`** = **favicon** sobre **`#f8fbfe`** (ícone do app, não wordmark); novo **nome de arquivo** para bust de cache; `version` **1.0.6**.
+
+**2026-11-06 — Resolução definitiva (qualquer celular):** Expo Go **não** garante ícone/splash nativos como produto final. Documentado [`docs/mobile-dev-build.md`](../docs/mobile-dev-build.md) + scripts raiz `pnpm mobile:run:ios` / `pnpm mobile:run:android` (build nativo; ícone + splash do `app.json` embutidos).
+
+### Próximos passos (checklist)
+
+- [ ] Cold start: `pnpm mobile:dev -- --clear` — fechar app por completo e reabrir
+- [ ] Se ainda aparecer splash antiga com ícone: `cd apps/mobile && npx expo prebuild --clean && npx expo run:android` (ou `run:ios`)
+- [ ] Confirmar sequência: fundo `#f8fbfe` → livro virando + “Abrindo sua biblioteca” + dots (sem flash branco)
+- [ ] **Expo Go:** plugin customizado pode não refletir tudo; dev build para launch screen “de produção”
+- [ ] Opcional (se quiser frame estático antes do JS): PNG do livro na nativa + animação em seguida (art/script)
+- [x] PNGs experimentais removidos do repo (`splash-icon` raíz, `expo-go-icon` não referenciado)
+- [ ] Commit / merge na branch conforme fluxo `/git`
+
+### Comandos de teste
+
+```bash
+cd ~/Documentos/Projeto-tcc/tcc-sistema
+pnpm mobile:dev -- --clear
+```
+
+Rebuild nativo (se necessário):
+
+```bash
+cd apps/mobile
+npx expo prebuild --clean
+npx expo run:android   # ou run:ios
+```
+
+### Git
+
+- Branch: `feat/mobile-melhorar-splash-nativa` (base `develop`)
+- Status: modificações listadas acima + arquivos untracked — **sem commit/push**
 
 ---
 
@@ -85,8 +159,8 @@ Home, vitrines, destaques, detalhe de conteúdo, leituras, minha obra, obras pú
 
 Roteiro: [`docs/roteiro-validacao-aluno.md`](../docs/roteiro-validacao-aluno.md)
 
-### App mobile `apps/mobile` — ✅
-Tabs (Início, Explorar, Leituras, Pesquisa), leitor paginado, engajamento, minha obra, progresso, acessibilidade (TTS, font scale), splash animada, navegação stack + voltar.
+### App mobile `apps/mobile` — ✅ (splash nativa 🔄)
+Tabs (Início, Explorar, Leituras, Pesquisa), leitor paginado, engajamento, minha obra, progresso, acessibilidade (TTS, font scale), **splash animada** (`AnimatedSplash`), handoff com splash nativa em ajuste (ver seção acima), navegação stack + voltar.
 
 Ver: [`apps/mobile/README.md`](../apps/mobile/README.md)
 
@@ -277,7 +351,8 @@ pnpm exec supabase functions deploy request-password-reset
 ```bash
 pnpm web:dev          # subir site local
 pnpm web:build        # validar build
-pnpm mobile:dev       # app mobile (Expo Go 57)
+pnpm mobile:dev       # app mobile (Expo ~58)
+pnpm mobile:dev -- --clear   # limpar cache Metro (splash/handoff)
 
 # Só quando houver NOVA migration (ler SQL antes!)
 pnpm db:push

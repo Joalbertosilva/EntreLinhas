@@ -1,41 +1,42 @@
 import { Link } from '@tanstack/react-router'
 import { Speakable } from '@/features/accessibility/Speakable'
-import { ArrowRight } from 'lucide-react'
-import { AmbientCanvasField } from '@/components/layout/LoginAmbientBackground'
-import { BookProgressVisual } from '@/features/app/BookProgressVisual'
-import { ProgressLevelBar } from '@/features/app/ProgressLevelBar'
-import { faixaDoNivel, tituloJornada } from '@/features/app/alunoProgress'
-import { useBookProgressAnimation } from '@/features/app/useBookProgressAnimation'
+import { ReaderProfileAvatar } from '@/features/app/ReaderProfileAvatar'
+import { useAuth } from '@/features/auth/AuthProvider'
 import { useAlunoProgress } from '@/features/app/useAlunoProgress'
 import { useHomeLevelUpNotice } from '@/features/app/useHomeLevelUpNotice'
+import { BookOpen, LineChart } from 'lucide-react'
 import { cn } from '@/lib/utils'
 
 interface HomeProgressCardProps {
   userId: string | undefined
+  displayName: string
 }
 
-export function HomeProgressCard({ userId }: HomeProgressCardProps) {
+export function HomeProgressCard({ userId, displayName }: HomeProgressCardProps) {
+  const { profile } = useAuth()
   const { data: progress, isLoading } = useAlunoProgress(userId)
-  const { pageProgress, displayPct, justLeveledUp } = useBookProgressAnimation(progress)
   const levelUpBanner = useHomeLevelUpNotice(userId, progress?.nivel, progress?.nivelMaximo)
-  const showLevelUp = justLeveledUp || levelUpBanner
+  const showLevelUp = levelUpBanner
 
   if (isLoading) {
     return (
       <div className="home-progress-wrap" aria-hidden>
-        <p className="home-jornada-eyebrow">Sua jornada de leitura</p>
-        <div className="jornada-card jornada-card--loading animate-pulse">
-          <div className="jornada-card__head">
-            <div className="jornada-card__avatar bg-primary-light/30" />
-            <div className="flex-1 space-y-2">
-              <div className="h-4 w-16 rounded-full bg-primary-light/40" />
-              <div className="h-5 w-28 rounded-lg bg-primary-light/35" />
+        <div className="jornada-card jornada-card--gamified jornada-card--loading animate-pulse">
+          <div className="jornada-card__head jornada-card__head--profile">
+            <div className="jornada-card__photo-wrap">
+              <div className="jornada-card__photo-skeleton" />
             </div>
+            <div className="h-5 w-40 max-w-full rounded-lg bg-primary-light/35" />
           </div>
-          <div className="mt-4 h-px bg-primary-light/25" />
-          <div className="mt-4 h-6 w-20 rounded-lg bg-primary-light/40" />
-          <div className="mt-3 h-2.5 w-full rounded-full bg-primary-light/30" />
-          <div className="mt-5 h-10 w-full rounded-full bg-primary-light/35" />
+          <div className="jornada-card__xp-bar-row">
+            <div className="jornada-card__xp-track bg-primary-light/30" />
+            <div className="h-4 w-16 shrink-0 rounded bg-primary-light/35" />
+          </div>
+          <div className="mt-2 h-3 w-48 max-w-full rounded bg-primary-light/25" />
+          <div className="jornada-card__actions">
+            <div className="h-10 flex-1 rounded-full bg-primary-light/30" />
+            <div className="h-10 flex-1 rounded-full bg-primary-light/30" />
+          </div>
         </div>
       </div>
     )
@@ -43,14 +44,12 @@ export function HomeProgressCard({ userId }: HomeProgressCardProps) {
 
   if (!progress) return null
 
-  const faixa = faixaDoNivel(progress.nivel)
-  const faixaRotulo = tituloJornada(progress.nivel)
+  const barPct = progress.nivelMaximo ? 100 : Math.max(0, Math.min(100, progress.progressoNivelPct))
 
   const journeyLabel = [
-    'Sua jornada de leitura',
+    displayName,
     `Nível ${progress.nivel}`,
-    faixaRotulo,
-    `${progress.xp} XP`,
+    `${progress.xpNoNivel} de ${progress.xpNecessarioNivel} XP neste nível`,
     progress.nivelMaximo
       ? 'Nível máximo alcançado'
       : progress.xpParaProximoNivel > 0
@@ -67,69 +66,36 @@ export function HomeProgressCard({ userId }: HomeProgressCardProps) {
           Você subiu de nível!
         </p>
       )}
-      <p className="home-jornada-eyebrow">Sua jornada de leitura</p>
       <Speakable label={journeyLabel} className="home-jornada-speakable">
-        <Link
-          to="/app/progresso"
-          className={cn(
-            'jornada-card jornada-card--interactive jornada-card--ambient group block no-underline',
-            showLevelUp && 'jornada-card--celebrate',
-          )}
-          aria-label={`${faixaRotulo}. Nível ${progress.nivel}. ${progress.xp} XP. ${displayPct}% deste capítulo.`}
+        <article
+          className={cn('jornada-card jornada-card--gamified', showLevelUp && 'jornada-card--celebrate')}
+          aria-label={journeyLabel}
         >
-        <AmbientCanvasField compact className="jornada-card__ambient ambient-canvas-field" />
-
-        <div className="jornada-card__surface">
-          <div className="jornada-card__head">
-            <div className="jornada-card__avatar">
-              <BookProgressVisual
-                pageProgress={pageProgress}
-                nivel={progress.nivel}
-                marcadorCor="#003366"
-                paleta={{
-                  accent: faixa.cor,
-                  marcador: '#003366',
-                  pagina: 'rgb(0 51 102 / 0.15)',
-                  paginaEscura: 'rgb(0 51 102 / 0.28)',
-                  glow: faixa.cor,
-                  barra: '#efb034',
-                  barraTrack: '#e8eef0',
-                  ambiente: '#ffffff',
-                  faixaNome: faixa.nome,
-                  texto: '#003366',
-                  textoMuted: '#64748b',
-                }}
-                justLeveledUp={justLeveledUp}
-                size="sm"
-                cinematic
-              />
-            </div>
-            <div className="jornada-card__head-text min-w-0">
-              <span className="jornada-card__level-badge">Nível {progress.nivel}</span>
-              <p className="jornada-card__title">{faixaRotulo}</p>
-            </div>
+          <div className="jornada-card__head jornada-card__head--profile">
+            <ReaderProfileAvatar
+              name={displayName}
+              imageUrl={profile?.avatar_url}
+              nivel={progress.nivel}
+              editable
+            />
+            <p className="jornada-card__name">{displayName}</p>
           </div>
 
-          <hr className="jornada-card__divider" />
-
-          <div className="jornada-card__xp-row">
-            <span className="jornada-card__xp-total">{progress.xp} XP</span>
-            <span className="jornada-card__xp-range">
-              {progress.xpNoNivel} / {progress.xpNecessarioNivel} XP
+          <div className="jornada-card__xp-bar-row">
+            <div
+              className="jornada-card__xp-track"
+              role="progressbar"
+              aria-valuenow={barPct}
+              aria-valuemin={0}
+              aria-valuemax={100}
+              aria-label={`Progresso do nível ${progress.nivel}`}
+            >
+              <div className="jornada-card__xp-fill" style={{ width: `${barPct}%` }} />
+            </div>
+            <span className="jornada-card__xp-inline">
+              {progress.xpNoNivel} / {progress.xpNecessarioNivel} xp
             </span>
           </div>
-
-          <ProgressLevelBar
-            className="jornada-card__bar"
-            minimal
-            pct={displayPct}
-            nivel={progress.nivel}
-            barra="#efb034"
-            barraTrack="#e8eef0"
-            xpTotal={progress.xp}
-            xpParaProximo={progress.xpParaProximoNivel}
-            nivelMaximo={progress.nivelMaximo}
-          />
 
           {progress.nivelMaximo ? (
             <p className="jornada-card__hint">Nível máximo alcançado</p>
@@ -139,12 +105,17 @@ export function HomeProgressCard({ userId }: HomeProgressCardProps) {
             </p>
           ) : null}
 
-          <span className="jornada-card__cta">
-            Ver minha jornada
-            <ArrowRight className="jornada-card__cta-icon" strokeWidth={2} aria-hidden />
-          </span>
-        </div>
-        </Link>
+          <div className="jornada-card__actions">
+            <Link to="/app/progresso" className="jornada-card__action jornada-card__action--jornada">
+              <LineChart className="jornada-card__action-icon" strokeWidth={2} aria-hidden />
+              Minha Jornada
+            </Link>
+            <Link to="/app/minha-obra" className="jornada-card__action jornada-card__action--obras">
+              <BookOpen className="jornada-card__action-icon" strokeWidth={2} aria-hidden />
+              Minhas Obras
+            </Link>
+          </div>
+        </article>
       </Speakable>
     </div>
   )

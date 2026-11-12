@@ -14,9 +14,10 @@ import { useMinhaObra, useObrasPublicas } from '@/features/app/useMinhaObra'
 interface HomeHeroProps {
   userId: string | undefined
   firstName: string
+  displayName: string
 }
 
-export function HomeHero({ userId, firstName }: HomeHeroProps) {
+export function HomeHero({ userId, firstName, displayName }: HomeHeroProps) {
   const destaques = HOME_SECTIONS[0]!
   const { data: obra, isLoading: loadingObra } = useMinhaObra(userId)
   const { data: obrasComunidade = [], isLoading: loadingComunidade } = useObrasPublicas(8)
@@ -57,7 +58,7 @@ export function HomeHero({ userId, firstName }: HomeHeroProps) {
               isLoading={loadingObra}
               sectionLabel={obraSectionLabel}
             />
-            <HomeProgressCard userId={userId} />
+            <HomeProgressCard userId={userId} displayName={displayName} />
           </div>
         </div>
       </section>

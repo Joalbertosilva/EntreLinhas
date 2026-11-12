@@ -1,7 +1,5 @@
-import { Text, View, useWindowDimensions } from 'react-native'
-import { Speakable } from '@/features/accessibility/Speakable'
-import { LinearGradient } from 'expo-linear-gradient'
-import { PLATFORM_GRADIENT, PLATFORM_GRADIENT_LOCATIONS } from '@/lib/brandTheme'
+import { Text, View } from 'react-native'
+import { ScreenPageHeader } from '@/components/layout/ScreenPageHeader'
 import { A11yScreen } from '@/components/layout/A11yScreen'
 import { TabScreenShell, TabScrollView } from '@/components/layout/TabScreenShell'
 import { CatalogVideoStrip } from '@/features/conteudos/CatalogVideoStrip'
@@ -21,8 +19,6 @@ import { useAuth } from '@/providers/AuthProvider'
 const CATALOG_SECTIONS = HOME_SECTIONS.filter((section) => section.id !== 'destaques')
 
 export default function HomeScreen() {
-  const { width } = useWindowDimensions()
-  const stackHero = width < 380
   const { profile } = useAuth()
   const { data: progress } = useAlunoProgress(profile?.id)
   const { data: minhaObra, isLoading: obraLoading } = useMinhaObra(profile?.id)
@@ -30,64 +26,41 @@ export default function HomeScreen() {
   const deck =
     'Leia obras da comunidade, escreva a sua e acompanhe sua jornada — tudo num só lugar.'
   const personalLine = progress ? mensagemAcolhedora(progress) : null
-
-  const greetingLabel = [
-    `${getTimeGreeting()}, ${firstName}`,
-    deck,
-    personalLine,
-  ]
-    .filter(Boolean)
-    .join('. ')
+  const greeting = getTimeGreeting()
 
   return (
     <A11yScreen>
       <TabScreenShell>
-        <LinearGradient
-          colors={[...PLATFORM_GRADIENT]}
-          locations={[...PLATFORM_GRADIENT_LOCATIONS]}
-          style={{ flex: 1 }}
-        >
-          <TabScrollView>
-            <Speakable
-              label={greetingLabel}
-              style={{ paddingHorizontal: SCREEN_HORIZONTAL_PADDING }}
-              className="mb-5"
-            >
-              <Text className="font-sans-bold text-2xl text-brand-navy">
-                {getTimeGreeting()}, {firstName}
+        <TabScrollView>
+          <ScreenPageHeader
+            eyebrow="Início"
+            title={`${greeting}, ${firstName}`}
+            description={deck}
+            variant="panel"
+          >
+            {personalLine ? (
+              <Text className="mt-4 rounded-xl bg-primary-light/60 px-4 py-3 font-sans text-sm leading-relaxed text-text-muted">
+                {personalLine}
               </Text>
-              <Text className="mt-2 font-sans text-sm leading-relaxed text-text-muted">{deck}</Text>
-              {personalLine ? (
-                <Text className="mt-2 rounded-2xl bg-white/80 px-4 py-3 font-sans text-sm leading-relaxed text-text-muted">
-                  {personalLine}
-                </Text>
-              ) : null}
-            </Speakable>
+            ) : null}
+          </ScreenPageHeader>
 
-            <View
-              style={{ paddingHorizontal: SCREEN_HORIZONTAL_PADDING }}
-              className={stackHero ? 'mb-5 gap-4' : 'mb-5 flex-row items-stretch gap-3'}
-            >
-              <View className={stackHero ? 'w-full' : 'min-w-0 flex-1'}>
-                <MinhaObraCard obra={minhaObra ?? null} isLoading={obraLoading} embedded />
-              </View>
-              <View className={stackHero ? 'w-full' : 'min-w-0 flex-1'}>
-                <HomeProgressCard userId={profile?.id} embedded />
-              </View>
+          <View style={{ paddingHorizontal: SCREEN_HORIZONTAL_PADDING }} className="mb-7 gap-5">
+            <MinhaObraCard obra={minhaObra ?? null} isLoading={obraLoading} embedded />
+            <HomeProgressCard userId={profile?.id} embedded />
+          </View>
+
+          <ContinueReadingSection userId={profile?.id} />
+          <ObrasSectionRail />
+          <ContentSectionRail section={HOME_SECTIONS[0]!} />
+
+          {CATALOG_SECTIONS.map((section) => (
+            <View key={section.id}>
+              <ContentSectionRail section={section} />
+              <CatalogVideoStrip section={section} />
             </View>
-
-            <ContinueReadingSection userId={profile?.id} />
-            <ObrasSectionRail />
-            <ContentSectionRail section={HOME_SECTIONS[0]!} />
-
-            {CATALOG_SECTIONS.map((section) => (
-              <View key={section.id}>
-                <ContentSectionRail section={section} />
-                <CatalogVideoStrip section={section} />
-              </View>
-            ))}
-          </TabScrollView>
-        </LinearGradient>
+          ))}
+        </TabScrollView>
       </TabScreenShell>
     </A11yScreen>
   )

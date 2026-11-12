@@ -60,7 +60,11 @@ export function UserAccountMenu({
         aria-label="Menu da conta"
         onClick={() => setOpen((v) => !v)}
       >
-        <Avatar name={profile.nome} className="h-8 w-8 text-[10px]" />
+        <Avatar
+          name={profile.nome}
+          imageUrl={profile.avatar_url}
+          className="h-8 w-8 text-[10px]"
+        />
         {!compact && (
           <span className="hidden max-w-[100px] truncate pr-1 text-sm font-medium text-text sm:inline md:max-w-[120px]">
             {firstName}
@@ -75,7 +79,11 @@ export function UserAccountMenu({
         >
           <div className="bg-gradient-to-br from-primary via-primary to-[#155a52] px-4 py-3.5">
             <div className="flex items-center gap-3">
-              <Avatar name={profile.nome} className="h-11 w-11 border-2 border-white/25 text-xs" />
+              <Avatar
+                name={profile.nome}
+                imageUrl={profile.avatar_url}
+                className="h-11 w-11 border-2 border-white/25 text-xs"
+              />
               <div className="min-w-0 flex-1">
                 <p className="truncate text-sm font-semibold text-white">{profile.nome}</p>
                 <p className="truncate text-xs text-white/80">@{profile.nome_usuario}</p>

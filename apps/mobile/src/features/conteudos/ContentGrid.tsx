@@ -1,10 +1,10 @@
 import { FlatList, Text, useWindowDimensions, View } from 'react-native'
 import type { ConteudoCardData } from '@/features/conteudos/useConteudos'
 import { ContentCard } from '@/features/conteudos/ContentCard'
-import { SCREEN_HORIZONTAL_PADDING } from '@/lib/layout'
+import { RAIL_ITEM_GAP, SCREEN_HORIZONTAL_PADDING } from '@/lib/layout'
 
 const H_PADDING = SCREEN_HORIZONTAL_PADDING
-const GAP = 12
+const GAP = RAIL_ITEM_GAP
 const NUM_COLS = 2
 
 interface ContentGridProps {

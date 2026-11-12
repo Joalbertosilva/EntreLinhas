@@ -48,13 +48,17 @@ function LoadingDot({ delay }: { delay: number }) {
 
 interface SplashLoadingCaptionProps {
   visible?: boolean
+  message?: string
 }
 
-export function SplashLoadingCaption({ visible = true }: SplashLoadingCaptionProps) {
+export function SplashLoadingCaption({
+  visible = true,
+  message = 'Abrindo sua biblioteca',
+}: SplashLoadingCaptionProps) {
   const opacity = useSharedValue(0)
 
   useEffect(() => {
-    opacity.value = withDelay(900, withTiming(visible ? 1 : 0, { duration: 500 }))
+    opacity.value = withDelay(200, withTiming(visible ? 1 : 0, { duration: 450 }))
   }, [opacity, visible])
 
   const wrapStyle = useAnimatedStyle(() => ({
@@ -73,7 +77,7 @@ export function SplashLoadingCaption({ visible = true }: SplashLoadingCaptionPro
           color: BRAND.textMuted,
         }}
       >
-        Abrindo sua biblioteca
+        {message}
       </Text>
       <View style={{ flexDirection: 'row', alignItems: 'center', marginTop: 10 }}>
         <LoadingDot delay={0} />
