@@ -78,6 +78,8 @@ export interface Profile {
   nome_usuario: string;
   perfil: Perfil;
   status: boolean;
+  /** URL pública da foto (covers/avatars/...) */
+  avatar_url?: string | null;
   deve_trocar_senha?: boolean;
   created_at: string;
   updated_at: string;
