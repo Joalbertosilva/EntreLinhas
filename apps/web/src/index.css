@@ -6387,12 +6387,22 @@
     flex-direction: column;
   }
 
+  /* Speakable envolve o texto — precisa repassar altura limitada para o scroll interno funcionar */
+  .book-page-text-region .a11y-speakable__content {
+    display: flex;
+    flex: 1;
+    min-height: 0;
+    flex-direction: column;
+    overflow: hidden;
+  }
+
   .book-page-text {
     flex: 1;
     min-height: 0;
     overflow-y: auto;
     overscroll-behavior: contain;
     -webkit-overflow-scrolling: touch;
+    touch-action: pan-y;
     padding-right: 0.35rem;
     outline: none;
   }
