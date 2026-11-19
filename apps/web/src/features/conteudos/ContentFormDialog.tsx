@@ -140,9 +140,8 @@ export function ContentFormDialog({
     const defaultCover = defaultConteudoCoverUrl(tipo)
     if (defaultCover) {
       setCoverUrl(defaultCover)
-      setValue('capa_url', defaultCover)
     }
-  }, [tipo, open, isEditing, coverFile, setValue])
+  }, [tipo, open, isEditing, coverFile])
 
   useEffect(() => {
     if (open) {
@@ -180,8 +179,8 @@ export function ContentFormDialog({
           input.tipo === 'musica'
             ? 'Informe a letra completa da música.'
             : input.tipo === 'poema'
-              ? 'Informe o texto completo do poema.'
-              : 'Informe o texto completo da crônica.',
+              ? 'Informe o poema.'
+              : 'Informe a crônica.',
         )
       }
 
@@ -384,8 +383,14 @@ export function ContentFormDialog({
               <Label>Capa {plataformaTipo === 'livro' ? 'do livro' : 'do conteúdo'}</Label>
               <CoverUpload
                 value={coverUrl}
-                onChange={setCoverUrl}
-                onFileSelect={setCoverFile}
+                onChange={(url) => {
+                  setCoverUrl(url)
+                  setValue('capa_url', url?.startsWith('http') || url?.startsWith('/') ? url : '')
+                }}
+                onFileSelect={(file) => {
+                  setCoverFile(file)
+                  if (file) setValue('capa_url', '')
+                }}
                 disabled={saveContent.isPending}
               />
             </div>

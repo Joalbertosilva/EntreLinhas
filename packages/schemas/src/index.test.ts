@@ -79,4 +79,24 @@ describe('conteudoFormSchema', () => {
     })
     expect(result.success).toBe(true)
   })
+
+  it('aceita capa padrão do app (caminho relativo) e capa vazia com upload', () => {
+    expect(
+      conteudoFormSchema.safeParse({
+        titulo: 'Crônica',
+        tipo: 'cronica',
+        capa_url: '/images/cronica-default-cover.png',
+        status: true,
+      }).success,
+    ).toBe(true)
+
+    expect(
+      conteudoFormSchema.safeParse({
+        titulo: 'Poema',
+        tipo: 'poema',
+        capa_url: '',
+        status: true,
+      }).success,
+    ).toBe(true)
+  })
 })

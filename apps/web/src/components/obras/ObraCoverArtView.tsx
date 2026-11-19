@@ -1,6 +1,5 @@
 import type { CategoriaObra } from '@tcc-sistema/types'
 import {
-  COVER_ART_BASE_HEIGHT,
   COVER_ART_BASE_WIDTH,
   COVER_FRAME,
   COVER_PHOTO_STYLE,
@@ -46,8 +45,6 @@ export function ObraCoverArtView({
   const textPanel = coverTextOnLightPanel(palette)
   const layout = scaledCoverLayout(width)
   const { height, s, photo, framePad, frameInnerPad, panel, kicker: kick, blob } = layout
-
-  const innerBorderPad = COVER_FRAME.inset * s
 
   return (
     <div

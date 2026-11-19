@@ -36,7 +36,7 @@ import { Badge } from '@/components/ui/Badge'
 import { Button } from '@/components/ui/Button'
 import { Card, CardContent } from '@/components/ui/Card'
 import { Skeleton } from '@/components/ui/Skeleton'
-import { TIPO_CONTEUDO_LABEL, TIPO_MATERIAL_LABEL } from '@/lib/labels'
+import { conteudoTextoPrincipalLabel, TIPO_CONTEUDO_LABEL, TIPO_MATERIAL_LABEL } from '@/lib/labels'
 import { STATUS_LEITURA_LABEL } from '@/lib/leituraLabels'
 import { Speakable } from '@/features/accessibility/Speakable'
 import { resolveConteudoCoverUrl } from '@/lib/conteudoCover'
@@ -505,6 +505,7 @@ function ConteudoInfo({ conteudo }: { conteudo: Conteudo }) {
 
   const hasTexto = Boolean(conteudo.conteudo_textual?.trim())
   const hasSections = sections.length > 0
+  const textoTitulo = conteudoTextoPrincipalLabel(conteudo.tipo)
 
   if (!hasSections && !hasTexto) return null
 
@@ -533,10 +534,10 @@ function ConteudoInfo({ conteudo }: { conteudo: Conteudo }) {
       ))}
 
       {hasTexto && (
-        <Speakable label={`Texto da leitura. ${conteudo.conteudo_textual}`}>
+        <Speakable label={`${textoTitulo}. ${conteudo.conteudo_textual}`}>
           <Card className="border-primary/10 bg-white/80 backdrop-blur-sm">
             <CardContent className="p-5 sm:p-6">
-              <h2 className="text-lg font-semibold text-brand-navy">Texto da leitura</h2>
+              <h2 className="text-lg font-semibold text-brand-navy">{textoTitulo}</h2>
               <div className="prose-content mt-4 whitespace-pre-wrap text-base leading-relaxed text-text">
                 {conteudo.conteudo_textual}
               </div>
