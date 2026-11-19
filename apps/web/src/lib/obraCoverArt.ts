@@ -252,7 +252,7 @@ export async function generateObraCoverArt(input: ObraCoverArtInput): Promise<Bl
 
     ctx.fillStyle = textPanel
     ctx.font = `600 ${tp.titleFontSize}px ${COVER_TITLE_FONT_FAMILY}`
-    const titleEndY = wrapText(
+    wrapText(
       ctx,
       titulo,
       COVER_WIDTH / 2,
