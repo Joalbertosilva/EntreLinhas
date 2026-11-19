@@ -191,11 +191,11 @@ export function ContentFormFieldsByTipo({ tipo, register, errors }: ContentFormF
 
         <FormSection title="Texto da crônica">
           <div className="space-y-2">
-            <Label htmlFor="conteudo_textual">Crônica completa *</Label>
+            <Label htmlFor="conteudo_textual">Crônica *</Label>
             <Textarea
               id="conteudo_textual"
               rows={12}
-              placeholder="Cole ou escreva o texto completo da crônica..."
+              placeholder="Cole ou escreva a crônica..."
               className="min-h-[14rem] leading-relaxed"
               {...register('conteudo_textual')}
             />
@@ -242,7 +242,7 @@ export function ContentFormFieldsByTipo({ tipo, register, errors }: ContentFormF
 
         <FormSection title="Texto do poema">
           <div className="space-y-2">
-            <Label htmlFor="conteudo_textual">Poema completo *</Label>
+            <Label htmlFor="conteudo_textual">Poema *</Label>
             <Textarea
               id="conteudo_textual"
               rows={14}

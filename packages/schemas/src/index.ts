@@ -62,6 +62,16 @@ export const updateUserSchema = z.object({
 
 export type UpdateUserInput = z.infer<typeof updateUserSchema>;
 
+/** Capa no formulário: URL pública, caminho estático do app ou vazio (upload usa arquivo à parte). */
+const conteudoCapaUrlFormSchema = z
+  .union([
+    z.literal(''),
+    z.string().url('URL inválida'),
+    z.string().regex(/^\//, 'Caminho de capa inválido'),
+  ])
+  .optional()
+  .nullable();
+
 /** RF004 — Conteúdo */
 export const conteudoSchema = z.object({
   titulo: z.string().min(1, 'Título obrigatório').max(300),
@@ -87,7 +97,7 @@ export type ConteudoInput = z.infer<typeof conteudoSchema>;
 export const conteudoFormSchema = conteudoSchema
   .omit({ status: true, capa_url: true })
   .extend({
-    capa_url: z.union([z.string().url('URL inválida'), z.literal('')]).optional().nullable(),
+    capa_url: conteudoCapaUrlFormSchema,
     video_url: z.union([z.string().url('URL inválida'), z.literal('')]).optional().nullable(),
     catalog_anchor: z.union([catalogAnchorSchema, z.literal('')]).optional().nullable(),
     video_categoria: z.string().max(120).optional().nullable(),
