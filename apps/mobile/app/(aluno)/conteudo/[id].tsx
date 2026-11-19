@@ -25,7 +25,7 @@ import { resolveConteudoCoverUrl } from '@/lib/conteudoCover'
 import { openVideoExternal } from '@/lib/openVideoUrl'
 import { DETAIL_COVER_HEIGHT, SCREEN_HORIZONTAL_PADDING } from '@/lib/layout'
 import { isYouTubeUrl } from '@/lib/youtube'
-import { TIPO_CONTEUDO_LABEL, TIPO_MATERIAL_LABEL } from '@/lib/labels'
+import { conteudoTextoPrincipalLabel, TIPO_CONTEUDO_LABEL, TIPO_MATERIAL_LABEL } from '@/lib/labels'
 import type { NativeScrollViewRef, NativeViewRef } from '@/lib/nativeRefs'
 import { useKeyboardAwareScroll } from '@/lib/useKeyboardAwareScroll'
 import { useStackScreenInsets } from '@/lib/useStackScreenInsets'
@@ -57,9 +57,13 @@ export default function ConteudoDetailScreen() {
       ]
     : []
 
-  const bookPages = data && usePaginatedReader ? buildBookPages(metaSections, data.conteudo_textual) : []
+  const bookPages =
+    data && usePaginatedReader
+      ? buildBookPages(metaSections, data.conteudo_textual, conteudoTextoPrincipalLabel(data.tipo))
+      : []
 
   const tipoLabel = data ? TIPO_CONTEUDO_LABEL[data.tipo as keyof typeof TIPO_CONTEUDO_LABEL] : ''
+  const textoPrincipalTitulo = data ? conteudoTextoPrincipalLabel(data.tipo) : 'Texto'
   const heroSpeakLabel = data
     ? [tipoLabel, data.titulo, data.autor ? `de ${data.autor}` : null].filter(Boolean).join('. ')
     : ''
@@ -163,21 +167,21 @@ export default function ConteudoDetailScreen() {
                 {bookPages.length > 0 && id ? (
                   <View className="mt-6">
                     <Speakable
-                      label="Leitura do livro"
+                      label={textoPrincipalTitulo}
                       style={{ paddingHorizontal: SCREEN_HORIZONTAL_PADDING }}
                       className="mb-3"
                     >
-                      <Text className="font-sans-bold text-lg text-brand-navy">Leitura</Text>
+                      <Text className="font-sans-bold text-lg text-brand-navy">{textoPrincipalTitulo}</Text>
                     </Speakable>
                     <BookPaginatedReader pages={bookPages} conteudoId={id} titulo={data.titulo} />
                   </View>
                 ) : data.conteudo_textual ? (
                   <Speakable
-                    label={`Texto. ${data.conteudo_textual}`}
+                    label={`${textoPrincipalTitulo}. ${data.conteudo_textual}`}
                     style={{ paddingHorizontal: SCREEN_HORIZONTAL_PADDING }}
                     className="mt-5"
                   >
-                    <Text className="mb-2 font-sans-bold text-lg text-brand-navy">Texto</Text>
+                    <Text className="mb-2 font-sans-bold text-lg text-brand-navy">{textoPrincipalTitulo}</Text>
                     <Text {...READER_PARAGRAPH_TEXT_PROPS}>{data.conteudo_textual}</Text>
                   </Speakable>
                 ) : data.resumo || data.descricao ? (

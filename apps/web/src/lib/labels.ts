@@ -13,6 +13,14 @@ export const TIPO_CONTEUDO_LABEL: Record<TipoConteudo, string> = {
   outro: 'Outro',
 }
 
+/** Título da seção do texto principal na leitura (poema/crônica usam só o nome do tipo). */
+export function conteudoTextoPrincipalLabel(tipo: TipoConteudo): string {
+  if (tipo === 'poema' || tipo === 'cronica') {
+    return TIPO_CONTEUDO_LABEL[tipo]
+  }
+  return 'Texto da leitura'
+}
+
 export const TIPO_CONTEUDO_ICON_COLOR: Record<TipoConteudo, string> = {
   livro: 'bg-primary-light text-primary',
   cronica: 'bg-accent-light text-[#5c4800]',
