@@ -8,6 +8,7 @@ export interface BookPage {
 export function buildBookPages(
   metaSections: Array<{ label: string; value: string | null | undefined }>,
   texto: string | null | undefined,
+  textoPageTitle = 'Texto da leitura',
 ): BookPage[] {
   const pages: BookPage[] = metaSections
     .filter((s) => s.value?.trim())
@@ -21,7 +22,7 @@ export function buildBookPages(
   if (textoLimpo) {
     pages.push({
       id: 'texto-da-leitura',
-      title: 'Texto da leitura',
+      title: textoPageTitle,
       body: textoLimpo,
     })
   }

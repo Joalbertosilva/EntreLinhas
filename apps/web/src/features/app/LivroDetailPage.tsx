@@ -27,7 +27,7 @@ import { YouTubeEmbed } from '@/components/media/YouTubeEmbed'
 import { Badge } from '@/components/ui/Badge'
 import { Button } from '@/components/ui/Button'
 import { resolveConteudoCoverUrl } from '@/lib/conteudoCover'
-import { TIPO_CONTEUDO_LABEL, TIPO_MATERIAL_LABEL } from '@/lib/labels'
+import { conteudoTextoPrincipalLabel, TIPO_CONTEUDO_LABEL, TIPO_MATERIAL_LABEL } from '@/lib/labels'
 import { isYouTubeUrl } from '@/lib/youtube'
 import { STATUS_LEITURA_LABEL } from '@/lib/leituraLabels'
 import { Speakable } from '@/features/accessibility/Speakable'
@@ -438,17 +438,16 @@ function BookReadingBlock({
   conteudoId: string
   metaSections: Array<{ label: string; value: string | null | undefined }>
 }) {
-  const pages = buildBookPages(metaSections, conteudo.conteudo_textual)
+  const textoTitulo = conteudoTextoPrincipalLabel(conteudo.tipo)
+  const pages = buildBookPages(metaSections, conteudo.conteudo_textual, textoTitulo)
   const pageCount = pages.length
   const coverUrl = resolveConteudoCoverUrl(conteudo)
   const readingLabel =
     conteudo.tipo === 'musica'
       ? 'Letra e leitura'
-      : conteudo.tipo === 'poema'
-        ? 'Leitura do poema'
-        : conteudo.tipo === 'cronica'
-          ? 'Leitura da crônica'
-          : 'Leitura do livro'
+      : conteudo.tipo === 'poema' || conteudo.tipo === 'cronica'
+        ? TIPO_CONTEUDO_LABEL[conteudo.tipo]
+        : 'Leitura do livro'
 
   if (pageCount === 0) return null
 
