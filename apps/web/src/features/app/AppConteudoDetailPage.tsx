@@ -149,6 +149,7 @@ export function AppConteudoDetailPage({ conteudoId }: AppConteudoDetailPageProps
         materiais={materiais}
         loadingMateriais={loadingMateriais}
         leituraStatus={leitura?.status_leitura}
+        integralStatus={leitura?.integral_status ?? null}
         loadingLeitura={loadingLeitura}
         leituraPending={atualizarLeitura.isPending}
         onLeitura={handleLeitura}

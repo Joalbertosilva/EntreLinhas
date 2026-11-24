@@ -1,4 +1,4 @@
-import type { StatusLeitura } from '@tcc-sistema/types'
+import type { StatusLeitura, StatusLeituraIntegral } from '@tcc-sistema/types'
 import type { QueryClient } from '@tanstack/react-query'
 import { toast } from 'sonner'
 import { PageTurnToast } from '@/features/app/PageTurnToast'
@@ -84,4 +84,43 @@ export async function celebrateReadingProgressChange(
     progressoNivelPct: next.progressoNivelPct,
     status,
   })
+}
+
+/** Celebração ao iniciar ou concluir leitura integral */
+export async function celebrateIntegralProgressChange(
+  queryClient: QueryClient,
+  userId: string,
+  integralStatus: StatusLeituraIntegral,
+  prevSnapshot?: AlunoProgressStats,
+) {
+  const prev =
+    prevSnapshot ?? queryClient.getQueryData<AlunoProgressStats>(['aluno-progress', userId])
+
+  let next: AlunoProgressStats
+  try {
+    next = await queryClient.fetchQuery({
+      queryKey: ['aluno-progress', userId],
+      queryFn: () => fetchAlunoProgress(userId),
+    })
+  } catch {
+    return
+  }
+
+  const xpGained = Math.max(0, next.xp - (prev?.xp ?? 0))
+  const leveledUp = Boolean(prev && next.nivel > prev.nivel)
+
+  if (xpGained <= 0 && !leveledUp) return
+
+  if (leveledUp) {
+    playLevelUpSound()
+  } else {
+    playPageTurnSound()
+  }
+
+  const msg =
+    integralStatus === 'concluido'
+      ? `Leitura integral concluída · +${xpGained} XP`
+      : `Leitura integral iniciada · +${xpGained} XP`
+
+  toast.success(msg, { duration: integralStatus === 'concluido' ? 4800 : 3200 })
 }

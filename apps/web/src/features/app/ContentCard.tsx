@@ -27,7 +27,7 @@ const TIPO_META: Record<
 interface ContentCardProps {
   conteudo: ConteudoCardData
   showTipo?: boolean
-  /** Preenche a célula em grids (ex.: destaques 4×N) */
+  /** Preenche a célula em grids (ex.: destaques 5×2 na home) */
   fluid?: boolean
 }
 

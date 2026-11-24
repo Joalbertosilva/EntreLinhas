@@ -13,7 +13,15 @@ import {
   Sparkles,
 } from 'lucide-react'
 import { toast } from 'sonner'
-import type { Conteudo, MaterialComplementar, StatusLeitura, Tema, TipoConteudo } from '@tcc-sistema/types'
+import type {
+  Conteudo,
+  MaterialComplementar,
+  StatusLeitura,
+  StatusLeituraIntegral,
+  Tema,
+  TipoConteudo,
+} from '@tcc-sistema/types'
+import { LivroLeituraIntegralSection } from '@/features/app/LivroLeituraIntegralSection'
 import { BookPaginatedReader } from '@/features/app/BookPaginatedReader'
 import { buildBookPages } from '@/features/app/bookPagination'
 import { BookReadingShell } from '@/features/app/BookReadingShell'
@@ -45,6 +53,7 @@ interface LivroDetailPageProps {
   materiais: MaterialComplementar[] | undefined
   loadingMateriais: boolean
   leituraStatus: StatusLeitura | null | undefined
+  integralStatus?: StatusLeituraIntegral | null
   loadingLeitura: boolean
   leituraPending: boolean
   onLeitura: (status: StatusLeitura, irParaTexto?: boolean) => void
@@ -60,6 +69,7 @@ export function LivroDetailPage({
   materiais,
   loadingMateriais,
   leituraStatus,
+  integralStatus,
   loadingLeitura,
   leituraPending,
   onLeitura,
@@ -128,6 +138,19 @@ export function LivroDetailPage({
         {(hasTexto || metaSections.length > 0) && (
           <ScrollReveal delayMs={80}>
             <BookReadingBlock conteudo={conteudo} conteudoId={conteudoId} metaSections={metaSections} />
+          </ScrollReveal>
+        )}
+
+        {conteudo.tipo === 'livro' && conteudo.integral_ativa && (
+          <ScrollReveal delayMs={110}>
+            <BookSectionDivider label="Leitura integral" />
+            <LivroLeituraIntegralSection
+              conteudo={conteudo}
+              conteudoId={conteudoId}
+              usuarioId={usuarioId}
+              statusEstudo={leituraStatus ?? null}
+              integralStatus={integralStatus ?? null}
+            />
           </ScrollReveal>
         )}
 

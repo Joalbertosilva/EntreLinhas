@@ -82,7 +82,7 @@ export function resumoLeituras(progress: AlunoProgressStats): string {
 export async function fetchAlunoProgress(userId: string) {
   const { data, error } = await supabase
     .from('leituras')
-    .select('status_leitura')
+    .select('status_leitura, integral_status')
     .eq('usuario_id', userId)
 
   if (error) throw error

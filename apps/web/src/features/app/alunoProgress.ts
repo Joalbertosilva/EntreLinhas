@@ -1,13 +1,17 @@
-import type { StatusLeitura } from '@tcc-sistema/types'
+import type { StatusLeitura, StatusLeituraIntegral } from '@tcc-sistema/types'
 
 /** Uma obra concluída = exatamente o necessário para sair do nível 1 */
 export const XP_CONCLUIDO = 100
 /** Explorar (em andamento) dá um pouco de XP, mas menos que concluir */
 export const XP_EM_ANDAMENTO = 25
+/** Bônus ao concluir leitura integral (obra completa em domínio público) */
+export const XP_INTEGRAL_EM_ANDAMENTO = 20
+export const XP_INTEGRAL_CONCLUIDO = 80
 export const NIVEL_MAXIMO = 50
 
 export interface LeituraProgresso {
   status_leitura: StatusLeitura
+  integral_status?: StatusLeituraIntegral | null
 }
 
 export interface AlunoProgressStats {
@@ -117,7 +121,14 @@ export function calcularProgressoAluno(leituras: LeituraProgresso[]): AlunoProgr
   const obrasConcluidas = leituras.filter((l) => l.status_leitura === 'concluido').length
   const emAndamento = leituras.filter((l) => l.status_leitura === 'em_andamento').length
 
-  const xp = obrasConcluidas * XP_CONCLUIDO + emAndamento * XP_EM_ANDAMENTO
+  const integralEmAndamento = leituras.filter((l) => l.integral_status === 'em_andamento').length
+  const integralConcluidas = leituras.filter((l) => l.integral_status === 'concluido').length
+
+  const xp =
+    obrasConcluidas * XP_CONCLUIDO +
+    emAndamento * XP_EM_ANDAMENTO +
+    integralEmAndamento * XP_INTEGRAL_EM_ANDAMENTO +
+    integralConcluidas * XP_INTEGRAL_CONCLUIDO
   const nivel = calcularNivelFromXp(xp)
   const nivelMaximo = nivel >= NIVEL_MAXIMO
 

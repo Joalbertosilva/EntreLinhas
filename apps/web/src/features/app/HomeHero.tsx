@@ -70,12 +70,12 @@ export function HomeHero({ userId, firstName, displayName }: HomeHeroProps) {
       <section className="home-editorial" aria-label="Destaques e obras da comunidade">
         <div className="home-editorial__inner home-editorial__inner--highlights">
           <SectionSpeakHeader
-            label="Destaques do EntreLinhas. Livros, crônicas, poemas e músicas mais curtidos — até doze itens em filas de quatro."
+            label="Destaques do EntreLinhas. Livros, crônicas, poemas e músicas mais curtidos — dez itens em duas filas de cinco."
             className="home-editorial__section-head"
           >
             <h2 className="home-editorial__section-title">Destaques do EntreLinhas</h2>
             <p className="home-editorial__section-deck">
-              Livros, crônicas, poemas e músicas mais curtidos — até doze itens em filas de quatro.
+              Livros, crônicas, poemas e músicas mais curtidos — dez itens em duas filas de cinco.
             </p>
           </SectionSpeakHeader>
           <ContentCarousel section={destaques} showViewAll variant="hero" fadeTone="catalog" />

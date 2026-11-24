@@ -41,6 +41,10 @@ export function getBookPageStorageKey(conteudoId: string): string {
   return `entrelinhas-book-page-${conteudoId}`
 }
 
+export function getIntegralBookPageStorageKey(conteudoId: string): string {
+  return `entrelinhas-integral-page-${conteudoId}`
+}
+
 export function getObraPageStorageKey(obraId: string): string {
   return `entrelinhas-obra-page-${obraId}`
 }

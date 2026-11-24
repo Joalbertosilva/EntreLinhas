@@ -7,6 +7,8 @@ import {
   TIPOS_MATERIAL,
   TIPOS_PRODUCAO,
   STATUS_LEITURA,
+  LICENCA_LEITURA_INTEGRAL,
+  METODO_TRADUCAO_INTEGRAL,
 } from '@tcc-sistema/types';
 
 export const perfilSchema = z.enum(PERFIS);
@@ -15,6 +17,8 @@ export const catalogAnchorSchema = z.enum(CATALOG_ANCHORS);
 export const tipoMaterialSchema = z.enum(TIPOS_MATERIAL);
 export const tipoInteracaoSchema = z.enum(TIPOS_INTERACAO);
 export const statusLeituraSchema = z.enum(STATUS_LEITURA);
+export const licencaLeituraIntegralSchema = z.enum(LICENCA_LEITURA_INTEGRAL);
+export const metodoTraducaoIntegralSchema = z.enum(METODO_TRADUCAO_INTEGRAL);
 export const tipoProducaoSchema = z.enum(TIPOS_PRODUCAO);
 
 /** RF002 — Login */
@@ -106,9 +110,34 @@ export const conteudoFormSchema = conteudoSchema
   reflexao_frase: z.string().max(1000).optional().nullable(),
   reflexao_texto: z.string().max(2000).optional().nullable(),
   reflexao_pergunta: z.string().max(500).optional().nullable(),
+  integral_ativa: z.boolean().optional(),
+  integral_licenca: z.union([licencaLeituraIntegralSchema, z.literal('')]).optional().nullable(),
+  integral_fonte_url: z.union([z.string().url('URL inválida'), z.literal('')]).optional().nullable(),
+  integral_traducao_metodo: z.union([metodoTraducaoIntegralSchema, z.literal('')]).optional().nullable(),
+  integral_traducao_credito: z.string().max(120).optional().nullable(),
   });
 
 export type ConteudoFormInput = z.infer<typeof conteudoFormSchema>;
+
+export const capituloIntegralSchema = z.object({
+  ordem: z.number().int().min(1),
+  titulo: z.string().min(1).max(300),
+  texto_pt: z.string().min(1),
+  texto_origem: z.string().optional().nullable(),
+});
+
+export const capitulosIntegralImportSchema = z.object({
+  meta: z
+    .object({
+      titulo: z.string().optional(),
+      autor: z.string().optional(),
+      fonte_url: z.string().url().optional(),
+    })
+    .optional(),
+  capitulos: z.array(capituloIntegralSchema).min(1),
+});
+
+export type CapitulosIntegralImportInput = z.infer<typeof capitulosIntegralImportSchema>;
 
 /** RF005 — Tema psicológico/reflexivo */
 export const temaSchema = z.object({

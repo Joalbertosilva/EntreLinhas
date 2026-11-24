@@ -104,5 +104,15 @@ Não confundir: Vercel hospeda só o **site estático**; os dados continuam no S
 - `request-password-reset`
 - `admin-reset-password`
 - `admin-set-user-password`
+- `import-leitura-integral-url` (import + tradução automática opcional)
 
 Redeploy só se alterar código em `supabase/functions/`.
+
+### Secrets — tradução na importação
+
+Para obra inteira em outro idioma: `LIBRETRANSLATE_API_KEY` (ver `docs/leitura-integral-traducao-automatica.md`).
+
+```bash
+pnpm exec supabase secrets set LIBRETRANSLATE_API_KEY=...
+pnpm exec supabase functions deploy import-leitura-integral-url
+```
