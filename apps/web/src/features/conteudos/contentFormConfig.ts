@@ -53,6 +53,26 @@ export const REFLEXAO_LABELS: Record<
   },
 }
 
+function buildIntegralDbFields(data: ConteudoFormInput) {
+  const ativa = Boolean(data.integral_ativa)
+  if (!ativa) {
+    return {
+      integral_ativa: false,
+      integral_licenca: null,
+      integral_fonte_url: null,
+      integral_traducao_metodo: null,
+      integral_traducao_credito: null,
+    }
+  }
+  return {
+    integral_ativa: true,
+    integral_licenca: data.integral_licenca ? data.integral_licenca : null,
+    integral_fonte_url: emptyToNull(data.integral_fonte_url ?? ''),
+    integral_traducao_metodo: data.integral_traducao_metodo ? data.integral_traducao_metodo : null,
+    integral_traducao_credito: emptyToNull(data.integral_traducao_credito ?? '') ?? 'EntreLinhas',
+  }
+}
+
 const NULL_TEXT_FIELDS = {
   resumo: null,
   personagens: null,
@@ -89,6 +109,7 @@ export function toDbPayload(
   }
 
   if (data.tipo === 'livro') {
+    const integral = buildIntegralDbFields(data)
     const livro = {
       ...shared,
       resumo: emptyToNull(data.resumo ?? ''),
@@ -100,6 +121,7 @@ export function toDbPayload(
       video_url: null,
       catalog_anchor: null,
       video_categoria: null,
+      ...integral,
     }
     return isEdit ? livro : { ...livro, responsavel_id: userId }
   }

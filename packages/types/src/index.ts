@@ -39,6 +39,16 @@ export type TipoInteracao = (typeof TIPOS_INTERACAO)[number];
 export const STATUS_LEITURA = ['em_andamento', 'na_lista', 'concluido'] as const;
 export type StatusLeitura = (typeof STATUS_LEITURA)[number];
 
+/** Leitura integral (obra completa em domínio público) */
+export const LICENCA_LEITURA_INTEGRAL = ['dominio_publico', 'sem_leitura_integral'] as const;
+export type LicencaLeituraIntegral = (typeof LICENCA_LEITURA_INTEGRAL)[number];
+
+export const METODO_TRADUCAO_INTEGRAL = ['preimportado', 'pt_nativo', 'nao_aplicavel'] as const;
+export type MetodoTraducaoIntegral = (typeof METODO_TRADUCAO_INTEGRAL)[number];
+
+export const STATUS_LEITURA_INTEGRAL = ['em_andamento', 'concluido'] as const;
+export type StatusLeituraIntegral = (typeof STATUS_LEITURA_INTEGRAL)[number];
+
 /** Tipos de produção — RF011 */
 export const TIPOS_PRODUCAO = [
   'conto',
@@ -120,7 +130,23 @@ export interface Conteudo {
   video_categoria: string | null;
   status: boolean;
   curtidas_count?: number;
+  integral_ativa?: boolean;
+  integral_licenca?: LicencaLeituraIntegral | null;
+  integral_fonte_url?: string | null;
+  integral_traducao_metodo?: MetodoTraducaoIntegral | null;
+  integral_traducao_credito?: string | null;
   responsavel_id: string;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface ConteudoCapituloIntegral {
+  id: string;
+  conteudo_id: string;
+  ordem: number;
+  titulo: string;
+  texto_pt: string;
+  texto_origem: string | null;
   created_at: string;
   updated_at: string;
 }

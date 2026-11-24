@@ -1,0 +1,28 @@
+{
+  "meta": {
+    "titulo": "O Pequeno Príncipe",
+    "autor": "Antoine de Saint-Exupéry",
+    "fonte_url": "https://gutenberg.net.au/ebooks03/0300771h.html",
+    "nota": "Amostra piloto EntreLinhas — texto em português gerado para testes. Não é tradução de editora. Importe no admin após salvar o livro."
+  },
+  "capitulos": [
+    {
+      "ordem": 1,
+      "titulo": "Dedicatória",
+      "texto_pt": "Peço desculpas às crianças por dedicar este livro a um adulto. Tenho uma desculpa séria: essa pessoa grande é o melhor amigo que tenho no mundo. Tenho outra desculpa: esse adulto entende tudo, até livros para crianças. Tenho uma terceira: ele mora na França, tem frio e fome, e precisa de consolo. Se tudo isso não bastasse, quero dedicar o livro à criança que ele um dia foi. Todas as pessoas grandes foram crianças — mas poucas se lembram disso.\n\n(Revisão piloto EntreLinhas — amostra curta para teste da leitura integral.)",
+      "texto_origem": "FR — Le Petit Prince, dédicace (domínio público)"
+    },
+    {
+      "ordem": 2,
+      "titulo": "Capítulo I",
+      "texto_pt": "Quando eu tinha seis anos, vi um desenho magnífico no livro sobre a Floresta Virgem chamado Histórias Vividas. Mostrava uma jiboia engolindo uma fera. Diziam que jiboias engolem a presa inteira, sem mastigar. Depois não conseguem se mexer e dormem os seis meses da digestão.\n\nPensei muito nas aventuras da selva e desenhei minha primeira cobra com lápis colorido. Enviei às pessoas grandes e perguntei se o desenho as assustava. Responderam: \"Por que um chapéu assustaria?\" Meu desenho não era um chapéu. Era uma jiboia digerindo um elefante. Então desenhei o interior do elefante para as pessoas grandes entenderem. Elas aconselharam deixar de lado desenhos de jiboias, seja abertas ou fechadas, e estudar geografia, história, aritmética e gramática. Foi assim que, aos seis anos, desisti da carreira de pintor. Os desenhos número 1 e número 2 falhavam em mostrar o que via. As pessoas grandes não entendem nada sozinhas — e cansam quem sempre precisa explicar.\n\n(Amostra piloto — capítulo abreviado para validar o leitor integral.)",
+      "texto_origem": "FR — Le Petit Prince, chapitre I (domínio público)"
+    },
+    {
+      "ordem": 3,
+      "titulo": "Capítulo II",
+      "texto_pt": "Vivi muito sozinho, sem ninguém de quem pudesse falar de verdade, até me acidentar no deserto do Saara, há seis anos. Algo quebrou no motor do meu avião. Não tinha mecânico nem passageiro — e me preparei para consertar sozinho, embora fosse mais grave que eu. Era questão de vida ou morte: tinha água para oito dias.\n\nNa primeira noite, dormi na areia a mil milhas de qualquer habitação humana. Estava mais isolado que um náufrago numa jangada. Imagine meu espanto, ao amanhecer, quando uma vozinha estranha pediu: \"Por favor… desenhe um carneiro para mim!\"\n\n(Amostra piloto — capítulo abreviado. Importe a obra completa com o script local quando estiver pronto.)",
+      "texto_origem": "FR — Le Petit Prince, chapitre II (domínio público)"
+    }
+  ]
+}

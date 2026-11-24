@@ -19,7 +19,7 @@ interface ContentCarouselProps {
   section: HomeSectionConfig
   showViewAll?: boolean
   variant?: 'default' | 'hero'
-  /** Grid 4 colunas (como destaques); home usa limite, páginas de seção ilimitado */
+  /** Grid (destaques: 5 colunas × 2 filas na home); páginas de seção ilimitado */
   layout?: 'carousel' | 'grid'
   /** Máximo de itens no grid; omitir = mostrar tudo o que foi carregado */
   gridLimit?: number
@@ -79,7 +79,7 @@ export function ContentCarousel({
         return Math.max(0, gridTarget - conteudos.length)
       }
       if (conteudos.length > 0) return 0
-      return Math.min(4, gridTarget)
+      return Math.min(isDestaques ? 5 : 4, gridTarget)
     }
     if (isLoading) return section.placeholderCount
     return countPlaceholders(conteudos.length, section.placeholderCount)
@@ -89,6 +89,7 @@ export function ContentCarousel({
     externalLoading,
     hasRealContent,
     isGridLayout,
+    isDestaques,
     isHomePreviewGrid,
     isLoading,
     section.placeholderCount,
@@ -216,6 +217,7 @@ export function ContentCarousel({
         <div
           className={cn(
             'catalog-preview-grid',
+            isDestaquesHeroGrid && 'catalog-preview-grid--destaques',
             isHomePreviewGrid && 'catalog-preview-grid--home-slot',
             !isHero && !isHomePreviewGrid && 'catalog-preview-grid--section',
           )}
