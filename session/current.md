@@ -1,8 +1,9 @@
 # Sessão atual — tcc-sistema / EntreLinhas
 
-> Última atualização: **2026-11-12**  
+> Última atualização: **2026-11-24**  
 > **Fase:** MVP completo (web + mobile) → **ensaio de apresentação**  
-> **Deploy:** pós-apresentação (site roda em `localhost` + Supabase nuvem)
+> **Deploy:** pós-apresentação (site roda em `localhost` + Supabase nuvem)  
+> **Git:** `main` e `develop` alinhados — commit `539b6c9` (leitura integral)
 
 ---
 
@@ -12,11 +13,29 @@
 Backend ✅  →  Web ✅  →  Mobile ✅  →  Apresentação 🔄  →  Deploy ⏳
 ```
 
-**Foco imediato:** paridade mobile — foto de perfil, nível no avatar, **Sobre o aplicativo** — branch `feat/mobile-perfil-avatar-nivel-sobre` (em andamento).
+**Entregue em `main`/`develop` (2026-11-24):** **leitura integral** — professor importa obra completa (Gutenberg / `.txt`), tradução automática no navegador, aluno lê com **modo leitura Kindle** (fundo orgânico do login).
 
-**Pendente retomar:** splash **nativa** (`feat/mobile-melhorar-splash-nativa`, alterações locais sem commit).
+**Foco imediato:** validar fluxo professor + aluno na apresentação; paridade mobile (perfil, splash nativa).
 
-**Foco geral:** ensaio com [`docs/roteiro-apresentacao.md`](../docs/roteiro-apresentacao.md); matriz em [`docs/validacao-requisitos.md`](../docs/validacao-requisitos.md).
+**Foco geral:** [`docs/roteiro-apresentacao.md`](../docs/roteiro-apresentacao.md); [`docs/validacao-requisitos.md`](../docs/validacao-requisitos.md).
+
+---
+
+## ✅ Leitura integral — no repositório e na nuvem
+
+| Item | Repositório (`main`) | Nuvem (ação sua) |
+|------|----------------------|------------------|
+| Migration `20261124120000_leitura_integral.sql` | ✅ | `pnpm db:push` se ainda não aplicou |
+| Edge Function `import-leitura-integral-url` | ✅ | `pnpm exec supabase functions deploy import-leitura-integral-url` |
+| Gerenciador: seção no formulário de livro | ✅ | — |
+| Aluno: leitura integral + modo Kindle | ✅ | — |
+| Docs professor / custo zero / tradução | ✅ | — |
+
+**Fluxo professor (demo):** link Gutenberg Australia → **Importar do link** + traduzir PT → **Modo leitura**.
+
+Referências: [`docs/guia-professor-leitura-integral.md`](../docs/guia-professor-leitura-integral.md), [`docs/leitura-integral-traducao-automatica.md`](../docs/leitura-integral-traducao-automatica.md).
+
+**Commits:** `f0ae78a` (supabase) · `539b6c9` (web).
 
 ---
 
@@ -152,12 +171,12 @@ Detalhes: [`docs/supabase-nuvem.md`](../docs/supabase-nuvem.md)
 ## O que já está pronto ✅
 
 ### Gerenciador `/admin` — MVP concluído
-Usuários, conteúdos, temas, materiais, alunos, obras, recuperação de senha, **auditoria painel completo** (cards, gráficos, timeline, fluxo, CSV), perfil.
+Usuários, conteúdos, temas, materiais, alunos, obras, **leitura integral** (import link/txt, tradução PT), recuperação de senha, **auditoria painel completo** (cards, gráficos, timeline, fluxo, CSV), perfil.
 
-Roteiro: [`docs/gerenciador-roteiro-teste.md`](../docs/gerenciador-roteiro-teste.md)
+Roteiro: [`docs/gerenciador-roteiro-teste.md`](../docs/gerenciador-roteiro-teste.md) · leitura integral: [`docs/guia-professor-leitura-integral.md`](../docs/guia-professor-leitura-integral.md)
 
 ### Plataforma aluno `/app` — ✅
-Home, vitrines, destaques, detalhe de conteúdo, leituras, minha obra, obras públicas, perfil, senha, interações/comentários, curtidas, busca.
+Home, vitrines, destaques, detalhe de conteúdo, leituras, **leitura integral** (após estudo), leitor paginado + **modo Kindle**, minha obra, obras públicas, perfil, senha, interações/comentários, curtidas, busca.
 
 Roteiro: [`docs/roteiro-validacao-aluno.md`](../docs/roteiro-validacao-aluno.md)
 
