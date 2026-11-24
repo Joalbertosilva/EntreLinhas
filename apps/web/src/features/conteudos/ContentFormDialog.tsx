@@ -21,6 +21,7 @@ import {
   type ReflexaoFormVariant,
 } from '@/features/conteudos/contentFormConfig'
 import { ContentFormFieldsByTipo } from '@/features/conteudos/ContentFormFieldsByTipo'
+import { LeituraIntegralFormSection } from '@/features/conteudos/LeituraIntegralFormSection'
 import { ReflexaoFormFields } from '@/features/conteudos/ReflexaoFormFields'
 import { TIPO_CONTEUDO_ICON_COLOR, TIPO_CONTEUDO_LABEL } from '@/lib/labels'
 import { cn } from '@/lib/utils'
@@ -69,6 +70,11 @@ const defaultValues: ConteudoFormInput = {
   reflexao_frase: '',
   reflexao_texto: '',
   reflexao_pergunta: '',
+  integral_ativa: false,
+  integral_licenca: '',
+  integral_fonte_url: '',
+  integral_traducao_metodo: 'preimportado',
+  integral_traducao_credito: 'EntreLinhas',
 }
 
 function toFormValues(conteudo: Conteudo): ConteudoFormInput {
@@ -92,6 +98,11 @@ function toFormValues(conteudo: Conteudo): ConteudoFormInput {
     reflexao_frase: '',
     reflexao_texto: '',
     reflexao_pergunta: '',
+    integral_ativa: conteudo.integral_ativa ?? false,
+    integral_licenca: conteudo.integral_licenca ?? '',
+    integral_fonte_url: conteudo.integral_fonte_url ?? '',
+    integral_traducao_metodo: conteudo.integral_traducao_metodo ?? 'preimportado',
+    integral_traducao_credito: conteudo.integral_traducao_credito ?? 'EntreLinhas',
   }
 }
 
@@ -402,6 +413,16 @@ export function ContentFormDialog({
           register={register}
           errors={errors}
         />
+
+        {plataformaTipo === 'livro' && (
+          <LeituraIntegralFormSection
+            conteudoId={conteudo?.id}
+            register={register}
+            setValue={setValue}
+            watch={watch}
+            disabled={saveContent.isPending}
+          />
+        )}
 
         {reflexaoVariant && (
           <section className="space-y-4 rounded-xl border border-accent/25 bg-accent-light/25 p-4 sm:p-5">

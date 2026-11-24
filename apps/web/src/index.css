@@ -6508,6 +6508,268 @@
     opacity: 0.45;
   }
 
+  /* Modo leitura imersivo (Kindle) */
+  .kindle-immersive {
+    position: fixed;
+    inset: 0;
+    z-index: 120;
+    display: flex;
+    flex-direction: column;
+    padding: env(safe-area-inset-top) env(safe-area-inset-right) env(safe-area-inset-bottom)
+      env(safe-area-inset-left);
+    background: var(--platform-bg-gradient, #f7f9fc);
+    animation: kindle-immersive-in 0.42s cubic-bezier(0.22, 1, 0.36, 1) both;
+  }
+
+  .kindle-immersive__ambient {
+    position: fixed;
+    inset: 0;
+    z-index: 0;
+    pointer-events: none;
+  }
+
+  .kindle-immersive__header {
+    position: relative;
+    z-index: 2;
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 1rem;
+    padding: 1rem 1.25rem 0.65rem;
+  }
+
+  .kindle-immersive__header-actions {
+    display: flex;
+    shrink: 0;
+    align-items: center;
+    gap: 0.35rem;
+  }
+
+  .kindle-immersive__kicker {
+    font-size: 0.6875rem;
+    font-weight: 600;
+    letter-spacing: 0.07em;
+    text-transform: uppercase;
+    color: color-mix(in srgb, var(--color-primary) 72%, var(--color-text-muted));
+    text-shadow: 0 1px 12px rgb(255 255 255 / 0.85);
+  }
+
+  .kindle-immersive__title {
+    margin-top: 0.2rem;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    font-size: 1.0625rem;
+    font-weight: 600;
+    color: var(--color-brand-navy);
+    text-shadow: 0 1px 14px rgb(255 255 255 / 0.9);
+  }
+
+  .kindle-immersive__stage {
+    position: relative;
+    z-index: 2;
+    display: flex;
+    flex: 1;
+    align-items: center;
+    justify-content: center;
+    min-height: 0;
+    padding: 0.25rem 1rem 0.35rem;
+  }
+
+  .kindle-immersive__frame {
+    position: relative;
+    display: flex;
+    width: min(100%, 46rem);
+    height: min(calc(100vh - 6.5rem), 52rem);
+    max-height: 100%;
+    flex-direction: column;
+    padding: 3px;
+    border-radius: 12px;
+    border: 1px solid rgb(0 102 204 / 0.18);
+    background: linear-gradient(
+      145deg,
+      color-mix(in srgb, var(--color-primary) 22%, transparent) 0%,
+      color-mix(in srgb, var(--color-brand-gold) 12%, transparent) 52%,
+      color-mix(in srgb, var(--color-primary) 18%, transparent) 100%
+    );
+    box-shadow:
+      0 0 0 1px rgb(255 255 255 / 0.08),
+      0 20px 64px rgb(0 0 0 / 0.45);
+  }
+
+  .kindle-immersive__frame-accent--gold,
+  .kindle-immersive__frame-accent--navy {
+    display: none;
+  }
+
+  .kindle-immersive__paper {
+    display: flex;
+    min-height: 0;
+    flex: 1;
+    flex-direction: column;
+    overflow: hidden;
+    border-radius: 9px;
+    border: 1px solid rgb(0 51 102 / 0.06);
+    background: linear-gradient(180deg, #ffffff 0%, #fffefb 40%, #fffdf7 100%);
+    box-shadow: inset 0 1px 0 rgb(255 255 255 / 0.92);
+  }
+
+  .book-reader--kindle-paper {
+    display: flex;
+    height: 100%;
+    min-height: 0;
+    flex: 1;
+    flex-direction: column;
+    gap: 0.45rem;
+    padding: 0.65rem 0.85rem 0.7rem;
+  }
+
+  .book-reader-spread--immersive {
+    display: flex;
+    flex: 1;
+    min-height: 0;
+    flex-direction: column;
+    border: none;
+    background: transparent;
+    box-shadow: none;
+  }
+
+  .book-page-viewport--immersive {
+    display: flex;
+    flex: 1;
+    height: auto;
+    min-height: 0;
+    max-height: none;
+    flex-direction: column;
+  }
+
+  .book-page-sheet--immersive {
+    position: relative;
+    display: flex;
+    height: 100%;
+    min-height: 0;
+    flex: 1;
+    flex-direction: column;
+    overflow: hidden;
+    padding: 0.25rem 0.55rem 0.1rem;
+    animation: none;
+  }
+
+  .book-page-sheet--immersive .book-page-title-row {
+    flex-shrink: 0;
+  }
+
+  .book-page-sheet--immersive .book-page-text-region {
+    flex: 1;
+    min-height: 0;
+  }
+
+  .book-page-sheet--immersive .book-page-scroll-hint {
+    flex-shrink: 0;
+    padding-top: 0.15rem;
+    font-size: 0.625rem;
+    color: rgb(0 51 102 / 0.45);
+  }
+
+  .book-page-title--immersive {
+    margin-bottom: 0.85rem;
+    padding-bottom: 0.55rem;
+    border-bottom: 1px solid rgb(0 102 204 / 0.11);
+    text-align: center;
+    font-size: 1.2rem;
+  }
+
+  .book-page-text--immersive {
+    flex: 1;
+    min-height: 0;
+    overflow-y: auto;
+    overflow-x: hidden;
+    overscroll-behavior: contain;
+    -webkit-overflow-scrolling: touch;
+    touch-action: pan-y;
+    font-family: Georgia, 'Times New Roman', 'Liberation Serif', serif;
+    font-size: 1.0625rem;
+    line-height: 1.82;
+    color: rgb(28 32 44 / 0.93);
+  }
+
+  .kindle-tap-zone {
+    position: absolute;
+    top: 3.75rem;
+    bottom: 3.25rem;
+    z-index: 2;
+    width: 12%;
+    cursor: pointer;
+    border: none;
+    background: transparent;
+    pointer-events: auto;
+  }
+
+  .kindle-tap-zone--prev {
+    left: 0;
+  }
+
+  .kindle-tap-zone--next {
+    right: 0;
+  }
+
+  .kindle-tap-zone:disabled {
+    cursor: default;
+    pointer-events: none;
+    opacity: 0;
+  }
+
+  .book-page-footer--immersive .book-page-indicator p {
+    color: var(--color-brand-navy);
+  }
+
+  .book-page-progress--immersive {
+    flex-shrink: 0;
+    margin-inline: 0.2rem;
+  }
+
+  .book-page-footer--immersive {
+    flex-shrink: 0;
+  }
+
+  .book-page-immersive-cta {
+    margin-top: 0.35rem;
+  }
+
+  .kindle-immersive__hint {
+    position: relative;
+    z-index: 2;
+    flex-shrink: 0;
+    padding: 0.2rem 1rem 0.85rem;
+    text-align: center;
+    font-size: 0.6875rem;
+    color: var(--color-text-muted);
+    text-shadow: 0 1px 10px rgb(255 255 255 / 0.88);
+  }
+
+  @keyframes kindle-immersive-in {
+    from {
+      opacity: 0;
+      transform: scale(1.015);
+    }
+
+    to {
+      opacity: 1;
+      transform: scale(1);
+    }
+  }
+
+  @media (min-width: 640px) {
+    .kindle-immersive__frame {
+      height: min(calc(100vh - 5.75rem), 54rem);
+    }
+
+    .book-page-text--immersive {
+      font-size: 1.125rem;
+      line-height: 1.85;
+    }
+  }
+
   .youtube-embed--compact {
     max-width: 36rem;
   }
@@ -7822,7 +8084,7 @@
     background: rgb(229 247 243 / 0.5);
   }
 
-  /* Grid de catálogo — mesmo tamanho dos destaques; home: 2×4; páginas: ilimitado */
+  /* Grid de catálogo — mesmo tamanho dos destaques; destaques home: 2×5; prévias home: 2×4; páginas: ilimitado */
   .catalog-preview-grid {
     display: grid;
     grid-template-columns: repeat(2, minmax(0, 1fr));
@@ -7840,6 +8102,11 @@
     .catalog-preview-grid {
       grid-template-columns: repeat(4, minmax(0, 1fr));
       gap: 1.15rem 0.9rem;
+    }
+
+    .catalog-preview-grid--destaques {
+      grid-template-columns: repeat(5, minmax(0, 1fr));
+      gap: 1.1rem 0.75rem;
     }
   }
 

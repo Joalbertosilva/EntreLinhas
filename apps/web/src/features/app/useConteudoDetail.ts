@@ -1,5 +1,11 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
-import type { Conteudo, MaterialComplementar, StatusLeitura, Tema } from '@tcc-sistema/types'
+import type {
+  Conteudo,
+  MaterialComplementar,
+  StatusLeitura,
+  StatusLeituraIntegral,
+  Tema,
+} from '@tcc-sistema/types'
 import type { AlunoProgressStats } from '@/features/app/alunoProgress'
 import { celebrateReadingProgressChange } from '@/features/app/progressCelebration'
 import { supabase } from '@/lib/supabase'
@@ -59,12 +65,16 @@ export function useMinhaLeitura(conteudoId: string, usuarioId: string | undefine
     queryFn: async () => {
       const { data, error } = await supabase
         .from('leituras')
-        .select('id, status_leitura')
+        .select('id, status_leitura, integral_status')
         .eq('conteudo_id', conteudoId)
         .eq('usuario_id', usuarioId!)
         .maybeSingle()
       if (error) throw error
-      return data as { id: string; status_leitura: StatusLeitura } | null
+      return data as {
+        id: string
+        status_leitura: StatusLeitura
+        integral_status: StatusLeituraIntegral | null
+      } | null
     },
   })
 }
