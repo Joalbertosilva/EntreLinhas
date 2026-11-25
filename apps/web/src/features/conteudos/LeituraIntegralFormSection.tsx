@@ -1,5 +1,6 @@
 import { capitulosIntegralImportSchema } from '@tcc-sistema/schemas'
 import { BookMarked, FileUp, Globe2, Link2, Loader2 } from 'lucide-react'
+import { useQueryClient } from '@tanstack/react-query'
 import { useRef, useState, type ReactNode } from 'react'
 import type { UseFormRegister, UseFormSetValue, UseFormWatch } from 'react-hook-form'
 import { toast } from 'sonner'
@@ -80,6 +81,7 @@ export function LeituraIntegralFormSection({
   watch,
   disabled,
 }: LeituraIntegralFormSectionProps) {
+  const queryClient = useQueryClient()
   const integralAtiva = watch('integral_ativa')
   const fonteUrl = watch('integral_fonte_url')
   const pdfTxtRef = useRef<HTMLInputElement>(null)
@@ -193,6 +195,7 @@ export function LeituraIntegralFormSection({
           setValue('integral_fonte_url', parsed.meta.fonte_url)
         }
         await replaceCapitulosIntegralInDb(cid, parsed)
+        await queryClient.invalidateQueries({ queryKey: ['capitulos-integral', cid] })
         setPendingFile(file.name)
         toast.success(`${parsed.capitulos.length} capítulo(s) importados.`)
         return
