@@ -13,6 +13,10 @@ export default defineConfig({
   resolve: {
     alias: {
       '@': path.resolve(__dirname, './src'),
+      '@tcc-sistema/integral-import': path.resolve(
+        __dirname,
+        '../../packages/integral-import/src/index.ts',
+      ),
     },
     // Monorepo (web + mobile): evita duas cópias do React no dev server.
     dedupe: ['react', 'react-dom'],

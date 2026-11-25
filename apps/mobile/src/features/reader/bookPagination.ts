@@ -1,7 +1,23 @@
+export type BookPageKind = 'text' | 'cover'
+
 export interface BookPage {
   id: string
   title: string
   body: string
+  kind?: BookPageKind
+  coverUrl?: string | null
+  speakLabel?: string
+}
+
+export function getBookPageSpeakLabel(page: BookPage): string {
+  if (page.speakLabel?.trim()) return page.speakLabel.trim()
+  if (page.kind === 'cover') {
+    const parts = [page.title, page.body ? `por ${page.body}` : '', 'Capa da leitura integral'].filter(
+      Boolean,
+    )
+    return parts.join('. ')
+  }
+  return `${page.title}. ${page.body}`
 }
 
 /** Uma seção = uma página. Mesmo tamanho de folha para todos os livros. */
@@ -54,4 +70,41 @@ export function buildObraBookPages(capitulos: ObraCapituloPage[]): BookPage[] {
       title: c.titulo,
       body: c.texto.trim(),
     }))
+}
+
+export interface IntegralBookMeta {
+  titulo: string
+  autor?: string | null
+  coverUrl?: string | null
+  creditoTraducao?: string | null
+}
+
+export function buildIntegralBookPages(meta: IntegralBookMeta, capitulos: ObraCapituloPage[]): BookPage[] {
+  const autor = meta.autor?.trim() ?? ''
+  const credito = meta.creditoTraducao?.trim() || 'EntreLinhas'
+  const capaSpeak = [meta.titulo, autor ? `por ${autor}` : '', 'Capa da leitura integral']
+    .filter(Boolean)
+    .join('. ')
+
+  const prefix: BookPage[] = [
+    {
+      id: 'integral-capa',
+      kind: 'cover',
+      title: meta.titulo,
+      body: autor,
+      coverUrl: meta.coverUrl ?? null,
+      speakLabel: capaSpeak,
+    },
+    {
+      id: 'integral-sobre-edicao',
+      title: 'Sobre esta edição',
+      body: `Tradução gerada para a plataforma EntreLinhas (${credito}) a partir de obra em domínio público. Pode haver imprecisões em relação a edições comerciais.`,
+    },
+  ]
+
+  return [...prefix, ...buildObraBookPages(capitulos)]
+}
+
+export function getIntegralBookPageStorageKey(conteudoId: string): string {
+  return `entrelinhas-integral-page-${conteudoId}`
 }

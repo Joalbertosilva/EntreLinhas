@@ -104,7 +104,7 @@ Não confundir: Vercel hospeda só o **site estático**; os dados continuam no S
 - `request-password-reset`
 - `admin-reset-password`
 - `admin-set-user-password`
-- `import-leitura-integral-url` (import + tradução automática opcional)
+- `import-leitura-integral-url` (import por link/.txt + texto de PDF extraído no navegador; professor e admin)
 
 Redeploy só se alterar código em `supabase/functions/`.
 

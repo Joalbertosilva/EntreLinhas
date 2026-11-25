@@ -3,7 +3,10 @@ import { createClient } from "jsr:@supabase/supabase-js@2";
 import {
   type CapituloParsed,
   decodeContentBuffer,
+  isMislabeledPdfAsText,
+  parseCervantesVirtualHtml,
   parseGutenbergAuHtml,
+  parseIntegralTextoBruto,
   parsePlainTextCapitulos,
 } from "../_shared/parseIntegralImport.ts";
 
@@ -20,11 +23,15 @@ const ALLOWED_HOSTS = [
   "www.gutenberg.org",
   "dominiopublico.gov.br",
   "www.dominiopublico.gov.br",
+  "dominiopublico.mec.gov.br",
+  "machado.mec.gov.br",
   "wikisource.org",
   "pt.wikisource.org",
   "it.wikisource.org",
   "archive.org",
   "www.archive.org",
+  "cervantesvirtual.com",
+  "www.cervantesvirtual.com",
 ];
 
 const MAX_TEXTO_BRUTO_CHARS = 1_500_000;
@@ -46,8 +53,14 @@ function isPlainTextUrl(url: URL): boolean {
   return path.endsWith(".txt") || path.endsWith(".txt.utf-8");
 }
 
+function isPdfUrl(url: URL): boolean {
+  return url.pathname.toLowerCase().endsWith(".pdf");
+}
+
 function guessIdioma(host: string, capitulos: CapituloParsed[]): string {
-  if (host.includes("dominiopublico")) return "pt";
+  if (host.includes("dominiopublico") || host.includes("cervantesvirtual") || host.includes("machado.mec")) {
+    return "pt";
+  }
   const amostra = capitulos
     .slice(0, 3)
     .map((c) => c.texto_pt)
@@ -131,6 +144,11 @@ function parseFromUrlContent(url: URL, raw: string): CapituloParsed[] | null {
     if (caps.length > 0) return caps;
   }
 
+  if (host.includes("cervantesvirtual")) {
+    const caps = parseCervantesVirtualHtml(raw, "Biblioteca Virtual Miguel de Cervantes");
+    if (caps.length > 0) return caps;
+  }
+
   if (isPlainTextUrl(url) || host.includes("dominiopublico") || host.includes("gutenberg.org")) {
     const origem = host.includes("dominiopublico")
       ? "Texto — Biblioteca Domínio Público"
@@ -178,22 +196,36 @@ Deno.serve(async (req) => {
 
     const adminClient = createClient(supabaseUrl, serviceRoleKey);
 
-    const { data: callerProfile, error: profileError } = await adminClient
+    const { data: callerProfile, error: profileError } = await userClient
       .from("profiles")
       .select("perfil, status")
       .eq("id", user.id)
-      .single();
+      .maybeSingle();
 
-    if (
-      profileError ||
-      !callerProfile ||
-      !callerProfile.status ||
-      !["professor", "administrador"].includes(callerProfile.perfil)
-    ) {
-      return new Response(JSON.stringify({ error: "Operação não permitida" }), {
+    if (profileError || !callerProfile) {
+      return new Response(
+        JSON.stringify({
+          error:
+            "Não foi possível confirmar seu perfil. Saia e entre de novo; se continuar, fale com o administrador.",
+        }),
+        { status: 403, headers: { ...corsHeaders, "Content-Type": "application/json" } },
+      );
+    }
+
+    if (!callerProfile.status) {
+      return new Response(JSON.stringify({ error: "Sua conta está inativa." }), {
         status: 403,
         headers: { ...corsHeaders, "Content-Type": "application/json" },
       });
+    }
+
+    if (!["professor", "administrador"].includes(callerProfile.perfil)) {
+      return new Response(
+        JSON.stringify({
+          error: "Somente professor ou administrador pode importar a leitura integral.",
+        }),
+        { status: 403, headers: { ...corsHeaders, "Content-Type": "application/json" } },
+      );
     }
 
     const body = await req.json();
@@ -227,9 +259,19 @@ Deno.serve(async (req) => {
           headers: { ...corsHeaders, "Content-Type": "application/json" },
         });
       }
-      capitulos = parsePlainTextCapitulos(
+      if (isMislabeledPdfAsText(textoBruto)) {
+        return new Response(
+          JSON.stringify({
+            error:
+              "Esse arquivo é PDF disfarçado de .txt (código %PDF). Não renomeie nem “converta” assim — envie o .pdf original; o EntreLinhas extrai o texto no navegador.",
+          }),
+          { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } },
+        );
+      }
+      capitulos = parseIntegralTextoBruto(
         textoBruto,
-        fonteUrl ? `Arquivo vinculado a ${fonteUrl}` : "Arquivo de texto enviado pelo professor",
+        fonteUrl,
+        "Arquivo de texto enviado pelo professor",
       );
       let fonteHost = "local";
       if (fonteUrl) {
@@ -246,7 +288,17 @@ Deno.serve(async (req) => {
         return new Response(
           JSON.stringify({
             error:
-              "URL não permitida. Use dominiopublico.gov.br, gutenberg.net.au/org (HTML ou .txt), wikisource ou archive.org.",
+              "URL não permitida. Use Cervantes, dominiopublico (MEC), gutenberg.net.au/org, wikisource ou archive.org — ou envie arquivo .txt / PDF.",
+          }),
+          { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } },
+        );
+      }
+
+      if (isPdfUrl(url)) {
+        return new Response(
+          JSON.stringify({
+            error:
+              "Link de PDF não é importado pelo servidor. Baixe o PDF e use Enviar arquivo (.txt ou PDF) — o texto é extraído no navegador.",
           }),
           { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } },
         );
@@ -290,7 +342,7 @@ Deno.serve(async (req) => {
       return new Response(
         JSON.stringify({
           error:
-            "Não foi possível dividir a obra em capítulos. Use link HTML do Gutenberg Australia, link .txt, ou envie o arquivo .txt baixado do site.",
+            "Não foi possível dividir a obra em capítulos. Use link HTML (Cervantes, Gutenberg Australia), .txt, ou envie PDF/.txt pelo formulário.",
         }),
         { status: 422,
           headers: { ...corsHeaders, "Content-Type": "application/json" } },

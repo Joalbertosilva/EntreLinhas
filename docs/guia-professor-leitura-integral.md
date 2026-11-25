@@ -23,7 +23,7 @@ O campo **“URL da obra original”** é um **comprovante**: “de onde tirei a
 3. **Salve** o livro.
 4. No Google, ache a obra e **copie o link da página** (não a home do site).
 5. Cole no campo **Link da obra**.
-6. **Importar do link** (HTML Gutenberg Australia ou link `.txt`) **ou** **Enviar arquivo .txt** baixado do Domínio Público / Gutenberg.
+6. **Importar do link** (HTML Gutenberg Australia ou link `.txt`) **ou** **Enviar arquivo** — `.txt` **ou PDF** do [Domínio Público MEC](https://dominiopublico.mec.gov.br/) (o PDF é lido no navegador; não precisa converter manualmente).
 
 **Regra de ouro:** o professor acha a obra e importa; o aluno **não** abre sites externos para ler.
 
@@ -39,6 +39,14 @@ O campo **“URL da obra original”** é um **comprovante**: “de onde tirei a
 Ensine estes modelos de busca. O professor abre o **primeiro resultado confiável** e copia a **barra de endereço** do navegador.
 
 ### Livro brasileiro já em português (melhor caminho)
+
+**Biblioteca Virtual Miguel de Cervantes** — HTML por capítulo, licença educacional / domínio público:
+
+- *Dom Casmurro* (texto no visor):  
+  `https://www.cervantesvirtual.com/obra-visor/dom-casmurro--0/html/ffcddb46-82b1-11df-acc7-002185ce6064_2.html`
+- Cole no campo **Link da obra** → **Importar do link** (o navegador baixa o HTML; sem tradução automática).
+
+**Domínio Público (MEC)** — prefira enviar o **PDF** original (.pdf), não renomear para `.txt` (o arquivo vira lixo `%PDF` com barras invertidas).
 
 ```
 site:dominiopublico.gov.br "Dom Casmurro"
