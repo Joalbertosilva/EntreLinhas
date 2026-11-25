@@ -1,6 +1,6 @@
 import { zodResolver } from '@hookform/resolvers/zod'
 import { useMutation, useQueryClient } from '@tanstack/react-query'
-import { useEffect, useState } from 'react'
+import { useCallback, useEffect, useRef, useState } from 'react'
 import { Controller, useForm } from 'react-hook-form'
 import { toast } from 'sonner'
 import { conteudoFormSchema, type ConteudoFormInput } from '@tcc-sistema/schemas'
@@ -124,7 +124,10 @@ export function ContentFormDialog({
   defaultTipo,
 }: ContentFormDialogProps) {
   const queryClient = useQueryClient()
-  const isEditing = Boolean(conteudo)
+  const [persistedConteudoId, setPersistedConteudoId] = useState<string | undefined>()
+  const editingConteudoId = conteudo?.id ?? persistedConteudoId
+  const isEditing = Boolean(editingConteudoId)
+  const saveIntentRef = useRef<'close' | 'keepOpen'>('close')
   const [coverFile, setCoverFile] = useState<File | null>(null)
   const [coverUrl, setCoverUrl] = useState<string | null>(null)
 
@@ -134,6 +137,8 @@ export function ContentFormDialog({
     reset,
     watch,
     setValue,
+    getValues,
+    trigger,
     control,
     formState: { errors, isSubmitting },
   } = useForm<ConteudoFormInput>({
@@ -156,6 +161,7 @@ export function ContentFormDialog({
   useEffect(() => {
     if (open) {
       reset(conteudo ? toFormValues(conteudo) : buildDefaultValues(defaultTipo))
+      setPersistedConteudoId(conteudo?.id)
       setCoverFile(null)
       const initialCover =
         conteudo?.capa_url ??
@@ -199,10 +205,11 @@ export function ContentFormDialog({
 
       const previousCoverUrl = conteudo?.capa_url ?? null
       let finalCoverUrl = coverUrl
+      const targetId = editingConteudoId
 
-      if (isEditing && conteudo) {
+      if (targetId) {
         if (coverFile) {
-          finalCoverUrl = await uploadCover(coverFile, conteudo.id)
+          finalCoverUrl = await uploadCover(coverFile, targetId)
           if (
             previousCoverUrl &&
             !sameCoverStorageObject(previousCoverUrl, finalCoverUrl)
@@ -217,12 +224,12 @@ export function ContentFormDialog({
         const { error } = await supabase
           .from('conteudos')
           .update(payload)
-          .eq('id', conteudo.id)
+          .eq('id', targetId)
         if (error) throw error
 
         if (shouldSyncReflexao(input.tipo)) {
           await syncReflexaoTema(
-            conteudo.id,
+            targetId,
             input.reflexao_tema,
             input.reflexao_frase,
             input.reflexao_texto,
@@ -230,7 +237,7 @@ export function ContentFormDialog({
           )
         }
 
-        return { id: conteudo.id, titulo: input.titulo, action: 'atualizar' as const }
+        return { id: targetId, titulo: input.titulo, action: 'atualizar' as const }
       }
 
       const createCoverUrl = resolveCoverUrlForCreate(input.tipo, coverUrl, Boolean(coverFile))
@@ -272,9 +279,18 @@ export function ContentFormDialog({
           detalhes: { titulo: result.titulo },
         })
       }
+      if (saveIntentRef.current === 'keepOpen') {
+        setPersistedConteudoId(result?.id)
+        toast.success('Livro salvo — pode importar o PDF ou o link.')
+        if (result?.id) {
+          invalidateConteudoCaches(queryClient, result.id)
+        }
+        return
+      }
       toast.success(isEditing ? 'Conteúdo atualizado' : 'Conteúdo cadastrado')
       reset()
       setCoverFile(null)
+      setPersistedConteudoId(undefined)
       onOpenChange(false)
       invalidateConteudoCaches(queryClient, result?.id ?? conteudo?.id)
     },
@@ -283,7 +299,29 @@ export function ContentFormDialog({
     },
   })
 
-  const onSubmit = (data: ConteudoFormInput) => saveContent.mutate(data)
+  const onSubmit = (data: ConteudoFormInput) => {
+    saveIntentRef.current = 'close'
+    saveContent.mutate(data)
+  }
+
+  const ensureConteudoForIntegral = useCallback(async (): Promise<string | undefined> => {
+    if (editingConteudoId) return editingConteudoId
+    const ok = await trigger(['titulo', 'tipo'])
+    if (!ok) {
+      toast.error('Informe o título do livro antes de importar a obra.')
+      return undefined
+    }
+    saveIntentRef.current = 'keepOpen'
+    try {
+      const data = getValues()
+      const result = await saveContent.mutateAsync(data)
+      return result.id
+    } catch {
+      return undefined
+    } finally {
+      saveIntentRef.current = 'close'
+    }
+  }, [editingConteudoId, getValues, saveContent, trigger])
 
   return (
     <Dialog
@@ -418,7 +456,8 @@ export function ContentFormDialog({
 
         {plataformaTipo === 'livro' && (
           <LeituraIntegralFormSection
-            conteudoId={conteudo?.id}
+            conteudoId={editingConteudoId}
+            ensureConteudoId={ensureConteudoForIntegral}
             register={register}
             setValue={setValue}
             watch={watch}

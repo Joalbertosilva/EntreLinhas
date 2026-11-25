@@ -43,18 +43,46 @@ export type ImportLeituraIntegralLinkResult = {
   origem: 'json' | 'edge'
 }
 
+export async function replaceCapitulosIntegralInDb(
+  conteudoId: string,
+  input: CapitulosIntegralImportInput,
+): Promise<number> {
+  const { error: delError } = await supabase
+    .from('conteudo_capitulos_integral')
+    .delete()
+    .eq('conteudo_id', conteudoId)
+  if (delError) throw delError
+
+  const rows = input.capitulos.map((cap) => ({
+    conteudo_id: conteudoId,
+    ordem: cap.ordem,
+    titulo: cap.titulo.trim(),
+    texto_pt: cap.texto_pt.trim(),
+    texto_origem: cap.texto_origem?.trim() || null,
+  }))
+
+  const { error: insError } = await supabase.from('conteudo_capitulos_integral').insert(rows)
+  if (insError) throw insError
+  return rows.length
+}
+
 export function useImportLeituraIntegralFromLink(conteudoId: string | undefined) {
   const queryClient = useQueryClient()
-  const replaceCapitulos = useReplaceCapitulosIntegral(conteudoId)
 
   return useMutation({
     mutationFn: async (input: {
+      conteudoId?: string
       fonteUrl: string
       traduzirParaPt?: boolean
       onTranslateProgress?: (current: number, total: number) => void
     }): Promise<ImportLeituraIntegralLinkResult> => {
+      const cid = input.conteudoId ?? conteudoId
+      if (!cid) throw new Error('Salve o livro antes de importar')
+      const replaceAdapter = {
+        mutateAsync: (parsed: CapitulosIntegralImportInput) => replaceCapitulosIntegralInDb(cid, parsed),
+      }
+
       const fonteUrl = input.fonteUrl
-      if (!conteudoId) throw new Error('Salve o livro antes de importar')
 
       const trimmed = fonteUrl.trim()
       if (!trimmed) throw new Error('Cole o link da obra')
@@ -64,7 +92,7 @@ export function useImportLeituraIntegralFromLink(conteudoId: string | undefined)
         if (!res.ok) throw new Error(`Não foi possível abrir o link (HTTP ${res.status})`)
         const json: unknown = await res.json()
         const parsed = capitulosIntegralImportSchema.parse(json)
-        const count = await replaceCapitulos.mutateAsync(parsed)
+        const count = await replaceCapitulosIntegralInDb(cid, parsed)
         const fonteGravada = parsed.meta?.fonte_url?.trim() || trimmed
         await supabase
           .from('conteudos')
@@ -73,7 +101,8 @@ export function useImportLeituraIntegralFromLink(conteudoId: string | undefined)
             integral_traducao_metodo: 'preimportado',
             integral_traducao_credito: 'EntreLinhas',
           })
-          .eq('id', conteudoId)
+          .eq('id', cid)
+        queryClient.invalidateQueries({ queryKey: ['capitulos-integral', cid] })
         return { capitulos: count, origem: 'json', idioma: 'pt' }
       }
 
@@ -94,8 +123,8 @@ export function useImportLeituraIntegralFromLink(conteudoId: string | undefined)
 
       if (textoBrutoFromBrowser) {
         const parsed = parseIntegralUploadText(textoBrutoFromBrowser, trimmed)
-        const count = await persistIntegralImportClient(conteudoId, parsed, replaceCapitulos)
-        queryClient.invalidateQueries({ queryKey: ['capitulos-integral', conteudoId] })
+        const count = await persistIntegralImportClient(cid, parsed, replaceAdapter)
+        queryClient.invalidateQueries({ queryKey: ['capitulos-integral', cid] })
         return {
           capitulos: count,
           idioma: 'pt',
@@ -106,7 +135,7 @@ export function useImportLeituraIntegralFromLink(conteudoId: string | undefined)
 
       const { data, error } = await supabase.functions.invoke('import-leitura-integral-url', {
         body: {
-          conteudo_id: conteudoId,
+          conteudo_id: cid,
           fonte_url: trimmed,
           texto_bruto: textoBrutoFromBrowser,
           traduzir_para_pt: input.traduzirParaPt !== false,
@@ -116,12 +145,12 @@ export function useImportLeituraIntegralFromLink(conteudoId: string | undefined)
       if (error) throw new Error(await messageFromFunctionsInvokeError(error))
       if (data?.error) throw new Error(String(data.error))
 
-      queryClient.invalidateQueries({ queryKey: ['capitulos-integral', conteudoId] })
+      queryClient.invalidateQueries({ queryKey: ['capitulos-integral', cid] })
 
       if (data?.traduzir_no_cliente && input.traduzirParaPt !== false) {
         const origem = String(data.idioma_detectado ?? data.idioma ?? 'fr')
-        await translateCapitulosIntegralNoCliente(conteudoId, origem, input.onTranslateProgress)
-        queryClient.invalidateQueries({ queryKey: ['capitulos-integral', conteudoId] })
+        await translateCapitulosIntegralNoCliente(cid, origem, input.onTranslateProgress)
+        queryClient.invalidateQueries({ queryKey: ['capitulos-integral', cid] })
         return {
           capitulos: Number(data?.capitulos ?? 0),
           idioma: 'pt',
@@ -143,22 +172,26 @@ export function useImportLeituraIntegralFromLink(conteudoId: string | undefined)
 
 export function useImportLeituraIntegralFromTextFile(conteudoId: string | undefined) {
   const queryClient = useQueryClient()
-  const replaceCapitulos = useReplaceCapitulosIntegral(conteudoId)
 
   return useMutation({
     mutationFn: async (input: {
+      conteudoId?: string
       texto: string
       fonteUrl?: string | null
       traduzirParaPt?: boolean
       onTranslateProgress?: (current: number, total: number) => void
     }): Promise<ImportLeituraIntegralLinkResult> => {
-      if (!conteudoId) throw new Error('Salve o livro antes de importar')
+      const cid = input.conteudoId ?? conteudoId
+      if (!cid) throw new Error('Salve o livro antes de importar')
       const texto = input.texto.trim()
       if (!texto) throw new Error('Arquivo de texto vazio')
 
       const parsed = parseIntegralUploadText(texto, input.fonteUrl)
-      const count = await persistIntegralImportClient(conteudoId, parsed, replaceCapitulos)
-      queryClient.invalidateQueries({ queryKey: ['capitulos-integral', conteudoId] })
+      const replaceAdapter = {
+        mutateAsync: (p: CapitulosIntegralImportInput) => replaceCapitulosIntegralInDb(cid, p),
+      }
+      const count = await persistIntegralImportClient(cid, parsed, replaceAdapter)
+      queryClient.invalidateQueries({ queryKey: ['capitulos-integral', cid] })
 
       if (input.traduzirParaPt === false) {
         return {
@@ -185,24 +218,7 @@ export function useReplaceCapitulosIntegral(conteudoId: string | undefined) {
   return useMutation({
     mutationFn: async (input: CapitulosIntegralImportInput) => {
       if (!conteudoId) throw new Error('Conteúdo inválido')
-
-      const { error: delError } = await supabase
-        .from('conteudo_capitulos_integral')
-        .delete()
-        .eq('conteudo_id', conteudoId)
-      if (delError) throw delError
-
-      const rows = input.capitulos.map((cap) => ({
-        conteudo_id: conteudoId,
-        ordem: cap.ordem,
-        titulo: cap.titulo.trim(),
-        texto_pt: cap.texto_pt.trim(),
-        texto_origem: cap.texto_origem?.trim() || null,
-      }))
-
-      const { error: insError } = await supabase.from('conteudo_capitulos_integral').insert(rows)
-      if (insError) throw insError
-      return rows.length
+      return replaceCapitulosIntegralInDb(conteudoId, input)
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['capitulos-integral', conteudoId] })
