@@ -260,7 +260,7 @@ function ConteudoDetailPage() {
                 <p className="mt-1 text-text-muted">por {conteudo.autor}</p>
               )}
               {conteudo.descricao && (
-                <p className="mt-3 text-sm text-text-muted leading-relaxed max-w-2xl">
+                <p className="mt-3 max-w-2xl whitespace-pre-wrap text-sm leading-relaxed text-text-muted">
                   {conteudo.descricao}
                 </p>
               )}

@@ -1,6 +1,7 @@
 import AsyncStorage from '@react-native-async-storage/async-storage'
+import { Image } from 'expo-image'
 import { LinearGradient } from 'expo-linear-gradient'
-import { ChevronDown, ChevronLeft, ChevronRight, Volume2 } from 'lucide-react-native'
+import { BookOpen, ChevronDown, ChevronLeft, ChevronRight, Volume2 } from 'lucide-react-native'
 import { useCallback, useEffect, useRef, useState } from 'react'
 import {
   Pressable,
@@ -20,7 +21,7 @@ import {
 } from '@/features/accessibility/accessibilitySpeechRegistry'
 import { useSpeechContext } from '@/features/accessibility/SpeechProvider'
 import type { BookPage } from '@/features/reader/bookPagination'
-import { getBookPageStorageKey } from '@/features/reader/bookPagination'
+import { getBookPageSpeakLabel, getBookPageStorageKey } from '@/features/reader/bookPagination'
 import { SCREEN_HORIZONTAL_PADDING } from '@/lib/layout'
 import { READER_PARAGRAPH_STYLE } from '@/lib/readerTypography'
 
@@ -99,8 +100,9 @@ export function BookPaginatedReader({ pages, conteudoId, titulo, storageKey: sto
       return
     }
 
-    registerSpeakScreen(() => `${current.title}. ${current.body}`)
+    registerSpeakScreen(() => getBookPageSpeakLabel(current))
     registerSpeakSelection(() => {
+      if (current.kind === 'cover') return null
       const { start, end } = selectionRef.current
       if (start !== end) {
         return current.body.slice(Math.min(start, end), Math.max(start, end))
@@ -151,6 +153,8 @@ export function BookPaginatedReader({ pages, conteudoId, titulo, storageKey: sto
 
   if (pages.length === 0 || !current) return null
 
+  const isCoverPage = current.kind === 'cover'
+  const pageHeading = isCoverPage ? 'Capa' : current.title
   const atStart = pageIndex === 0
   const atEnd = pageIndex >= pages.length - 1
   const progress = ((pageIndex + 1) / pages.length) * 100
@@ -186,12 +190,14 @@ export function BookPaginatedReader({ pages, conteudoId, titulo, storageKey: sto
     selectionRef.current = event.nativeEvent.selection
   }
 
+  const pageSpeakLabel = getBookPageSpeakLabel(current)
+
   const speakPage = () => {
     if (isSpeaking) {
       void stop()
       return
     }
-    void speak(`${current.title}. ${current.body}`)
+    void speak(pageSpeakLabel)
   }
 
   const speakSelection = () => {
@@ -204,8 +210,6 @@ export function BookPaginatedReader({ pages, conteudoId, titulo, storageKey: sto
     void speak(slice)
   }
 
-  const pageSpeakLabel = `${current.title}. ${current.body}`
-
   return (
     <View accessibilityLabel={`Leitura paginada: ${titulo}`}>
       <Speakable
@@ -214,74 +218,101 @@ export function BookPaginatedReader({ pages, conteudoId, titulo, storageKey: sto
         className="overflow-hidden rounded-2xl border border-primary/15 bg-white shadow-sm"
       >
         <View className="border-b border-border/60 bg-primary-light/30 px-4 py-3">
-          <Text className="font-sans-semibold text-base text-brand-navy">{current.title}</Text>
+          <Text className="font-sans-semibold text-base text-brand-navy">{pageHeading}</Text>
         </View>
 
-        <View
-          onLayout={onTextAreaLayout}
-          style={{
-            position: 'relative',
-            overflow: 'hidden',
-            height: textAreaMaxHeight,
-            minHeight: textAreaMinHeight,
-          }}
-        >
-          <TextInput
-            key={`reader-page-${pageIndex}`}
-            defaultValue={current.body}
-            readOnly
-            multiline
-            scrollEnabled
-            onScroll={onScroll}
-            onContentSizeChange={onContentSizeChange}
-            showSoftInputOnFocus={false}
-            caretHidden
-            contextMenuHidden={false}
-            selectTextOnFocus={false}
-            selectionColor="#1c756a"
-            onSelectionChange={onSelectionChange}
+        {isCoverPage ? (
+          <View
+            className="items-center justify-center px-6 py-8"
+            style={{ minHeight: textAreaMinHeight }}
+          >
+            {current.coverUrl ? (
+              <Image
+                source={{ uri: current.coverUrl }}
+                accessibilityIgnoresInvertColors
+                style={{ width: 168, height: 224, borderRadius: 10 }}
+                contentFit="cover"
+              />
+            ) : (
+              <View
+                className="items-center justify-center rounded-xl bg-primary-light"
+                style={{ width: 168, height: 224 }}
+              >
+                <BookOpen color="rgba(0,102,204,0.7)" size={36} strokeWidth={1.5} />
+              </View>
+            )}
+            <Text className="mt-5 text-center font-sans-semibold text-base text-brand-navy">{current.title}</Text>
+            {current.body.trim() ? (
+              <Text className="mt-1 text-center font-sans text-sm text-text-muted">por {current.body.trim()}</Text>
+            ) : null}
+          </View>
+        ) : (
+          <View
+            onLayout={onTextAreaLayout}
             style={{
+              position: 'relative',
+              overflow: 'hidden',
               height: textAreaMaxHeight,
               minHeight: textAreaMinHeight,
-              maxHeight: textAreaMaxHeight,
-              paddingTop: 16,
-              paddingBottom: readerBottomPadding,
-              paddingLeft: 16,
-              paddingRight: 16,
-              fontFamily: 'PlusJakartaSans_400Regular',
-              fontSize: readerFontSize,
-              lineHeight: readerLineHeight,
-              color: '#1a3342',
-              textAlignVertical: 'top',
-              ...READER_PARAGRAPH_STYLE,
             }}
-            className="w-full font-sans text-text"
-          />
+          >
+            <TextInput
+              key={`reader-page-${pageIndex}`}
+              defaultValue={current.body}
+              readOnly
+              multiline
+              scrollEnabled
+              onScroll={onScroll}
+              onContentSizeChange={onContentSizeChange}
+              showSoftInputOnFocus={false}
+              caretHidden
+              contextMenuHidden={false}
+              selectTextOnFocus={false}
+              selectionColor="#1c756a"
+              onSelectionChange={onSelectionChange}
+              style={{
+                height: textAreaMaxHeight,
+                minHeight: textAreaMinHeight,
+                maxHeight: textAreaMaxHeight,
+                paddingTop: 16,
+                paddingBottom: readerBottomPadding,
+                paddingLeft: 16,
+                paddingRight: 16,
+                fontFamily: 'PlusJakartaSans_400Regular',
+                fontSize: readerFontSize,
+                lineHeight: readerLineHeight,
+                color: '#1a3342',
+                textAlignVertical: 'top',
+                ...READER_PARAGRAPH_STYLE,
+              }}
+              className="w-full font-sans text-text"
+            />
 
-          {hasMoreBelow ? (
-            <>
-              <LinearGradient
-                pointerEvents="none"
-                colors={['rgba(255,255,255,0)', 'rgba(255,255,255,0.92)', '#ffffff']}
-                style={{
-                  position: 'absolute',
-                  left: 0,
-                  right: 0,
-                  bottom: 0,
-                  height: 48,
-                }}
-              />
-              <View
-                pointerEvents="none"
-                style={{ position: 'absolute', left: 0, right: 0, bottom: 8 }}
-                className="flex-row items-center justify-center gap-1"
-              >
-                <ChevronDown color="#1c756a" size={14} />
-                <Text className="font-sans-semibold text-[11px] text-primary">Role para ler mais</Text>
-              </View>
-            </>
-          ) : null}
-        </View>
+            {hasMoreBelow ? (
+              <>
+                <LinearGradient
+                  pointerEvents="none"
+                  colors={['rgba(255,255,255,0)', 'rgba(255,255,255,0.92)', '#ffffff']}
+                  style={{
+                    position: 'absolute',
+                    left: 0,
+                    right: 0,
+                    bottom: 0,
+                    height: 48,
+                  }}
+                />
+                <View
+                  pointerEvents="none"
+                  style={{ position: 'absolute', left: 0, right: 0, bottom: 8 }}
+                  className="flex-row items-center justify-center gap-1"
+                >
+                  <ChevronDown color="#1c756a" size={14} />
+                  <Text className="font-sans-semibold text-[11px] text-primary">Role para ler mais</Text>
+                </View>
+              </>
+            ) : null}
+          </View>
+        )}
 
         <View className="flex-row flex-wrap gap-2 border-t border-border/40 px-4 py-3">
           <Pressable
@@ -293,17 +324,21 @@ export function BookPaginatedReader({ pages, conteudoId, titulo, storageKey: sto
               {isSpeaking ? 'Parar' : 'Ouvir página'}
             </Text>
           </Pressable>
-          <Pressable
-            onPress={speakSelection}
-            className="flex-row items-center gap-1.5 rounded-full border border-primary/25 bg-white px-3 py-1.5 active:opacity-80"
-          >
-            <Volume2 color="#1c756a" size={14} />
-            <Text className="font-sans-semibold text-xs text-primary">Ouvir seleção</Text>
-          </Pressable>
+          {!isCoverPage ? (
+            <Pressable
+              onPress={speakSelection}
+              className="flex-row items-center gap-1.5 rounded-full border border-primary/25 bg-white px-3 py-1.5 active:opacity-80"
+            >
+              <Volume2 color="#1c756a" size={14} />
+              <Text className="font-sans-semibold text-xs text-primary">Ouvir seleção</Text>
+            </Pressable>
+          ) : null}
         </View>
 
         <Text className="border-t border-border/40 px-4 py-2 text-center font-sans text-[11px] text-text-muted">
-          Toque e arraste para selecionar um trecho · role dentro da caixa para ler tudo
+          {isCoverPage
+            ? 'Use Próxima para ver os créditos e começar a leitura'
+            : 'Toque e arraste para selecionar um trecho · role dentro da caixa para ler tudo'}
         </Text>
       </Speakable>
 

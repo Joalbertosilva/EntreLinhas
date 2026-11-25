@@ -3,6 +3,11 @@ import { capitulosIntegralImportSchema, type CapitulosIntegralImportInput } from
 import type { ConteudoCapituloIntegral, StatusLeituraIntegral } from '@tcc-sistema/types'
 import { supabase } from '@/lib/supabase'
 import { translateCapitulosIntegralNoCliente } from '@/lib/integralMachineTranslate'
+import {
+  fetchIntegralSourceInBrowser,
+  shouldFetchIntegralLinkInBrowser,
+} from '@/lib/integralImportFetch'
+import { parseIntegralUploadText, persistIntegralImportClient } from '@/lib/integralImportClient'
 import { messageFromFunctionsInvokeError } from '@/lib/supabaseFunctionError'
 import type { AlunoProgressStats } from '@/features/app/alunoProgress'
 import { celebrateIntegralProgressChange } from '@/features/app/progressCelebration'
@@ -72,10 +77,38 @@ export function useImportLeituraIntegralFromLink(conteudoId: string | undefined)
         return { capitulos: count, origem: 'json', idioma: 'pt' }
       }
 
+      let textoBrutoFromBrowser: string | undefined
+      if (shouldFetchIntegralLinkInBrowser(trimmed)) {
+        try {
+          textoBrutoFromBrowser = await fetchIntegralSourceInBrowser(trimmed)
+        } catch (e) {
+          const msg = e instanceof Error ? e.message : String(e)
+          if (msg === 'Failed to fetch') {
+            throw new Error(
+              'O site da Cervantes bloqueou a busca automática (CORS). Baixe o PDF do MEC ou copie o HTML da obra.',
+            )
+          }
+          throw e
+        }
+      }
+
+      if (textoBrutoFromBrowser) {
+        const parsed = parseIntegralUploadText(textoBrutoFromBrowser, trimmed)
+        const count = await persistIntegralImportClient(conteudoId, parsed, replaceCapitulos)
+        queryClient.invalidateQueries({ queryKey: ['capitulos-integral', conteudoId] })
+        return {
+          capitulos: count,
+          idioma: 'pt',
+          aviso: 'Texto importado em português. Revise capítulos antes de publicar.',
+          origem: 'edge',
+        }
+      }
+
       const { data, error } = await supabase.functions.invoke('import-leitura-integral-url', {
         body: {
           conteudo_id: conteudoId,
           fonte_url: trimmed,
+          texto_bruto: textoBrutoFromBrowser,
           traduzir_para_pt: input.traduzirParaPt !== false,
         },
       })
@@ -110,6 +143,7 @@ export function useImportLeituraIntegralFromLink(conteudoId: string | undefined)
 
 export function useImportLeituraIntegralFromTextFile(conteudoId: string | undefined) {
   const queryClient = useQueryClient()
+  const replaceCapitulos = useReplaceCapitulosIntegral(conteudoId)
 
   return useMutation({
     mutationFn: async (input: {
@@ -122,37 +156,23 @@ export function useImportLeituraIntegralFromTextFile(conteudoId: string | undefi
       const texto = input.texto.trim()
       if (!texto) throw new Error('Arquivo de texto vazio')
 
-      const { data, error } = await supabase.functions.invoke('import-leitura-integral-url', {
-        body: {
-          conteudo_id: conteudoId,
-          fonte_url: input.fonteUrl?.trim() || undefined,
-          texto_bruto: texto,
-          traduzir_para_pt: input.traduzirParaPt !== false,
-        },
-      })
-
-      if (error) throw new Error(await messageFromFunctionsInvokeError(error))
-      if (data?.error) throw new Error(String(data.error))
-
+      const parsed = parseIntegralUploadText(texto, input.fonteUrl)
+      const count = await persistIntegralImportClient(conteudoId, parsed, replaceCapitulos)
       queryClient.invalidateQueries({ queryKey: ['capitulos-integral', conteudoId] })
 
-      if (data?.traduzir_no_cliente && input.traduzirParaPt !== false) {
-        const origem = String(data.idioma_detectado ?? data.idioma ?? 'auto')
-        await translateCapitulosIntegralNoCliente(conteudoId, origem, input.onTranslateProgress)
-        queryClient.invalidateQueries({ queryKey: ['capitulos-integral', conteudoId] })
+      if (input.traduzirParaPt === false) {
         return {
-          capitulos: Number(data?.capitulos ?? 0),
+          capitulos: count,
           idioma: 'pt',
-          aviso:
-            'Tradução automática para português concluída. Revise capítulos antes do aluno acessar — pode haver imprecisões.',
+          aviso: 'Texto importado em português. Revise capítulos antes do aluno publicar.',
           origem: 'edge',
         }
       }
 
       return {
-        capitulos: Number(data?.capitulos ?? 0),
-        idioma: data?.idioma,
-        aviso: data?.aviso ?? null,
+        capitulos: count,
+        idioma: 'pt',
+        aviso: 'Texto importado em português. Revise capítulos antes do aluno acessar.',
         origem: 'edge',
       }
     },

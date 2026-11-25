@@ -7,9 +7,9 @@ import { conteudoFormSchema, type ConteudoFormInput } from '@tcc-sistema/schemas
 import type { Conteudo, TipoConteudo } from '@tcc-sistema/types'
 import { BookOpen, Music, PenLine, Quote, Video } from 'lucide-react'
 import { CONTEUDO_TIPOS_PLATAFORMA } from '@tcc-sistema/types'
-import { defaultConteudoCoverUrl } from '@/lib/conteudoCover'
+import { defaultConteudoCoverUrl, resolveCoverUrlForCreate } from '@/lib/conteudoCover'
 import { supabase } from '@/lib/supabase'
-import { deleteCoverByUrl, uploadCover } from '@/lib/storage'
+import { deleteCoverByUrl, sameCoverStorageObject, uploadCover } from '@/lib/storage'
 import { logAudit } from '@/lib/audit'
 import { invalidateConteudoCaches } from '@/lib/conteudoQueries'
 import { loadReflexaoFields, syncReflexaoTema } from '@/features/conteudos/conteudoReflexao'
@@ -149,10 +149,9 @@ export function ContentFormDialog({
   useEffect(() => {
     if (!open || isEditing || coverFile) return
     const defaultCover = defaultConteudoCoverUrl(tipo)
-    if (defaultCover) {
-      setCoverUrl(defaultCover)
-    }
-  }, [tipo, open, isEditing, coverFile])
+    setCoverUrl(defaultCover)
+    setValue('capa_url', defaultCover ?? '')
+  }, [tipo, open, isEditing, coverFile, setValue])
 
   useEffect(() => {
     if (open) {
@@ -204,7 +203,10 @@ export function ContentFormDialog({
       if (isEditing && conteudo) {
         if (coverFile) {
           finalCoverUrl = await uploadCover(coverFile, conteudo.id)
-          if (previousCoverUrl && previousCoverUrl !== finalCoverUrl) {
+          if (
+            previousCoverUrl &&
+            !sameCoverStorageObject(previousCoverUrl, finalCoverUrl)
+          ) {
             await deleteCoverByUrl(previousCoverUrl)
           }
         } else if (coverUrl === null && previousCoverUrl) {
@@ -231,8 +233,8 @@ export function ContentFormDialog({
         return { id: conteudo.id, titulo: input.titulo, action: 'atualizar' as const }
       }
 
-      const presetCover = !coverFile ? defaultConteudoCoverUrl(input.tipo) : null
-      const payload = toDbPayload(input, user.id, false, presetCover ?? coverUrl)
+      const createCoverUrl = resolveCoverUrlForCreate(input.tipo, coverUrl, Boolean(coverFile))
+      const payload = toDbPayload(input, user.id, false, createCoverUrl)
       const { data: inserted, error } = await supabase
         .from('conteudos')
         .insert(payload)

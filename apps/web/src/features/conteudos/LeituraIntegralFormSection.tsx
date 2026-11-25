@@ -1,6 +1,6 @@
 import { capitulosIntegralImportSchema } from '@tcc-sistema/schemas'
-import { FileUp, Link2, Loader2 } from 'lucide-react'
-import { useRef, useState } from 'react'
+import { BookMarked, FileUp, Globe2, Link2, Loader2 } from 'lucide-react'
+import { useRef, useState, type ReactNode } from 'react'
 import type { UseFormRegister, UseFormSetValue, UseFormWatch } from 'react-hook-form'
 import { toast } from 'sonner'
 import type { ConteudoFormInput } from '@tcc-sistema/schemas'
@@ -10,11 +10,16 @@ import {
   useImportLeituraIntegralFromTextFile,
   useReplaceCapitulosIntegral,
 } from '@/features/app/useLeituraIntegral'
+import { extractTextFromIntegralPdf } from '@/lib/integralPdfText'
+import { isMislabeledPdfAsText, MSG_MISLABELED_PDF } from '@/lib/integralMislabeledFile'
 import { Button } from '@/components/ui/Button'
 import { Label } from '@/components/ui/Label'
 import { Input } from '@/components/ui/Input'
 
 const LINK_GUTENBERG_PP = 'https://www.gutenberg.net.au/ebooks03/0300771h.html'
+const LINK_CERVANTES_DOM_CASMURRO =
+  'https://www.cervantesvirtual.com/obra-visor/dom-casmurro--0/html/ffcddb46-82b1-11df-acc7-002185ce6064_2.html'
+const LINK_DOMINIO_PUBLICO = 'https://dominiopublico.mec.gov.br/pesquisa/pesquisa.php'
 
 function linkAmostraPortugues(): string {
   if (typeof window !== 'undefined') {
@@ -31,6 +36,41 @@ interface LeituraIntegralFormSectionProps {
   disabled?: boolean
 }
 
+function IntegralCanalCard({
+  icon,
+  title,
+  lead,
+  children,
+  tone = 'default',
+}: {
+  icon: ReactNode
+  title: string
+  lead: string
+  children: ReactNode
+  tone?: 'default' | 'primary' | 'accent'
+}) {
+  const toneClass =
+    tone === 'primary'
+      ? 'border-primary/25 bg-primary-light/20'
+      : tone === 'accent'
+        ? 'border-accent/30 bg-accent-light/20'
+        : 'border-border/80 bg-white'
+  return (
+    <article className={`rounded-xl border p-4 sm:p-5 shadow-sm ${toneClass}`}>
+      <div className="flex gap-3">
+        <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-white/80 text-primary shadow-sm ring-1 ring-border/60">
+          {icon}
+        </div>
+        <div className="min-w-0 space-y-1">
+          <h3 className="text-sm font-semibold text-brand-navy">{title}</h3>
+          <p className="text-xs leading-relaxed text-text-muted">{lead}</p>
+        </div>
+      </div>
+      <div className="mt-4 space-y-3 border-t border-border/50 pt-4">{children}</div>
+    </article>
+  )
+}
+
 export function LeituraIntegralFormSection({
   conteudoId,
   register,
@@ -40,15 +80,27 @@ export function LeituraIntegralFormSection({
 }: LeituraIntegralFormSectionProps) {
   const integralAtiva = watch('integral_ativa')
   const fonteUrl = watch('integral_fonte_url')
-  const fileRef = useRef<HTMLInputElement>(null)
+  const pdfTxtRef = useRef<HTMLInputElement>(null)
+  const jsonRef = useRef<HTMLInputElement>(null)
   const [pendingFile, setPendingFile] = useState<string | null>(null)
-  const [traduzirParaPt, setTraduzirParaPt] = useState(true)
+  const [traduzirParaPt, setTraduzirParaPt] = useState(false)
   const [translateProgress, setTranslateProgress] = useState<string | null>(null)
+  const [pdfExtractProgress, setPdfExtractProgress] = useState<string | null>(null)
   const progressToastRef = useRef<string | number | undefined>(undefined)
   const { data: capitulos = [], isLoading } = useCapitulosIntegral(conteudoId, Boolean(conteudoId))
   const replaceCapitulos = useReplaceCapitulosIntegral(conteudoId)
   const importFromLink = useImportLeituraIntegralFromLink(conteudoId)
   const importFromText = useImportLeituraIntegralFromTextFile(conteudoId)
+
+  const statusCapitulos = !conteudoId ? (
+    <span className="text-amber-900">Salve o livro antes de importar capítulos.</span>
+  ) : isLoading ? (
+    'Carregando capítulos…'
+  ) : capitulos.length > 0 ? (
+    `${capitulos.length} capítulo(s) já gravados para este livro`
+  ) : (
+    'Nenhum capítulo importado ainda'
+  )
 
   const handleImportLink = async () => {
     if (!conteudoId) {
@@ -57,7 +109,7 @@ export function LeituraIntegralFormSection({
     }
     const url = fonteUrl?.trim()
     if (!url) {
-      toast.error('Cole o link no campo abaixo.')
+      toast.error('Cole o link da obra no bloco “Importar por link”.')
       return
     }
     try {
@@ -93,17 +145,32 @@ export function LeituraIntegralFormSection({
     }
   }
 
-  const handleImportFile = async (file: File) => {
+  const handleImportFile = async (file: File, kind: 'pdf-txt' | 'json') => {
     if (!conteudoId) {
       toast.error('Salve o conteúdo primeiro para importar capítulos.')
       return
     }
     const nameLower = file.name.toLowerCase()
-    const isJson = nameLower.endsWith('.json') || file.type === 'application/json'
+    const isJson = kind === 'json' || nameLower.endsWith('.json') || file.type === 'application/json'
+    const isPdf = nameLower.endsWith('.pdf') || file.type === 'application/pdf'
     const isText =
       nameLower.endsWith('.txt') || file.type === 'text/plain' || file.type.startsWith('text/')
     try {
-      const raw = await file.text()
+      let raw: string
+      if (isPdf) {
+        setPdfExtractProgress('Lendo PDF…')
+        toast.message('Extraindo texto do PDF no navegador — pode levar um minuto.', { duration: 8000 })
+        raw = await extractTextFromIntegralPdf(file, (page, total) => {
+          setPdfExtractProgress(`Página ${page} de ${total}…`)
+        })
+        setPdfExtractProgress(null)
+      } else {
+        raw = await file.text()
+        if (!isJson && isMislabeledPdfAsText(raw)) {
+          toast.error(MSG_MISLABELED_PDF)
+          return
+        }
+      }
       if (isJson) {
         const json: unknown = JSON.parse(raw)
         const parsed = capitulosIntegralImportSchema.parse(json)
@@ -115,11 +182,11 @@ export function LeituraIntegralFormSection({
         toast.success(`${parsed.capitulos.length} capítulo(s) importados.`)
         return
       }
-      if (isText) {
+      if (isText || isPdf) {
         const result = await importFromText.mutateAsync({
           texto: raw,
           fonteUrl: fonteUrl?.trim() || null,
-          traduzirParaPt,
+          traduzirParaPt: isPdf ? false : traduzirParaPt,
           onTranslateProgress: (current, total) => {
             setTranslateProgress(`Traduzindo capítulo ${current} de ${total}…`)
           },
@@ -129,8 +196,9 @@ export function LeituraIntegralFormSection({
         if (result.aviso) toast.message(result.aviso, { duration: 9000 })
         return
       }
-      toast.error('Use arquivo .txt (texto do site) ou .json (backup técnico).')
+      toast.error('Use PDF ou .txt do Domínio Público neste bloco.')
     } catch (e) {
+      setPdfExtractProgress(null)
       toast.error(e instanceof Error ? e.message : 'Não foi possível importar o arquivo')
     }
   }
@@ -140,24 +208,9 @@ export function LeituraIntegralFormSection({
       <div>
         <p className="text-sm font-semibold text-brand-navy">Leitura integral (opcional)</p>
         <p className="mt-1 text-xs leading-relaxed text-text-muted">
-          O professor faz <strong>sozinho</strong>: acha a obra em domínio público, importa o{' '}
-          <strong>livro inteiro</strong> por link ou arquivo <strong>.txt</strong>. O aluno só lê no EntreLinhas.
+          Depois que o aluno concluir o estudo do resumo, ele pode ler o livro inteiro aqui no EntreLinhas. Escolha o
+          caminho que combina com a obra — cada bloco abaixo é independente.
         </p>
-        <ol className="mt-2 list-decimal space-y-1 pl-4 text-[11px] leading-relaxed text-text-muted">
-          <li>
-            <strong>Brasileira em português:</strong> no Domínio Público, baixe o <strong>texto (.txt)</strong> no
-            navegador · cole a URL da ficha no campo · envie o .txt em{' '}
-            <strong>Enviar arquivo de texto</strong>.
-          </li>
-          <li>
-            <strong>Obra estrangeira:</strong> link HTML no <code className="rounded bg-surface px-1">gutenberg.net.au</code>{' '}
-            · <strong>Importar do link</strong> com tradução automática para português (como o Tradutor do Google).
-          </li>
-          <li>
-            Ou cole link que termina em <code className="rounded bg-surface px-1">.txt</code> (Project Gutenberg) e
-            importe pelo link.
-          </li>
-        </ol>
       </div>
 
       <label className="flex items-center gap-2 text-sm">
@@ -171,8 +224,8 @@ export function LeituraIntegralFormSection({
       </label>
 
       {integralAtiva && (
-        <div className="grid gap-4 sm:grid-cols-2">
-          <div className="space-y-2 sm:col-span-2">
+        <div className="space-y-4">
+          <div className="space-y-2">
             <Label htmlFor="integral_licenca">Licença da integral</Label>
             <select
               id="integral_licenca"
@@ -186,62 +239,144 @@ export function LeituraIntegralFormSection({
             </select>
           </div>
 
-          <div className="space-y-2 sm:col-span-2">
-            <Label htmlFor="integral_fonte_url">Link da obra (cole aqui)</Label>
-            <Input
-              id="integral_fonte_url"
-              placeholder="https://www.gutenberg.net.au/ebooks03/0300771h.html"
-              disabled={disabled}
-              {...register('integral_fonte_url')}
-            />
-            <div className="flex flex-wrap gap-2 pt-1">
-              <Button
-                type="button"
-                variant="ghost"
-                size="sm"
-                className="h-auto px-2 py-1 text-xs"
-                onClick={() => {
-                  setValue('integral_fonte_url', LINK_GUTENBERG_PP)
-                }}
-              >
-                Ex.: Pequeno Príncipe (Gutenberg — referência)
-              </Button>
-              <Button
-                type="button"
-                variant="ghost"
-                size="sm"
-                className="h-auto px-2 py-1 text-xs"
-                onClick={() => {
-                  setValue('integral_fonte_url', linkAmostraPortugues())
-                }}
-              >
-                Ex.: Pequeno Príncipe (teste em português — EntreLinhas)
-              </Button>
-            </div>
+          <div
+            className="rounded-xl border border-border/60 bg-surface/50 px-3 py-2.5 text-xs text-text-muted"
+            role="status"
+          >
+            {statusCapitulos}
+            {(translateProgress || pdfExtractProgress) && (
+              <p className="mt-1 font-medium text-primary">{translateProgress ?? pdfExtractProgress}</p>
+            )}
+            {pendingFile && (
+              <p className="mt-1 text-[11px]">Último arquivo enviado: {pendingFile}</p>
+            )}
           </div>
 
-          <label className="flex items-start gap-2 text-sm sm:col-span-2">
-            <input
-              type="checkbox"
-              className="mt-0.5 h-4 w-4 rounded border-primary/30"
-              checked={traduzirParaPt}
-              disabled={disabled}
-              onChange={(e) => setTraduzirParaPt(e.target.checked)}
-            />
-            <span className="text-xs leading-relaxed text-text-muted">
-              <strong className="text-text">Traduzir automaticamente para português</strong> ao importar (obra em
-              outro idioma). A tradução roda no seu navegador — não feche a aba até terminar.
-            </span>
-          </label>
-          {translateProgress && (
-            <p className="text-xs font-medium text-primary sm:col-span-2" role="status">
-              {translateProgress}
+          <IntegralCanalCard
+            tone="primary"
+            icon={<BookMarked className="h-5 w-5" aria-hidden />}
+            title="Obra brasileira — Domínio Público (MEC)"
+            lead="Baixe o PDF na ficha da obra e envie aqui. O texto é extraído no seu navegador — use o arquivo .pdf, não renomeie para .txt."
+          >
+            <p className="text-[11px] leading-relaxed text-text-muted">
+              Pesquise em{' '}
+              <a
+                href={LINK_DOMINIO_PUBLICO}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="font-medium text-primary underline-offset-2 hover:underline"
+              >
+                dominiopublico.mec.gov.br
+              </a>
+              , abra a obra e use o botão de download em PDF.
             </p>
-          )}
-
-          <div className="flex flex-wrap items-center gap-3 sm:col-span-2">
+            <div className="space-y-2">
+              <Label htmlFor="integral_fonte_url_mec">Link da ficha no MEC (opcional)</Label>
+              <Input
+                id="integral_fonte_url_mec"
+                placeholder="https://dominiopublico.mec.gov.br/…"
+                disabled={disabled}
+                value={fonteUrl ?? ''}
+                onChange={(e) =>
+                  setValue('integral_fonte_url', e.target.value, { shouldDirty: true, shouldValidate: true })
+                }
+              />
+              <p className="text-[11px] text-text-muted">
+                Só para registro: de onde veio o PDF. O aluno não abre esse link para ler.
+              </p>
+            </div>
+            <input
+              ref={pdfTxtRef}
+              type="file"
+              accept=".pdf,application/pdf,.txt,text/plain"
+              className="hidden"
+              onChange={(e) => {
+                const file = e.target.files?.[0]
+                if (file) void handleImportFile(file, 'pdf-txt')
+                e.target.value = ''
+              }}
+            />
             <Button
               type="button"
+              disabled={
+                disabled || !conteudoId || replaceCapitulos.isPending || importFromText.isPending
+              }
+              onClick={() => pdfTxtRef.current?.click()}
+            >
+              {replaceCapitulos.isPending || importFromText.isPending ? (
+                <Loader2 className="h-4 w-4 animate-spin" aria-hidden />
+              ) : (
+                <FileUp className="h-4 w-4" aria-hidden />
+              )}
+              Enviar PDF ou .txt do Domínio Público
+            </Button>
+          </IntegralCanalCard>
+
+          <IntegralCanalCard
+            tone="accent"
+            icon={<Globe2 className="h-5 w-5" aria-hidden />}
+            title="Importar por link na internet"
+            lead="HTML da Cervantes, Gutenberg Australia ou link direto para um .txt. Cole a URL da página da obra (não a home do site)."
+          >
+            <div className="space-y-2">
+              <Label htmlFor="integral_fonte_url_link">Link da página da obra</Label>
+              <Input
+                id="integral_fonte_url_link"
+                placeholder="https://www.gutenberg.net.au/ebooks03/0300771h.html"
+                disabled={disabled}
+                {...register('integral_fonte_url')}
+              />
+              <div className="flex flex-wrap gap-2">
+                <Button
+                  type="button"
+                  variant="ghost"
+                  size="sm"
+                  className="h-auto px-2 py-1 text-xs"
+                  disabled={disabled}
+                  onClick={() => setValue('integral_fonte_url', LINK_CERVANTES_DOM_CASMURRO)}
+                >
+                  Ex.: Dom Casmurro (Cervantes)
+                </Button>
+                <Button
+                  type="button"
+                  variant="ghost"
+                  size="sm"
+                  className="h-auto px-2 py-1 text-xs"
+                  disabled={disabled}
+                  onClick={() => setValue('integral_fonte_url', LINK_GUTENBERG_PP)}
+                >
+                  Ex.: Pequeno Príncipe (Gutenberg AU)
+                </Button>
+                <Button
+                  type="button"
+                  variant="ghost"
+                  size="sm"
+                  className="h-auto px-2 py-1 text-xs"
+                  disabled={disabled}
+                  onClick={() => setValue('integral_fonte_url', linkAmostraPortugues())}
+                >
+                  Ex.: teste em português (EntreLinhas)
+                </Button>
+              </div>
+            </div>
+
+            <label className="flex items-start gap-2 text-sm">
+              <input
+                type="checkbox"
+                className="mt-0.5 h-4 w-4 rounded border-primary/30"
+                checked={traduzirParaPt}
+                disabled={disabled}
+                onChange={(e) => setTraduzirParaPt(e.target.checked)}
+              />
+              <span className="text-xs leading-relaxed text-text-muted">
+                <strong className="text-text">Traduzir para português</strong> (obras em outro idioma, ex. francês no
+                Gutenberg). Roda no seu navegador — não feche a aba.
+              </span>
+            </label>
+
+            <Button
+              type="button"
+              variant="secondary"
               disabled={disabled || !conteudoId || importFromLink.isPending}
               onClick={() => void handleImportLink()}
             >
@@ -250,90 +385,73 @@ export function LeituraIntegralFormSection({
               ) : (
                 <Link2 className="h-4 w-4" aria-hidden />
               )}
-              Importar do link
+              Importar capítulos deste link
             </Button>
-            {conteudoId && (
-              <span className="text-xs text-text-muted">
-                {isLoading
-                  ? 'Carregando capítulos…'
-                  : capitulos.length > 0
-                    ? `${capitulos.length} capítulo(s) no banco`
-                    : 'Nenhum capítulo importado ainda'}
-              </span>
-            )}
-            {!conteudoId && (
-              <span className="text-xs text-amber-800">Salve o livro para importar.</span>
-            )}
-          </div>
 
-          <p className="text-[11px] leading-relaxed text-text-muted sm:col-span-2">
-            <strong>*O Pequeno Príncipe*:</strong> Gutenberg Australia (HTML) = obra inteira em francês. Para
-            português, use fonte em PT (Domínio Público ou texto legal) em arquivo <code>.txt</code> — não há JSON
-            público na internet para baixar.
-          </p>
-
-          <div className="space-y-2">
-            <Label htmlFor="integral_traducao_metodo">Método do texto em PT</Label>
-            <select
-              id="integral_traducao_metodo"
-              className="w-full rounded-xl border border-border bg-white px-3 py-2 text-sm"
-              disabled={disabled}
-              {...register('integral_traducao_metodo')}
-            >
-              <option value="">Selecione…</option>
-              <option value="preimportado">Importado por link / JSON</option>
-              <option value="pt_nativo">Original já em português</option>
-              <option value="nao_aplicavel">Não aplicável</option>
-            </select>
-          </div>
-
-          <div className="space-y-2">
-            <Label htmlFor="integral_traducao_credito">Crédito da tradução</Label>
-            <Input
-              id="integral_traducao_credito"
-              placeholder="EntreLinhas"
-              disabled={disabled}
-              {...register('integral_traducao_credito')}
-            />
-          </div>
-
-          <div className="sm:col-span-2 space-y-2">
-            <Label>Arquivo da obra (livro inteiro)</Label>
-            <div className="flex flex-wrap items-center gap-3">
-              <input
-                ref={fileRef}
-                type="file"
-                accept=".txt,text/plain,application/json,.json"
-                className="hidden"
-                onChange={(e) => {
-                  const file = e.target.files?.[0]
-                  if (file) void handleImportFile(file)
-                  e.target.value = ''
-                }}
-              />
-              <Button
-                type="button"
-                variant="outline"
-                size="sm"
-                disabled={
-                  disabled || !conteudoId || replaceCapitulos.isPending || importFromText.isPending
-                }
-                onClick={() => fileRef.current?.click()}
-              >
-                {replaceCapitulos.isPending || importFromText.isPending ? (
-                  <Loader2 className="h-4 w-4 animate-spin" aria-hidden />
-                ) : (
-                  <FileUp className="h-4 w-4" aria-hidden />
-                )}
-                Enviar arquivo (.txt ou JSON)
-              </Button>
-              {pendingFile && <span className="text-xs text-text-muted">Último: {pendingFile}</span>}
-            </div>
-            <p className="text-[11px] text-text-muted">
-              O usual é <strong>.txt</strong> baixado do Domínio Público ou do Gutenberg. JSON só se alguém exportou
-              capítulos manualmente.
+            <p className="text-[11px] leading-relaxed text-text-muted">
+              <strong>Pequeno Príncipe:</strong> o HTML do Gutenberg AU está em francês — marque tradução ou use texto
+              em português de fonte legal por PDF/.txt no bloco acima.
             </p>
-          </div>
+          </IntegralCanalCard>
+
+          <details className="rounded-xl border border-dashed border-border/80 bg-surface/30 px-4 py-3 text-sm">
+            <summary className="cursor-pointer text-xs font-medium text-text-muted">
+              Registro da tradução e backup técnico (JSON)
+            </summary>
+            <div className="mt-4 grid gap-4 sm:grid-cols-2">
+              <div className="space-y-2 sm:col-span-2 sm:grid sm:grid-cols-2 sm:gap-4">
+                <div className="space-y-2">
+                  <Label htmlFor="integral_traducao_metodo">Método do texto em PT</Label>
+                  <select
+                    id="integral_traducao_metodo"
+                    className="w-full rounded-xl border border-border bg-white px-3 py-2 text-sm"
+                    disabled={disabled}
+                    {...register('integral_traducao_metodo')}
+                  >
+                    <option value="">Selecione…</option>
+                    <option value="preimportado">Importado por link / JSON</option>
+                    <option value="pt_nativo">Original já em português</option>
+                    <option value="nao_aplicavel">Não aplicável</option>
+                  </select>
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="integral_traducao_credito">Crédito da tradução</Label>
+                  <Input
+                    id="integral_traducao_credito"
+                    placeholder="EntreLinhas"
+                    disabled={disabled}
+                    {...register('integral_traducao_credito')}
+                  />
+                </div>
+              </div>
+              <div className="space-y-2 sm:col-span-2">
+                <p className="text-[11px] text-text-muted">
+                  JSON só para restaurar cópia já exportada ou testes internos — não é o fluxo normal para professores.
+                </p>
+                <input
+                  ref={jsonRef}
+                  type="file"
+                  accept="application/json,.json"
+                  className="hidden"
+                  onChange={(e) => {
+                    const file = e.target.files?.[0]
+                    if (file) void handleImportFile(file, 'json')
+                    e.target.value = ''
+                  }}
+                />
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="sm"
+                  disabled={disabled || !conteudoId || replaceCapitulos.isPending}
+                  onClick={() => jsonRef.current?.click()}
+                >
+                  <FileUp className="h-4 w-4" aria-hidden />
+                  Enviar arquivo .json
+                </Button>
+              </div>
+            </div>
+          </details>
         </div>
       )}
     </section>

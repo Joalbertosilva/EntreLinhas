@@ -2,7 +2,8 @@ import { BookOpen, Lock, Loader2, Sparkles } from 'lucide-react'
 import { toast } from 'sonner'
 import type { Conteudo, StatusLeitura, StatusLeituraIntegral } from '@tcc-sistema/types'
 import { BookPaginatedReader } from '@/features/app/BookPaginatedReader'
-import { buildObraBookPages, getIntegralBookPageStorageKey } from '@/features/app/bookPagination'
+import { buildIntegralBookPages, getIntegralBookPageStorageKey } from '@/features/app/bookPagination'
+import { resolveConteudoCoverUrl } from '@/lib/conteudoCover'
 import {
   mensagemLeituraIntegralBloqueada,
   podeAcessarLeituraIntegral,
@@ -35,7 +36,14 @@ export function LivroLeituraIntegralSection({
 
   const desbloqueado = podeAcessarLeituraIntegral(conteudo, statusEstudo, capitulos.length)
   const mensagemBloqueio = mensagemLeituraIntegralBloqueada(conteudo, statusEstudo, capitulos.length)
-  const pages = buildObraBookPages(
+  const coverUrl = resolveConteudoCoverUrl(conteudo)
+  const pages = buildIntegralBookPages(
+    {
+      titulo: conteudo.titulo,
+      autor: conteudo.autor,
+      coverUrl,
+      creditoTraducao: conteudo.integral_traducao_credito,
+    },
     capitulos.map((c) => ({
       id: c.id,
       ordem: c.ordem,
@@ -105,11 +113,6 @@ export function LivroLeituraIntegralSection({
 
       {!isLoading && desbloqueado && (
         <div className="space-y-4">
-          <p className="text-xs leading-relaxed text-text-muted">
-            Tradução gerada para a plataforma EntreLinhas a partir de obra em domínio público. Pode
-            haver imprecisões em relação a edições comerciais.
-          </p>
-
           {!integralStatus && (
             <Button
               type="button"
