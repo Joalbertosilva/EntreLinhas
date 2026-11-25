@@ -26,6 +26,25 @@ export function withCacheBust(url: string, version?: number | string): string {
   return `${url}${sep}v=${v}`
 }
 
+/** Compara caminhos no bucket; ignora query string (`?v=`). */
+export function sameCoverStorageObject(
+  a: string | null | undefined,
+  b: string | null | undefined,
+): boolean {
+  const pathA = a ? extractCoverStoragePath(a) : null
+  const pathB = b ? extractCoverStoragePath(b) : null
+  if (!pathA || !pathB) return false
+  return pathA === pathB
+}
+
+export function coverFileExtension(file: File): 'png' | 'webp' | 'jpg' {
+  const type = file.type.toLowerCase()
+  const name = file.name.toLowerCase()
+  if (type === 'image/png' || name.endsWith('.png')) return 'png'
+  if (type === 'image/webp' || name.endsWith('.webp')) return 'webp'
+  return 'jpg'
+}
+
 export function extractCoverStoragePath(url: string): string | null {
   const patterns = [
     `/storage/v1/object/public/${COVERS_BUCKET}/`,
@@ -45,17 +64,18 @@ export async function uploadCover(file: File, contentId: string): Promise<string
   const validation = validateCoverFile(file)
   if (validation) throw new Error(validation)
 
-  const ext = file.type === 'image/png' ? 'png' : file.type === 'image/webp' ? 'webp' : 'jpg'
+  const ext = coverFileExtension(file)
   const path = `${contentId}/capa.${ext}`
 
   const { error } = await supabase.storage.from(COVERS_BUCKET).upload(path, file, {
     upsert: true,
-    contentType: file.type,
+    contentType: file.type || `image/${ext === 'jpg' ? 'jpeg' : ext}`,
+    cacheControl: '3600',
   })
   if (error) throw new Error(error.message)
 
   const { data } = supabase.storage.from(COVERS_BUCKET).getPublicUrl(path)
-  return data.publicUrl
+  return withCacheBust(data.publicUrl)
 }
 
 async function uploadObraCoverFile(
