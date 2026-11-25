@@ -1,4 +1,4 @@
-import { ChevronLeft, ChevronRight, Maximize2, Minimize2, X } from 'lucide-react'
+import { BookOpen, ChevronLeft, ChevronRight, Maximize2, Minimize2, X } from 'lucide-react'
 import { useCallback, useEffect, useRef, useState } from 'react'
 import { createPortal } from 'react-dom'
 import { useAccessibility } from '@/features/accessibility/AccessibilityProvider'
@@ -7,7 +7,7 @@ import { SpeakButton } from '@/features/accessibility/SpeakButton'
 import { AmbientCanvasField } from '@/components/layout/LoginAmbientBackground'
 import { Button } from '@/components/ui/Button'
 import type { BookPage } from '@/features/app/bookPagination'
-import { getBookPageStorageKey } from '@/features/app/bookPagination'
+import { getBookPageSpeakLabel, getBookPageStorageKey } from '@/features/app/bookPagination'
 import { cn } from '@/lib/utils'
 
 interface BookPaginatedReaderProps {
@@ -107,7 +107,9 @@ export function BookPaginatedReader({
   const atStart = pageIndex === 0
   const atEnd = pageIndex >= pages.length - 1
   const progress = ((pageIndex + 1) / pages.length) * 100
-  const pageSpeakLabel = `${current.title}. ${current.body}`
+  const isCoverPage = current.kind === 'cover'
+  const pageHeading = isCoverPage ? 'Capa' : current.title
+  const pageSpeakLabel = getBookPageSpeakLabel(current)
 
   const pageViewport = (
     <div
@@ -139,23 +141,55 @@ export function BookPaginatedReader({
           </>
         )}
         <div className="book-page-title-row">
-          <h3 className={cn('book-page-title', immersive && 'book-page-title--immersive')}>{current.title}</h3>
+          <h3 className={cn('book-page-title', immersive && 'book-page-title--immersive')}>{pageHeading}</h3>
           {audioEnabled && <SpeakButton label={pageSpeakLabel} className="book-page-title-speak" />}
         </div>
-        <Speakable hideButton label={pageSpeakLabel} className="book-page-text-region">
-          <div
-            ref={scrollRef}
-            className={cn(
-              'book-prose book-page-text scrollbar-thin whitespace-pre-wrap',
-              immersive && 'book-page-text--immersive',
-            )}
-            tabIndex={0}
-          >
-            {current.body}
-          </div>
-        </Speakable>
+        {isCoverPage ? (
+          <Speakable hideButton label={pageSpeakLabel} className="book-page-cover-region">
+            <div className={cn('book-page-cover', immersive && 'book-page-cover--immersive')}>
+              {current.coverUrl ? (
+                <img
+                  src={current.coverUrl}
+                  alt=""
+                  className="book-page-cover__image"
+                  width={240}
+                  height={320}
+                />
+              ) : (
+                <div className="book-page-cover__placeholder" aria-hidden>
+                  <BookOpen className="h-10 w-10 text-primary/70" strokeWidth={1.5} />
+                </div>
+              )}
+              <div className="book-page-cover__meta">
+                <p className={cn('book-page-cover__title', immersive && 'book-page-cover__title--immersive')}>
+                  {current.title}
+                </p>
+                {current.body.trim() ? (
+                  <p className="book-page-cover__author">por {current.body.trim()}</p>
+                ) : null}
+              </div>
+            </div>
+          </Speakable>
+        ) : (
+          <Speakable hideButton label={pageSpeakLabel} className="book-page-text-region">
+            <div
+              ref={scrollRef}
+              className={cn(
+                'book-prose book-page-text scrollbar-thin whitespace-pre-wrap',
+                immersive && 'book-page-text--immersive',
+              )}
+              tabIndex={0}
+            >
+              {current.body}
+            </div>
+          </Speakable>
+        )}
         <p className="book-page-scroll-hint">
-          {immersive ? 'Role o texto abaixo para continuar lendo' : 'Role dentro da página para ler tudo'}
+          {isCoverPage
+            ? 'Use Próxima para ver os créditos e começar a leitura'
+            : immersive
+              ? 'Role o texto abaixo para continuar lendo'
+              : 'Role dentro da página para ler tudo'}
         </p>
       </div>
     </div>
