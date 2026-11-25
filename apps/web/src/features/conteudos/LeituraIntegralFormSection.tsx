@@ -5,10 +5,10 @@ import type { UseFormRegister, UseFormSetValue, UseFormWatch } from 'react-hook-
 import { toast } from 'sonner'
 import type { ConteudoFormInput } from '@tcc-sistema/schemas'
 import {
+  replaceCapitulosIntegralInDb,
   useCapitulosIntegral,
   useImportLeituraIntegralFromLink,
   useImportLeituraIntegralFromTextFile,
-  useReplaceCapitulosIntegral,
 } from '@/features/app/useLeituraIntegral'
 import { extractTextFromIntegralPdf } from '@/lib/integralPdfText'
 import { isMislabeledPdfAsText, MSG_MISLABELED_PDF } from '@/lib/integralMislabeledFile'
@@ -30,6 +30,7 @@ function linkAmostraPortugues(): string {
 
 interface LeituraIntegralFormSectionProps {
   conteudoId: string | undefined
+  ensureConteudoId?: () => Promise<string | undefined>
   register: UseFormRegister<ConteudoFormInput>
   setValue: UseFormSetValue<ConteudoFormInput>
   watch: UseFormWatch<ConteudoFormInput>
@@ -73,6 +74,7 @@ function IntegralCanalCard({
 
 export function LeituraIntegralFormSection({
   conteudoId,
+  ensureConteudoId,
   register,
   setValue,
   watch,
@@ -86,14 +88,30 @@ export function LeituraIntegralFormSection({
   const [traduzirParaPt, setTraduzirParaPt] = useState(false)
   const [translateProgress, setTranslateProgress] = useState<string | null>(null)
   const [pdfExtractProgress, setPdfExtractProgress] = useState<string | null>(null)
+  const [ensuringConteudo, setEnsuringConteudo] = useState(false)
   const progressToastRef = useRef<string | number | undefined>(undefined)
   const { data: capitulos = [], isLoading } = useCapitulosIntegral(conteudoId, Boolean(conteudoId))
-  const replaceCapitulos = useReplaceCapitulosIntegral(conteudoId)
   const importFromLink = useImportLeituraIntegralFromLink(conteudoId)
   const importFromText = useImportLeituraIntegralFromTextFile(conteudoId)
 
+  const resolveConteudoId = async (): Promise<string | null> => {
+    if (conteudoId) return conteudoId
+    if (!ensureConteudoId) return null
+    setEnsuringConteudo(true)
+    try {
+      const id = await ensureConteudoId()
+      return id ?? null
+    } finally {
+      setEnsuringConteudo(false)
+    }
+  }
+
+  const importBusy = ensuringConteudo || importFromText.isPending || importFromLink.isPending
+
   const statusCapitulos = !conteudoId ? (
-    <span className="text-amber-900">Salve o livro antes de importar capítulos.</span>
+    <span className="text-amber-900">
+      Livro novo: ao clicar em importar ou enviar PDF, salvamos o cadastro automaticamente (precisa do título).
+    </span>
   ) : isLoading ? (
     'Carregando capítulos…'
   ) : capitulos.length > 0 ? (
@@ -103,10 +121,8 @@ export function LeituraIntegralFormSection({
   )
 
   const handleImportLink = async () => {
-    if (!conteudoId) {
-      toast.error('Salve o livro antes de importar.')
-      return
-    }
+    const cid = await resolveConteudoId()
+    if (!cid) return
     const url = fonteUrl?.trim()
     if (!url) {
       toast.error('Cole o link da obra no bloco “Importar por link”.')
@@ -120,6 +136,7 @@ export function LeituraIntegralFormSection({
       }
       setTranslateProgress(null)
       const result = await importFromLink.mutateAsync({
+        conteudoId: cid,
         fonteUrl: url,
         traduzirParaPt,
         onTranslateProgress: (current, total) => {
@@ -146,10 +163,8 @@ export function LeituraIntegralFormSection({
   }
 
   const handleImportFile = async (file: File, kind: 'pdf-txt' | 'json') => {
-    if (!conteudoId) {
-      toast.error('Salve o conteúdo primeiro para importar capítulos.')
-      return
-    }
+    const cid = await resolveConteudoId()
+    if (!cid) return
     const nameLower = file.name.toLowerCase()
     const isJson = kind === 'json' || nameLower.endsWith('.json') || file.type === 'application/json'
     const isPdf = nameLower.endsWith('.pdf') || file.type === 'application/pdf'
@@ -177,13 +192,14 @@ export function LeituraIntegralFormSection({
         if (parsed.meta?.fonte_url) {
           setValue('integral_fonte_url', parsed.meta.fonte_url)
         }
-        await replaceCapitulos.mutateAsync(parsed)
+        await replaceCapitulosIntegralInDb(cid, parsed)
         setPendingFile(file.name)
         toast.success(`${parsed.capitulos.length} capítulo(s) importados.`)
         return
       }
       if (isText || isPdf) {
         const result = await importFromText.mutateAsync({
+          conteudoId: cid,
           texto: raw,
           fonteUrl: fonteUrl?.trim() || null,
           traduzirParaPt: isPdf ? false : traduzirParaPt,
@@ -298,12 +314,10 @@ export function LeituraIntegralFormSection({
             />
             <Button
               type="button"
-              disabled={
-                disabled || !conteudoId || replaceCapitulos.isPending || importFromText.isPending
-              }
+              disabled={disabled || importBusy}
               onClick={() => pdfTxtRef.current?.click()}
             >
-              {replaceCapitulos.isPending || importFromText.isPending ? (
+              {importBusy ? (
                 <Loader2 className="h-4 w-4 animate-spin" aria-hidden />
               ) : (
                 <FileUp className="h-4 w-4" aria-hidden />
@@ -377,10 +391,10 @@ export function LeituraIntegralFormSection({
             <Button
               type="button"
               variant="secondary"
-              disabled={disabled || !conteudoId || importFromLink.isPending}
+              disabled={disabled || importBusy}
               onClick={() => void handleImportLink()}
             >
-              {importFromLink.isPending ? (
+              {importFromLink.isPending || ensuringConteudo ? (
                 <Loader2 className="h-4 w-4 animate-spin" aria-hidden />
               ) : (
                 <Link2 className="h-4 w-4" aria-hidden />
@@ -443,7 +457,7 @@ export function LeituraIntegralFormSection({
                   type="button"
                   variant="outline"
                   size="sm"
-                  disabled={disabled || !conteudoId || replaceCapitulos.isPending}
+                  disabled={disabled || importBusy}
                   onClick={() => jsonRef.current?.click()}
                 >
                   <FileUp className="h-4 w-4" aria-hidden />
