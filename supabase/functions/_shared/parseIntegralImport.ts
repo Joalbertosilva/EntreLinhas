@@ -5,7 +5,7 @@ import {
   stripNeadFromChunk,
   tituloFromMecCapituloPart,
   trimMecPdfPreamble,
-} from './cleanPdfText'
+} from './cleanPdfText.ts'
 
 export {
   cleanDominioPublicoPdfText,
@@ -14,7 +14,7 @@ export {
   stripNeadFromChunk,
   tituloFromMecCapituloPart,
   trimMecPdfPreamble,
-} from './cleanPdfText'
+} from './cleanPdfText.ts'
 
 export type CapituloParsed = {
   ordem: number;
