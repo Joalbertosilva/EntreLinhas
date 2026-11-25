@@ -271,7 +271,9 @@ function VideoConteudoPage({
                 {conteudo.titulo}
               </h1>
               {conteudo.descricao && (
-                <p className="text-base leading-relaxed text-text-muted">{conteudo.descricao}</p>
+                <p className="whitespace-pre-wrap text-base leading-relaxed text-text-muted">
+                  {conteudo.descricao}
+                </p>
               )}
             </Speakable>
             {videoUrl ? (
@@ -371,7 +373,7 @@ function ConteudoHero({ conteudo, compact = false }: { conteudo: Conteudo; compa
               <p className="mt-1 text-text-muted">por {conteudo.autor}</p>
             )}
             {conteudo.descricao && (
-              <p className="mt-4 text-base leading-relaxed text-text-muted">
+              <p className="mt-4 whitespace-pre-wrap text-base leading-relaxed text-text-muted">
                 {conteudo.descricao}
               </p>
             )}

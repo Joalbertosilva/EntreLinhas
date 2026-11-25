@@ -15,6 +15,26 @@ const DEFAULT_BY_TIPO: Partial<Record<TipoConteudo, string>> = {
   poema: DEFAULT_POEMA_COVER,
 }
 
+const PRESET_CONTEUDO_COVER_URLS = new Set<string>([DEFAULT_CRONICA_COVER, DEFAULT_POEMA_COVER])
+
+export function isPresetConteudoCoverUrl(url: string | null | undefined): boolean {
+  const trimmed = url?.trim()
+  return Boolean(trimmed && PRESET_CONTEUDO_COVER_URLS.has(trimmed))
+}
+
+/** Capa ao criar conteúdo: preset só no tipo correspondente; não reaproveita capa de outro tipo. */
+export function resolveCoverUrlForCreate(
+  tipo: TipoConteudo,
+  coverUrl: string | null,
+  hasCoverFile: boolean,
+): string | null {
+  if (hasCoverFile) return coverUrl
+  const preset = defaultConteudoCoverUrl(tipo)
+  if (preset) return preset
+  if (isPresetConteudoCoverUrl(coverUrl)) return null
+  return coverUrl
+}
+
 /** Capa padrão por tipo (crônica/poema) — usada na criação e na exibição. */
 export function defaultConteudoCoverUrl(tipo: TipoConteudo): string | null {
   return DEFAULT_BY_TIPO[tipo] ?? null
