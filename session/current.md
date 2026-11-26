@@ -1,9 +1,9 @@
 # Sessão atual — tcc-sistema / EntreLinhas
 
-> Última atualização: **2026-11-25**  
+> Última atualização: **2026-11-26**  
 > **Fase:** MVP completo (web + mobile) → **ensaio de apresentação**  
 > **Deploy:** pós-apresentação (site roda em `localhost` + Supabase nuvem)  
-> **Git:** `main`/`develop` — import PDF Domínio Público (MEC), painel professor por canal, fix capa
+> **Git:** `main`/`develop` — leitura integral **só PDF MEC** (1 folha = 1 página; texto fiel na extração)
 
 ---
 
@@ -13,9 +13,9 @@
 Backend ✅  →  Web ✅  →  Mobile ✅  →  Apresentação 🔄  →  Deploy ⏳
 ```
 
-**Entregue em `main`/`develop` (2026-11-24):** **leitura integral** — professor importa obra completa (Gutenberg / `.txt`), tradução automática no navegador, aluno lê com **modo leitura Kindle** (fundo orgânico do login).
+**Entregue em `develop` (2026-11-26):** **leitura integral** — professor importa **somente PDF** do Domínio Público (MEC); extração no navegador (1:1 páginas); gravação via RLS; aluno lê por página/capítulo detectado. **Sem** fluxo link/tradução na UI.
 
-**Foco imediato:** validar fluxo professor + aluno na apresentação; paridade mobile (perfil, splash nativa).
+**Foco imediato:** merge em `main`; validar PDF real na apresentação; **paridade mobile** do leitor integral.
 
 **Foco geral:** [`docs/roteiro-apresentacao.md`](../docs/roteiro-apresentacao.md); [`docs/validacao-requisitos.md`](../docs/validacao-requisitos.md).
 
@@ -27,11 +27,13 @@ Backend ✅  →  Web ✅  →  Mobile ✅  →  Apresentação 🔄  →  Deplo
 |------|----------------------|------------------|
 | Migration `20261124120000_leitura_integral.sql` | ✅ | `pnpm db:push` se ainda não aplicou |
 | Edge Function `import-leitura-integral-url` | ✅ | **`pnpm exec supabase functions deploy import-leitura-integral-url`** após merge |
-| Gerenciador: seção no formulário de livro | ✅ | Blocos **MEC (PDF)** e **link**; import PDF no navegador |
+| Gerenciador: seção no formulário de livro | ✅ | **Só PDF MEC**; import no navegador |
 | Aluno: leitura integral + modo Kindle | ✅ | — |
-| Docs professor / custo zero / tradução | ✅ | PDF MEC documentado |
+| Docs professor | ✅ | PDF MEC |
 
-**Fluxo professor (demo):** Brasil → PDF MEC no bloco Domínio Público; estrangeiro → link Gutenberg + traduzir PT.
+**Fluxo professor (demo):** baixar PDF no MEC → enviar no gerenciador → revisar páginas → aluno lê.
+
+**Segurança nuvem:** não fazer deploy de Edge Functions `translate-*` / `fetch-integral-link` se o produto ficar só em PDF; import usa client + RLS.
 
 Referências: [`docs/guia-professor-leitura-integral.md`](../docs/guia-professor-leitura-integral.md), [`docs/leitura-integral-traducao-automatica.md`](../docs/leitura-integral-traducao-automatica.md).
 
