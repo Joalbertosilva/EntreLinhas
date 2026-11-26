@@ -1,3 +1,6 @@
+import { stripWwwObraHeaders } from './pdfTextNormalize'
+import { stripIntegralPageMarkers } from './pageMarkers'
+
 const NEAD_PAGE_MARK = /www\.nead\.unama\.br\s*\d+/gi
 
 /** Remove cabeçalhos/rodapés típicos de PDFs do Domínio Público / NEAD e destrava capítulos colados. */
@@ -5,7 +8,7 @@ export function cleanDominioPublicoPdfText(raw: string): string {
   let text = raw.replace(/\r/g, '').trim()
 
   const firstCap = text.search(
-    /\bCAP[ÍI]TULO\s+(?:PRIMEIRO|SEGUNDO|TERCEIRO|QUARTO|QUINTO|SEXTO|S[ÉE]TIMO|OITAVO|NONO|D[EÉ]CIMO|[IVXLCDM]{1,7})\b/i,
+    /\b(?:CAP[ÍI]TULO|Capítulo)\s+(?:PRIMEIRO|SEGUNDO|TERCEIRO|QUARTO|QUINTO|SEXTO|S[ÉE]TIMO|OITAVO|NONO|D[EÉ]CIMO|[IVXLCDM]{1,7}|\d{1,3})\b/i,
   )
   if (firstCap > 0) {
     text = text.slice(firstCap)
@@ -50,7 +53,9 @@ export function cleanDominioPublicoPdfText(raw: string): string {
 }
 
 export function countMecCapituloHeadings(text: string): number {
-  const matches = text.match(/\bCAP[ÍI]TULO\s+(?:PRIMEIRO|SEGUNDO|TERCEIRO|QUARTO|QUINTO|SEXTO|S[ÉE]TIMO|OITAVO|NONO|D[EÉ]CIMO|[IVXLCDM]{1,7})\b/gi)
+  const matches = text.match(
+    /\b(?:CAP[ÍI]TULO|Capítulo)\s+(?:PRIMEIRO|SEGUNDO|TERCEIRO|QUARTO|QUINTO|SEXTO|S[ÉE]TIMO|OITAVO|NONO|D[EÉ]CIMO|[IVXLCDM]{1,7}|\d{1,3})\b/gi,
+  )
   return matches?.length ?? 0
 }
 
@@ -62,12 +67,38 @@ export function isDominioPublicoPdfLikeText(text: string): boolean {
   )
 }
 
+/** Limpeza leve no trecho — sem reflow de novo (já feito por página no PDF). */
 export function stripNeadFromChunk(chunk: string): string {
-  return chunk
-    .replace(NEAD_PAGE_MARK, '')
-    .replace(/nead\.unama\.br\s*\d*/gi, '')
-    .replace(/\s{2,}/g, ' ')
+  return stripWwwObraHeaders(
+    stripIntegralPageMarkers(
+      chunk
+        .replace(NEAD_PAGE_MARK, '')
+        .replace(/nead\.unama\.br\s*\d*/gi, '')
+        .replace(/^\s*\d{1,4}\s*$/gm, ''),
+    ),
+  )
+    .replace(/[ \t]{2,}/g, ' ')
     .trim()
+}
+
+/** Limpeza leve por página (antes de juntar o PDF). */
+export function cleanDominioPublicoPdfPageText(raw: string): string {
+  let text = raw.replace(/\r/g, '').trim()
+  text = text.replace(NEAD_PAGE_MARK, '')
+  text = text.replace(/nead\.unama\.br\s*\d*/gi, '')
+  text = text.replace(/www\.dominiopublico[^\s]*\s*\d*/gi, '')
+  text = text.replace(/dominiopublico\.mec\.gov\.br\s*\d*/gi, '')
+  text = text.replace(/\buvb@unama\.br\b/gi, '')
+  text = text.replace(/[ \t]{2,}/g, ' ')
+  text = text
+    .split('\n')
+    .map((line) => line.trim())
+    .filter((line) => line.length > 0)
+    .filter((line) => !/^www\.nead\.unama\.br/i.test(line))
+    .filter((line) => !/^NEAD\s*[–-]/i.test(line))
+    .join('\n')
+  text = text.replace(/\n{3,}/g, '\n\n')
+  return text.trim()
 }
 
 export function trimMecPdfPreamble(part: string): string {
