@@ -6805,6 +6805,140 @@
     flex-shrink: 0;
   }
 
+  body.book-integral-translate-active,
+  body:has(.book-reader--traduzir-pt) {
+    top: 0 !important;
+    position: static !important;
+  }
+
+  body:has(.book-reader--traduzir-pt) .goog-te-banner-frame,
+  body:has(.book-reader--traduzir-pt) .goog-te-banner-frame.skiptranslate,
+  body:has(.book-reader--traduzir-pt) iframe.goog-te-banner-frame,
+  body:has(.book-reader--traduzir-pt) .skiptranslate,
+  body:has(.book-reader--traduzir-pt) #goog-gt-tt {
+    display: none !important;
+    visibility: hidden !important;
+    height: 0 !important;
+    max-height: 0 !important;
+    width: 0 !important;
+    overflow: hidden !important;
+    opacity: 0 !important;
+    pointer-events: none !important;
+  }
+
+  body.book-integral-translate-active .goog-te-banner-frame,
+  body.book-integral-translate-active .goog-te-menu-frame,
+  body.book-integral-translate-active .goog-te-balloon-frame,
+  body.book-integral-translate-active .goog-te-ftab,
+  body.book-integral-translate-active #goog-gt-tt,
+  body.book-integral-translate-active .goog-te-gadget,
+  body.book-integral-translate-active .goog-logo-link,
+  body.book-integral-translate-active .goog-te-gadget-icon,
+  body.book-integral-translate-active iframe.skiptranslate,
+  body.book-integral-translate-active iframe.goog-te-banner-frame {
+    display: none !important;
+    visibility: hidden !important;
+    height: 0 !important;
+    max-height: 0 !important;
+    width: 0 !important;
+    overflow: hidden !important;
+    opacity: 0 !important;
+    pointer-events: none !important;
+  }
+
+  .integral-google-translate-host,
+  .integral-google-translate-host *,
+  #google_translate_element_integral,
+  #google_translate_element_integral *,
+  body.book-integral-translate-active .skiptranslate.goog-te-gadget {
+    display: none !important;
+    visibility: hidden !important;
+    height: 0 !important;
+    font-size: 0 !important;
+    line-height: 0 !important;
+  }
+
+  body.book-integral-translate-active .book-reader .goog-text-highlight {
+    background: none !important;
+    box-shadow: none !important;
+  }
+
+  .integral-obra-texto .integral-obra-paragrafo {
+    margin: 0 0 1rem;
+    text-align: justify;
+    text-indent: 1.35rem;
+    white-space: pre-line;
+  }
+
+  .integral-obra-texto .integral-obra-paragrafo:first-child {
+    text-indent: 0;
+  }
+
+  .integral-obra-texto .integral-obra-paragrafo:last-child {
+    margin-bottom: 0;
+  }
+
+  .integral-obra-texto .integral-capitulo-marca {
+    margin: 1.25rem 0 0.75rem;
+    text-align: center;
+    text-indent: 0;
+    font-family: var(--font-serif, 'Literata', Georgia, serif);
+    font-size: 1.05em;
+    font-weight: 600;
+    letter-spacing: 0.04em;
+    color: var(--color-brand-navy, #1c3454);
+  }
+
+  .integral-obra-texto .integral-capitulo-marca:first-child {
+    margin-top: 0;
+  }
+
+  .integral-obra-texto .integral-secao-marca {
+    margin: 1.5rem 0 0.75rem;
+    text-align: left;
+    text-indent: 0;
+    font-size: 0.78rem;
+    font-weight: 700;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--color-primary, #2d6a4f);
+  }
+
+  .integral-obra-texto .integral-nota-editorial {
+    margin: 1rem 0;
+    padding: 0.65rem 0.85rem;
+    border-left: 3px solid var(--color-primary/40, rgba(45, 106, 79, 0.45));
+    background: color-mix(in srgb, var(--color-primary, #2d6a4f) 6%, transparent);
+    font-size: 0.92em;
+    line-height: 1.55;
+    text-align: left;
+    text-indent: 0;
+    color: var(--color-text-muted, #4a5560);
+  }
+
+  .integral-obra-texto .integral-obra-titulo-linha {
+    margin: 0 0 0.5rem;
+    text-align: center;
+    text-indent: 0;
+    font-size: 0.85em;
+    font-weight: 600;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--color-text-muted, #5c6470);
+  }
+
+  .integral-obra-texto font,
+  .integral-obra-texto span,
+  .integral-obra-texto .goog-text-highlight {
+    font-family: inherit !important;
+    font-size: inherit !important;
+    line-height: inherit !important;
+    color: inherit !important;
+    background: transparent !important;
+    box-shadow: none !important;
+    white-space: inherit !important;
+  }
+
   .book-page-immersive-cta {
     margin-top: 0.35rem;
   }

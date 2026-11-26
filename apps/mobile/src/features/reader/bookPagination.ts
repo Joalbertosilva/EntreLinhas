@@ -81,7 +81,6 @@ export interface IntegralBookMeta {
 
 export function buildIntegralBookPages(meta: IntegralBookMeta, capitulos: ObraCapituloPage[]): BookPage[] {
   const autor = meta.autor?.trim() ?? ''
-  const credito = meta.creditoTraducao?.trim() || 'EntreLinhas'
   const capaSpeak = [meta.titulo, autor ? `por ${autor}` : '', 'Capa da leitura integral']
     .filter(Boolean)
     .join('. ')
@@ -94,11 +93,6 @@ export function buildIntegralBookPages(meta: IntegralBookMeta, capitulos: ObraCa
       body: autor,
       coverUrl: meta.coverUrl ?? null,
       speakLabel: capaSpeak,
-    },
-    {
-      id: 'integral-sobre-edicao',
-      title: 'Sobre esta edição',
-      body: `Tradução gerada para a plataforma EntreLinhas (${credito}) a partir de obra em domínio público. Pode haver imprecisões em relação a edições comerciais.`,
     },
   ]
 

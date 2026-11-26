@@ -1,4 +1,5 @@
 import { BookOpen, ChevronLeft, ChevronRight, Maximize2, Minimize2, X } from 'lucide-react'
+import { splitObraEmParagrafosBlocos } from '@/lib/integralObraParagraphs'
 import { useCallback, useEffect, useRef, useState } from 'react'
 import { createPortal } from 'react-dom'
 import { useAccessibility } from '@/features/accessibility/AccessibilityProvider'
@@ -14,12 +15,10 @@ interface BookPaginatedReaderProps {
   pages: BookPage[]
   conteudoId: string
   titulo: string
-  /** Chave de sessionStorage; padrão usa conteudoId */
   storageKey?: string
-  /** Exibe botão de expandir (modo Kindle) */
   allowImmersive?: boolean
-  /** Abre o modo imersivo ao montar */
   openImmersiveOnMount?: boolean
+  onPageIndexChange?: (index: number) => void
 }
 
 type TurnDirection = 'next' | 'prev' | null
@@ -31,6 +30,7 @@ export function BookPaginatedReader({
   storageKey: storageKeyProp,
   allowImmersive = true,
   openImmersiveOnMount = false,
+  onPageIndexChange,
 }: BookPaginatedReaderProps) {
   const storageKey = storageKeyProp ?? getBookPageStorageKey(conteudoId)
   const scrollRef = useRef<HTMLDivElement>(null)
@@ -47,6 +47,9 @@ export function BookPaginatedReader({
       const n = Number.parseInt(saved, 10)
       if (!Number.isNaN(n) && n >= 0 && n < pages.length) {
         setPageIndex(n)
+      } else if (pages.length > 0) {
+        sessionStorage.removeItem(storageKey)
+        setPageIndex(0)
       }
     }
     setHydrated(true)
@@ -55,7 +58,8 @@ export function BookPaginatedReader({
   useEffect(() => {
     if (!hydrated) return
     sessionStorage.setItem(storageKey, String(pageIndex))
-  }, [pageIndex, storageKey, hydrated])
+    onPageIndexChange?.(pageIndex)
+  }, [pageIndex, storageKey, hydrated, onPageIndexChange])
 
   useEffect(() => {
     scrollRef.current?.scrollTo({ top: 0 })
@@ -107,9 +111,10 @@ export function BookPaginatedReader({
   const atStart = pageIndex === 0
   const atEnd = pageIndex >= pages.length - 1
   const progress = ((pageIndex + 1) / pages.length) * 100
-  const isCoverPage = current.kind === 'cover'
-  const pageHeading = isCoverPage ? 'Capa' : current.title
+  const pageHeading = current.kind === 'cover' ? 'Capa' : current.title
   const pageSpeakLabel = getBookPageSpeakLabel(current)
+  const blocosObra =
+    current.kind === 'cover' ? [] : splitObraEmParagrafosBlocos(current.body)
 
   const pageViewport = (
     <div
@@ -120,7 +125,7 @@ export function BookPaginatedReader({
         turn === 'prev' && 'book-page-viewport--turn-prev',
       )}
     >
-      <div key={pageIndex} className={cn('book-page-sheet', immersive && 'book-page-sheet--immersive')}>
+      <div key={current.id} className={cn('book-page-sheet', immersive && 'book-page-sheet--immersive')}>
         <div className="book-page-inner-shadow" aria-hidden />
         {immersive && (
           <>
@@ -140,11 +145,18 @@ export function BookPaginatedReader({
             />
           </>
         )}
-        <div className="book-page-title-row">
-          <h3 className={cn('book-page-title', immersive && 'book-page-title--immersive')}>{pageHeading}</h3>
-          {audioEnabled && <SpeakButton label={pageSpeakLabel} className="book-page-title-speak" />}
+        <div className={cn('book-page-title-row', current.kind === 'cover' && 'notranslate')}>
+          <h3
+            className={cn('book-page-title', immersive && 'book-page-title--immersive')}
+            lang="pt"
+          >
+            {pageHeading}
+          </h3>
+          {audioEnabled && (
+            <SpeakButton label={pageSpeakLabel} className="book-page-title-speak notranslate" />
+          )}
         </div>
-        {isCoverPage ? (
+        {current.kind === 'cover' ? (
           <Speakable hideButton label={pageSpeakLabel} className="book-page-cover-region">
             <div className={cn('book-page-cover', immersive && 'book-page-cover--immersive')}>
               {current.coverUrl ? (
@@ -175,18 +187,34 @@ export function BookPaginatedReader({
             <div
               ref={scrollRef}
               className={cn(
-                'book-prose book-page-text scrollbar-thin whitespace-pre-wrap',
+                'book-prose book-page-text scrollbar-thin integral-obra-texto',
                 immersive && 'book-page-text--immersive',
               )}
+              lang="pt"
               tabIndex={0}
             >
-              {current.body}
+              {blocosObra.map((bloco, idx) => (
+                <p
+                  key={`${pageIndex}-${idx}`}
+                  className={cn(
+                    bloco.kind === 'capitulo' && 'integral-capitulo-marca',
+                    bloco.kind === 'secao' && 'integral-secao-marca',
+                    bloco.kind === 'titulo' && 'integral-obra-titulo-linha',
+                    bloco.kind === 'texto' &&
+                      (/^Na história\.?\s/i.test(bloco.text)
+                        ? 'integral-nota-editorial'
+                        : 'integral-obra-paragrafo'),
+                  )}
+                >
+                  {bloco.text}
+                </p>
+              ))}
             </div>
           </Speakable>
         )}
-        <p className="book-page-scroll-hint">
-          {isCoverPage
-            ? 'Use Próxima para ver os créditos e começar a leitura'
+        <p className="book-page-scroll-hint notranslate">
+          {current.kind === 'cover'
+            ? 'Use Próxima para começar a leitura'
             : immersive
               ? 'Role o texto abaixo para continuar lendo'
               : 'Role dentro da página para ler tudo'}
@@ -196,7 +224,7 @@ export function BookPaginatedReader({
   )
 
   const footer = (
-    <footer className={cn('book-page-footer', immersive && 'book-page-footer--immersive')}>
+    <footer className={cn('book-page-footer notranslate', immersive && 'book-page-footer--immersive')}>
       <Button
         type="button"
         variant="outline"
@@ -247,7 +275,7 @@ export function BookPaginatedReader({
 
   const progressBar = (
     <div
-      className={cn('book-page-progress', immersive && 'book-page-progress--immersive')}
+      className={cn('book-page-progress notranslate', immersive && 'book-page-progress--immersive')}
       role="progressbar"
       aria-valuenow={pageIndex + 1}
       aria-valuemin={1}
@@ -275,7 +303,7 @@ export function BookPaginatedReader({
     immersive &&
     typeof document !== 'undefined' &&
     createPortal(
-      <div className="kindle-immersive" role="dialog" aria-modal aria-label={`Leitura imersiva: ${titulo}`}>
+      <div className="kindle-immersive notranslate" role="dialog" aria-modal aria-label={`Leitura imersiva: ${titulo}`}>
         <AmbientCanvasField className="kindle-immersive__ambient ambient-canvas-field" />
         <header className="kindle-immersive__header">
           <div className="kindle-immersive__heading min-w-0 flex-1">

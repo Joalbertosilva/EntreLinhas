@@ -1,6 +1,9 @@
 import type { CapituloParsed } from "./parseIntegralImport.ts";
 
-const CHUNK_CHARS = 1_800;
+const CHUNK_CHARS = 3_200;
+const TRANSLATE_ATTEMPTS = 4;
+const BASE_PAUSE_MS = 350;
+const MYMEMORY_MAX = 480;
 
 function splitForTranslation(text: string): string[] {
   const trimmed = text.trim();
@@ -28,142 +31,161 @@ function splitForTranslation(text: string): string[] {
   return parts.filter((s) => s.length > 0);
 }
 
-function mapLangPair(source: string): string {
-  if (source === "fr" || source === "auto") return "fr|pt-BR";
-  if (source === "en") return "en|pt-BR";
-  if (source === "es") return "es|pt-BR";
-  return "fr|pt-BR";
+function sleep(ms: number): Promise<void> {
+  return new Promise((r) => setTimeout(r, ms));
+}
+
+function mapSl(source: string): string {
+  if (source === "origem" || source === "desconhecido" || source === "auto") return "auto";
+  return source;
+}
+
+/** Mesmo endpoint que google-translate-api-x (`client=at`) — o antigo `gtx` costuma devolver HTML/bloqueio. */
+async function translateViaGoogleAt(text: string, source: string): Promise<string | null> {
+  const sl = mapSl(source);
+  const body = new URLSearchParams({ sl, tl: "pt", q: text });
+  const url =
+    "https://translate.google.com/translate_a/single?client=at&dt=t&dt=rm&dj=1";
+
+  const res = await fetch(url, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/x-www-form-urlencoded;charset=UTF-8",
+      "User-Agent":
+        "Mozilla/5.0 (compatible; EntreLinhas-Import/1.0; educational translation)",
+    },
+    body,
+  });
+
+  if (!res.ok) return null;
+  const raw = await res.text();
+  if (raw.startsWith("<") || raw.includes("Sorry")) return null;
+  let json: { sentences?: Array<{ trans?: string }> };
+  try {
+    json = JSON.parse(raw);
+  } catch {
+    return null;
+  }
+  const merged = (json.sentences ?? [])
+    .map((s) => s.trans ?? "")
+    .join("")
+    .trim();
+  return merged.length > 0 ? merged : null;
 }
 
 async function translateViaLibreTranslate(text: string, source: string): Promise<string | null> {
-  const baseUrl = (Deno.env.get("LIBRETRANSLATE_URL") ?? "https://libretranslate.com").replace(/\/$/, "");
-  const apiKey = Deno.env.get("LIBRETRANSLATE_API_KEY");
+  const apiKey = Deno.env.get("LIBRETRANSLATE_API_KEY")?.trim();
+  if (!apiKey) return null;
+  const base = (Deno.env.get("LIBRETRANSLATE_URL") ?? "https://libretranslate.com").replace(/\/$/, "");
 
-  const payload: Record<string, string> = {
-    q: text,
-    source: source === "origem" || source === "desconhecido" ? "auto" : source,
-    target: "pt",
-    format: "text",
-  };
-  if (apiKey) payload.api_key = apiKey;
-
-  const res = await fetch(`${baseUrl}/translate`, {
+  const res = await fetch(`${base}/translate`, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
-    body: JSON.stringify(payload),
+    body: JSON.stringify({
+      q: text,
+      source: mapSl(source),
+      target: "pt",
+      format: "text",
+      api_key: apiKey,
+    }),
   });
-
   if (!res.ok) return null;
-  const json = (await res.json()) as { translatedText?: string; error?: string };
-  if (json.error || !json.translatedText) return null;
-  return json.translatedText.trim();
-}
-
-/** Mesmo tipo de endpoint que o Chrome usa em “Traduzir para português” (uso só na importação, 1× por obra). */
-async function translateViaGoogleGtx(text: string, source: string): Promise<string | null> {
-  const sl = source === "origem" || source === "desconhecido" ? "auto" : source;
-  const url = new URL("https://translate.googleapis.com/translate_a/single");
-  url.searchParams.set("client", "gtx");
-  url.searchParams.set("sl", sl);
-  url.searchParams.set("tl", "pt");
-  url.searchParams.set("dt", "t");
-  url.searchParams.set("q", text);
-
-  const res = await fetch(url.toString());
-  if (!res.ok) return null;
-  const json = (await res.json()) as unknown;
-  if (!Array.isArray(json) || !Array.isArray(json[0])) return null;
-  const segments = json[0] as Array<[string, ...unknown[]]>;
-  const merged = segments.map((row) => row[0]).filter(Boolean).join("");
-  return merged.trim().length > 0 ? merged.trim() : null;
+  const json = (await res.json()) as { translatedText?: string };
+  const out = json.translatedText?.trim() ?? "";
+  return out.length > 0 ? out : null;
 }
 
 async function translateViaMyMemory(text: string, source: string): Promise<string | null> {
-  const langpair = mapLangPair(source);
-  const email = Deno.env.get("MYMEMORY_EMAIL");
-  const params = new URLSearchParams({
-    q: text,
-    langpair,
-  });
+  const q = text.length > MYMEMORY_MAX ? text.slice(0, MYMEMORY_MAX) : text;
+  const sl = mapSl(source) === "auto" ? "en" : mapSl(source);
+  const email = Deno.env.get("MYMEMORY_EMAIL")?.trim();
+  const params = new URLSearchParams({ q, langpair: `${sl}|pt` });
   if (email) params.set("de", email);
 
-  const res = await fetch(`https://api.mymemory.translated.net/get?${params.toString()}`);
+  const res = await fetch(`https://api.mymemory.translated.net/get?${params}`);
   if (!res.ok) return null;
   const json = (await res.json()) as {
-    responseStatus?: number;
-    quotaFinished?: boolean;
     responseData?: { translatedText?: string };
+    quotaFinished?: boolean;
   };
-  if (json.quotaFinished || json.responseStatus !== 200) return null;
-  const out = json.responseData?.translatedText?.trim();
-  return out && out.length > 0 ? out : null;
+  const out = json.responseData?.translatedText?.trim() ?? "";
+  if (!out || out.includes("MYMEMORY WARNING") || json.quotaFinished) return null;
+  return out;
 }
 
+async function tryProviders(
+  text: string,
+  source: string,
+  providers: Array<(t: string, s: string) => Promise<string | null>>,
+): Promise<string | null> {
+  for (const provider of providers) {
+    const out = await provider(text, source);
+    if (out) return out;
+  }
+  return null;
+}
+
+const PROVIDERS = [
+  translateViaGoogleAt,
+  translateViaLibreTranslate,
+  translateViaMyMemory,
+] as const;
+
 async function translateChunk(text: string, source: string): Promise<string> {
-  const libre = await translateViaLibreTranslate(text, source);
-  if (libre) return libre;
-
-  const gtx = await translateViaGoogleGtx(text, source);
-  if (gtx) return gtx;
-
-  const memory = await translateViaMyMemory(text, source);
-  if (memory) return memory;
-
+  for (let attempt = 0; attempt < TRANSLATE_ATTEMPTS; attempt++) {
+    const providers =
+      attempt === 0
+        ? [translateViaGoogleAt]
+        : attempt === 1
+          ? [translateViaGoogleAt, translateViaLibreTranslate]
+          : PROVIDERS;
+    const out = await tryProviders(text, source, providers);
+    if (out) return out;
+    if (attempt < TRANSLATE_ATTEMPTS - 1) {
+      await sleep(700 + attempt * 1_100);
+    }
+  }
   throw new Error(
-    "Não foi possível traduzir automaticamente. Tente de novo em alguns minutos ou desmarque a tradução e importe no idioma original.",
+    "Tradutor indisponível no momento. Aguarde um minuto e importe de novo com tradução marcada — capítulos já gravados em PT são mantidos.",
   );
 }
 
 async function translateLongText(text: string, source: string): Promise<string> {
+  const lang = mapSl(source);
   const chunks = splitForTranslation(text);
   const parts: string[] = [];
   for (const chunk of chunks) {
-    parts.push(await translateChunk(chunk, source));
-    await new Promise((r) => setTimeout(r, 120));
+    parts.push(await translateChunk(chunk, lang));
+    await sleep(BASE_PAUSE_MS);
   }
   return parts.join("\n\n");
 }
 
-const CHAPTER_CONCURRENCY = 1;
-
-async function mapWithConcurrency<T, R>(
-  items: T[],
-  concurrency: number,
-  fn: (item: T, index: number) => Promise<R>,
-): Promise<R[]> {
-  const results: R[] = new Array(items.length);
-  let next = 0;
-
-  async function worker() {
-    while (next < items.length) {
-      const i = next++;
-      results[i] = await fn(items[i]!, i);
-    }
-  }
-
-  await Promise.all(Array.from({ length: Math.min(concurrency, items.length) }, () => worker()));
-  return results;
+export async function translateIntegralTextToPt(
+  text: string,
+  sourceLang: string,
+): Promise<string> {
+  if (!text.trim()) return "";
+  return translateLongText(text, sourceLang);
 }
 
 export async function translateCapitulosToPt(
   capitulos: CapituloParsed[],
   sourceLang: string,
 ): Promise<CapituloParsed[]> {
-  const lang =
-    sourceLang === "desconhecido" || sourceLang === "origem" ? "auto" : sourceLang;
+  const lang = mapSl(sourceLang);
 
-  return mapWithConcurrency(capitulos, CHAPTER_CONCURRENCY, async (cap) => {
+  const results: CapituloParsed[] = [];
+  for (const cap of capitulos) {
     const originalTexto = cap.texto_pt;
-    const [tituloPt, textoPt] = await Promise.all([
-      translateLongText(cap.titulo, lang),
-      translateLongText(originalTexto, lang),
-    ]);
-
-    return {
+    const tituloPt = await translateLongText(cap.titulo, lang);
+    const textoPt = await translateLongText(originalTexto, lang);
+    results.push({
       ...cap,
       titulo: tituloPt,
       texto_pt: textoPt,
       texto_origem: originalTexto,
-    };
-  });
+    });
+  }
+  return results;
 }
