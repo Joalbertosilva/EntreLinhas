@@ -20,6 +20,7 @@
     "@tcc-sistema/schemas": "workspace:*",
     "@tcc-sistema/types": "workspace:*",
     "clsx": "^2.1.1",
+    "google-translate-api-x": "^10.7.3",
     "lucide-react": "^1.34.0",
     "pdfjs-dist": "4.10.38",
     "react": "^19.2.8",

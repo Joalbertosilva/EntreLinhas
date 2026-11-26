@@ -1,13 +1,12 @@
 import "jsr:@supabase/functions-js/edge-runtime.d.ts";
 import { createClient } from "jsr:@supabase/supabase-js@2";
+import { baixarObraIntegralRaw, isAllowedIntegralUrl } from "../_shared/fetchIntegralObra.ts";
 import {
   type CapituloParsed,
-  decodeContentBuffer,
+  integralImportPareceDegradado,
   isMislabeledPdfAsText,
-  parseCervantesVirtualHtml,
-  parseGutenbergAuHtml,
+  parseIntegralFromUrlContent,
   parseIntegralTextoBruto,
-  parsePlainTextCapitulos,
 } from "../_shared/parseIntegralImport.ts";
 
 const corsHeaders = {
@@ -136,30 +135,6 @@ async function persistCapitulos(
   };
 }
 
-function parseFromUrlContent(url: URL, raw: string): CapituloParsed[] | null {
-  const host = url.hostname.toLowerCase();
-
-  if (host.includes("gutenberg.net.au") && !isPlainTextUrl(url)) {
-    const caps = parseGutenbergAuHtml(raw, "HTML — Project Gutenberg Australia");
-    if (caps.length > 0) return caps;
-  }
-
-  if (host.includes("cervantesvirtual")) {
-    const caps = parseCervantesVirtualHtml(raw, "Biblioteca Virtual Miguel de Cervantes");
-    if (caps.length > 0) return caps;
-  }
-
-  if (isPlainTextUrl(url) || host.includes("dominiopublico") || host.includes("gutenberg.org")) {
-    const origem = host.includes("dominiopublico")
-      ? "Texto — Biblioteca Domínio Público"
-      : "Texto — Project Gutenberg";
-    const caps = parsePlainTextCapitulos(raw, origem);
-    if (caps.length > 0) return caps;
-  }
-
-  return null;
-}
-
 Deno.serve(async (req) => {
   if (req.method === "OPTIONS") {
     return new Response("ok", { headers: corsHeaders });
@@ -233,6 +208,35 @@ Deno.serve(async (req) => {
     const fonteUrl = (body?.fonte_url as string | undefined)?.trim() ?? "";
     const textoBruto = body?.texto_bruto as string | undefined;
     const traduzirParaPt = body?.traduzir_para_pt !== false;
+    const somenteBaixar = body?.somente_baixar === true;
+
+    if (somenteBaixar) {
+      if (!fonteUrl) {
+        return new Response(JSON.stringify({ error: "fonte_url é obrigatória para baixar o link" }), {
+          status: 400,
+          headers: { ...corsHeaders, "Content-Type": "application/json" },
+        });
+      }
+      try {
+        const baixado = await baixarObraIntegralRaw(fonteUrl);
+        if (baixado.texto.length > MAX_TEXTO_BRUTO_CHARS) {
+          return new Response(JSON.stringify({ error: "Obra grande demais para importar por link." }), {
+            status: 400,
+            headers: { ...corsHeaders, "Content-Type": "application/json" },
+          });
+        }
+        return new Response(
+          JSON.stringify({ ok: true, ...baixado, texto_bruto: baixado.texto }),
+          { headers: { ...corsHeaders, "Content-Type": "application/json" } },
+        );
+      } catch (e) {
+        const message = e instanceof Error ? e.message : "Falha ao baixar o link";
+        return new Response(JSON.stringify({ error: message }), {
+          status: 502,
+          headers: { ...corsHeaders, "Content-Type": "application/json" },
+        });
+      }
+    }
 
     if (!conteudoId) {
       return new Response(JSON.stringify({ error: "conteudo_id é obrigatório" }), {
@@ -283,12 +287,12 @@ Deno.serve(async (req) => {
       }
       idioma = guessIdioma(fonteHost, capitulos);
     } else {
-      const url = isAllowedUrl(fonteUrl);
+      const url = isAllowedIntegralUrl(fonteUrl);
       if (!url) {
         return new Response(
           JSON.stringify({
             error:
-              "URL não permitida. Use Cervantes, dominiopublico (MEC), gutenberg.net.au/org, wikisource ou archive.org — ou envie arquivo .txt / PDF.",
+              "URL não permitida. Use gutenberg.net.au, Cervantes, dominiopublico (MEC), wikisource ou archive.org.",
           }),
           { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } },
         );
@@ -304,45 +308,25 @@ Deno.serve(async (req) => {
         );
       }
 
-      const res = await fetch(url.toString(), {
-        headers: { "User-Agent": "EntreLinhas-Import/1.0 (educational; tcc-sistema)" },
-      });
-
-      if (!res.ok) {
-        return new Response(
-          JSON.stringify({
-            error: `Não foi possível abrir o link (HTTP ${res.status}). Baixe o .txt no site e use “Enviar arquivo de texto”.`,
-          }),
-          { status: 502, headers: { ...corsHeaders, "Content-Type": "application/json" } },
-        );
-      }
-
-      const buffer = await res.arrayBuffer();
-      const asText = isPlainTextUrl(url);
-      const raw = decodeContentBuffer(buffer, !asText);
-      fonteGravada = fonteUrl;
-
-      if (raw.includes("Just a moment") && raw.includes("cloudflare")) {
-        return new Response(
-          JSON.stringify({
-            error:
-              "O site bloqueou o acesso automático. Abra o site no navegador, baixe o texto (.txt) e use Enviar arquivo de texto.",
-          }),
-          { status: 502, headers: { ...corsHeaders, "Content-Type": "application/json" } },
-        );
-      }
-
-      capitulos = parseFromUrlContent(url, raw);
-      if (capitulos?.length) {
-        idioma = guessIdioma(url.hostname, capitulos);
+      try {
+        const baixado = await baixarObraIntegralRaw(fonteUrl);
+        fonteGravada = baixado.fonte_url_efetiva;
+        capitulos = parseIntegralFromUrlContent(baixado.fonte_url_efetiva, baixado.texto);
+        idioma = guessIdioma(new URL(baixado.fonte_url_efetiva).hostname, capitulos ?? []);
+      } catch (e) {
+        const message = e instanceof Error ? e.message : "Falha ao baixar o link";
+        return new Response(JSON.stringify({ error: message }), {
+          status: 502,
+          headers: { ...corsHeaders, "Content-Type": "application/json" },
+        });
       }
     }
 
-    if (!capitulos || capitulos.length === 0) {
+    if (!capitulos || capitulos.length === 0 || integralImportPareceDegradado(capitulos)) {
       return new Response(
         JSON.stringify({
           error:
-            "Não foi possível dividir a obra em capítulos. Use link HTML (Cervantes, Gutenberg Australia), .txt, ou envie PDF/.txt pelo formulário.",
+            "Não foi possível dividir a obra em capítulos deste link. Use a página HTML completa (ex.: gutenberg.net.au/ebooks03/…h.html), o arquivo -h.htm do Gutenberg ou envie PDF/.txt.",
         }),
         { status: 422,
           headers: { ...corsHeaders, "Content-Type": "application/json" } },

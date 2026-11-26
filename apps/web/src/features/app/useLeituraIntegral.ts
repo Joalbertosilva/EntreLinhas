@@ -3,26 +3,37 @@ import { capitulosIntegralImportSchema, type CapitulosIntegralImportInput } from
 import type { ConteudoCapituloIntegral, StatusLeituraIntegral } from '@tcc-sistema/types'
 import { supabase } from '@/lib/supabase'
 import { translateCapitulosIntegralNoCliente } from '@/lib/integralMachineTranslate'
-import {
-  fetchIntegralSourceInBrowser,
-  shouldFetchIntegralLinkInBrowser,
-} from '@/lib/integralImportFetch'
+import { inferIntegralDivisaoModo, guessIdiomaIntegralCapitulos, type IntegralDivisaoModo } from '@tcc-sistema/integral-import'
 import { parseIntegralUploadText, persistIntegralImportClient } from '@/lib/integralImportClient'
-import { messageFromFunctionsInvokeError } from '@/lib/supabaseFunctionError'
+import { fetchIntegralObraRaw } from '@/lib/integralImportLinkFetch'
 import type { AlunoProgressStats } from '@/features/app/alunoProgress'
 import { celebrateIntegralProgressChange } from '@/features/app/progressCelebration'
+import {
+  listCapitulosIntegral,
+  listCapitulosIntegralComTexto,
+  replaceCapitulosIntegralRows,
+} from '@/lib/capitulosIntegralDb'
+
+export function invalidateCapitulosIntegralCache(
+  queryClient: ReturnType<typeof useQueryClient>,
+  conteudoId: string,
+) {
+  queryClient.invalidateQueries({ queryKey: ['capitulos-integral', conteudoId] })
+  queryClient.invalidateQueries({ queryKey: ['capitulos-integral-leitura', conteudoId] })
+  queryClient.invalidateQueries({ queryKey: ['app-conteudo', conteudoId] })
+  queryClient.removeQueries({ queryKey: ['capitulo-integral-texto'] })
+}
+
 export function useCapitulosIntegral(conteudoId: string | undefined, enabled = true) {
   return useQuery({
     queryKey: ['capitulos-integral', conteudoId],
     enabled: Boolean(conteudoId) && enabled,
+    staleTime: 0,
+    refetchOnMount: 'always',
     queryFn: async () => {
-      const { data, error } = await supabase
-        .from('conteudo_capitulos_integral')
-        .select('*')
-        .eq('conteudo_id', conteudoId!)
-        .order('ordem', { ascending: true })
-      if (error) throw error
-      return data as ConteudoCapituloIntegral[]
+      if (!conteudoId) return []
+      const lista = await listCapitulosIntegral(conteudoId)
+      return lista as ConteudoCapituloIntegral[]
     },
   })
 }
@@ -41,18 +52,15 @@ export type ImportLeituraIntegralLinkResult = {
   idioma?: string
   aviso?: string | null
   origem: 'json' | 'edge'
+  divisao?: IntegralDivisaoModo
+  totalPaginasPdf?: number
+  fonteArquivo?: string | null
 }
 
 export async function replaceCapitulosIntegralInDb(
   conteudoId: string,
   input: CapitulosIntegralImportInput,
 ): Promise<number> {
-  const { error: delError } = await supabase
-    .from('conteudo_capitulos_integral')
-    .delete()
-    .eq('conteudo_id', conteudoId)
-  if (delError) throw delError
-
   const rows = input.capitulos.map((cap) => ({
     conteudo_id: conteudoId,
     ordem: cap.ordem,
@@ -61,9 +69,7 @@ export async function replaceCapitulosIntegralInDb(
     texto_origem: cap.texto_origem?.trim() || null,
   }))
 
-  const { error: insError } = await supabase.from('conteudo_capitulos_integral').insert(rows)
-  if (insError) throw insError
-  return rows.length
+  return replaceCapitulosIntegralRows(conteudoId, rows)
 }
 
 export function useImportLeituraIntegralFromLink(conteudoId: string | undefined) {
@@ -74,7 +80,7 @@ export function useImportLeituraIntegralFromLink(conteudoId: string | undefined)
       conteudoId?: string
       fonteUrl: string
       traduzirParaPt?: boolean
-      onTranslateProgress?: (current: number, total: number) => void
+      onTranslateProgress?: (current: number, total: number, detalhe?: string) => void
     }): Promise<ImportLeituraIntegralLinkResult> => {
       const cid = input.conteudoId ?? conteudoId
       if (!cid) throw new Error('Salve o livro antes de importar')
@@ -102,69 +108,57 @@ export function useImportLeituraIntegralFromLink(conteudoId: string | undefined)
             integral_traducao_credito: 'EntreLinhas',
           })
           .eq('id', cid)
-        queryClient.invalidateQueries({ queryKey: ['capitulos-integral', cid] })
+        invalidateCapitulosIntegralCache(queryClient, cid)
         return { capitulos: count, origem: 'json', idioma: 'pt' }
       }
 
-      let textoBrutoFromBrowser: string | undefined
-      if (shouldFetchIntegralLinkInBrowser(trimmed)) {
-        try {
-          textoBrutoFromBrowser = await fetchIntegralSourceInBrowser(trimmed)
-        } catch (e) {
-          const msg = e instanceof Error ? e.message : String(e)
-          if (msg === 'Failed to fetch') {
-            throw new Error(
-              'O site da Cervantes bloqueou a busca automática (CORS). Baixe o PDF do MEC ou copie o HTML da obra.',
-            )
-          }
-          throw e
-        }
-      }
+      const { texto, fonteUrlEfetiva } = await fetchIntegralObraRaw(trimmed, cid)
+      const { parsed, divisao, totalPaginasPdf } = parseIntegralUploadText(texto, fonteUrlEfetiva, 'link')
+      const count = await persistIntegralImportClient(cid, parsed, replaceAdapter)
+      invalidateCapitulosIntegralCache(queryClient, cid)
 
-      if (textoBrutoFromBrowser) {
-        const parsed = parseIntegralUploadText(textoBrutoFromBrowser, trimmed)
-        const count = await persistIntegralImportClient(cid, parsed, replaceAdapter)
-        queryClient.invalidateQueries({ queryKey: ['capitulos-integral', cid] })
+      const idiomaDetectado = guessIdiomaIntegralCapitulos(
+        parsed.capitulos.map((c) => ({
+          ordem: c.ordem,
+          titulo: c.titulo,
+          texto_pt: c.texto_pt,
+          texto_origem: c.texto_origem ?? null,
+        })),
+      )
+
+      const querTraduzir = input.traduzirParaPt === true
+      if (querTraduzir && idiomaDetectado !== 'pt') {
+        const traduzidos = await translateCapitulosIntegralNoCliente(cid, idiomaDetectado, {
+          onProgress: input.onTranslateProgress,
+          slowMode: true,
+        })
+        invalidateCapitulosIntegralCache(queryClient, cid)
+        const capsTraduzidos = await listCapitulosIntegral(cid)
         return {
-          capitulos: count,
-          idioma: 'pt',
-          aviso: 'Texto importado em português. Revise capítulos antes de publicar.',
-          origem: 'edge',
-        }
-      }
-
-      const { data, error } = await supabase.functions.invoke('import-leitura-integral-url', {
-        body: {
-          conteudo_id: cid,
-          fonte_url: trimmed,
-          texto_bruto: textoBrutoFromBrowser,
-          traduzir_para_pt: input.traduzirParaPt !== false,
-        },
-      })
-
-      if (error) throw new Error(await messageFromFunctionsInvokeError(error))
-      if (data?.error) throw new Error(String(data.error))
-
-      queryClient.invalidateQueries({ queryKey: ['capitulos-integral', cid] })
-
-      if (data?.traduzir_no_cliente && input.traduzirParaPt !== false) {
-        const origem = String(data.idioma_detectado ?? data.idioma ?? 'fr')
-        await translateCapitulosIntegralNoCliente(cid, origem, input.onTranslateProgress)
-        queryClient.invalidateQueries({ queryKey: ['capitulos-integral', cid] })
-        return {
-          capitulos: Number(data?.capitulos ?? 0),
+          capitulos: capsTraduzidos.length,
           idioma: 'pt',
           aviso:
-            'Tradução automática para português concluída. Revise capítulos antes do aluno acessar — pode haver imprecisões.',
+            traduzidos > 0
+              ? 'Tradução automática para português concluída. Revise capítulos antes do aluno acessar — pode haver imprecisões.'
+              : 'Importação salva, mas nenhum capítulo novo foi traduzido. Marque “Traduzir para português” e importe de novo.',
           origem: 'edge',
+          divisao: inferIntegralDivisaoModo(capsTraduzidos.map((c) => ({ titulo: c.titulo }))),
+          totalPaginasPdf,
         }
       }
 
       return {
-        capitulos: Number(data?.capitulos ?? 0),
-        idioma: data?.idioma,
-        aviso: data?.aviso ?? null,
+        capitulos: count,
+        idioma: idiomaDetectado === 'pt' ? 'pt' : idiomaDetectado,
+        aviso:
+          idiomaDetectado === 'pt'
+            ? 'Texto importado em português. Revise capítulos antes de publicar.'
+            : querTraduzir
+              ? null
+              : 'Texto no idioma original. Marque “Traduzir para português” na importação se quiser PT automático.',
         origem: 'edge',
+        divisao,
+        totalPaginasPdf,
       }
     },
   })
@@ -179,35 +173,87 @@ export function useImportLeituraIntegralFromTextFile(conteudoId: string | undefi
       texto: string
       fonteUrl?: string | null
       traduzirParaPt?: boolean
-      onTranslateProgress?: (current: number, total: number) => void
+      onTranslateProgress?: (current: number, total: number, detalhe?: string) => void
     }): Promise<ImportLeituraIntegralLinkResult> => {
       const cid = input.conteudoId ?? conteudoId
       if (!cid) throw new Error('Salve o livro antes de importar')
       const texto = input.texto.trim()
       if (!texto) throw new Error('Arquivo de texto vazio')
 
-      const parsed = parseIntegralUploadText(texto, input.fonteUrl)
+      const { parsed, divisao, totalPaginasPdf } = parseIntegralUploadText(texto, input.fonteUrl, 'arquivo')
       const replaceAdapter = {
         mutateAsync: (p: CapitulosIntegralImportInput) => replaceCapitulosIntegralInDb(cid, p),
       }
       const count = await persistIntegralImportClient(cid, parsed, replaceAdapter)
-      queryClient.invalidateQueries({ queryKey: ['capitulos-integral', cid] })
+      invalidateCapitulosIntegralCache(queryClient, cid)
 
-      if (input.traduzirParaPt === false) {
-        return {
-          capitulos: count,
-          idioma: 'pt',
-          aviso: 'Texto importado em português. Revise capítulos antes do aluno publicar.',
-          origem: 'edge',
-        }
-      }
+      const avisoPaginas =
+        divisao === 'paginas'
+          ? `${totalPaginasPdf ?? count} página(s) na mesma ordem do PDF — revise ortografia antes do aluno ler.`
+          : 'Revise os trechos antes do aluno acessar.'
+
+      await supabase
+        .from('conteudos')
+        .update({
+          integral_traducao_metodo: 'pt_nativo',
+          integral_traducao_credito: 'Texto original em português (Domínio Público)',
+        })
+        .eq('id', cid)
 
       return {
         capitulos: count,
         idioma: 'pt',
-        aviso: 'Texto importado em português. Revise capítulos antes do aluno acessar.',
+        aviso: avisoPaginas,
         origem: 'edge',
+        divisao,
+        totalPaginasPdf,
       }
+    },
+  })
+}
+
+export function useRetomarTraducaoIntegral(conteudoId: string | undefined) {
+  const queryClient = useQueryClient()
+
+  return useMutation({
+    mutationFn: async (input: {
+      conteudoId?: string
+      idiomaOrigem?: string
+      onTranslateProgress?: (current: number, total: number, detalhe?: string) => void
+    }): Promise<number> => {
+      const cid = input.conteudoId ?? conteudoId
+      if (!cid) throw new Error('Salve o livro antes de traduzir')
+
+      const caps = await listCapitulosIntegralComTexto(cid)
+      if (!caps.length) throw new Error('Não há capítulos importados para traduzir.')
+
+      const idioma =
+        input.idiomaOrigem ??
+        guessIdiomaIntegralCapitulos(
+          caps.map((c) => ({
+            ordem: c.ordem,
+            titulo: c.titulo,
+            texto_pt: c.texto_pt,
+            texto_origem: c.texto_origem ?? null,
+          })),
+        )
+
+      if (idioma === 'pt') {
+        throw new Error('O texto detectado já está em português — tradução não é necessária.')
+      }
+
+      const traduzidos = await translateCapitulosIntegralNoCliente(cid, idioma, {
+        onProgress: input.onTranslateProgress,
+        slowMode: true,
+      })
+
+      invalidateCapitulosIntegralCache(queryClient, cid)
+      if (traduzidos < 1) {
+        throw new Error(
+          'Nenhum capítulo pendente foi traduzido. Os que já estão em português foram mantidos.',
+        )
+      }
+      return traduzidos
     },
   })
 }
@@ -221,7 +267,7 @@ export function useReplaceCapitulosIntegral(conteudoId: string | undefined) {
       return replaceCapitulosIntegralInDb(conteudoId, input)
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['capitulos-integral', conteudoId] })
+      invalidateCapitulosIntegralCache(queryClient, conteudoId!)
     },
   })
 }
