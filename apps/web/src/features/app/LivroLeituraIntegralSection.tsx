@@ -1,3 +1,4 @@
+import { useMemo } from 'react'
 import { BookOpen, Lock, Loader2, Sparkles } from 'lucide-react'
 import { toast } from 'sonner'
 import type { Conteudo, StatusLeitura, StatusLeituraIntegral } from '@tcc-sistema/types'
@@ -9,6 +10,8 @@ import {
   podeAcessarLeituraIntegral,
 } from '@/features/app/leituraIntegral'
 import { useAtualizarLeituraIntegral, useCapitulosIntegral } from '@/features/app/useLeituraIntegral'
+import { obraIntegralJaEmPortugues } from '@/lib/integralTranslateHeuristics'
+import { useCapitulosIntegralLeitura } from '@/features/app/useCapitulosIntegralLeitura'
 import { Button } from '@/components/ui/Button'
 import { Speakable } from '@/features/accessibility/Speakable'
 import { cn } from '@/lib/utils'
@@ -29,29 +32,58 @@ export function LivroLeituraIntegralSection({
   integralStatus,
 }: LivroLeituraIntegralSectionProps) {
   const showBlock = Boolean(conteudo.integral_ativa)
-  const { data: capitulos = [], isLoading } = useCapitulosIntegral(conteudoId, showBlock)
+  const { data: listaCapitulos = [], isLoading: loadingLista } = useCapitulosIntegral(conteudoId, showBlock)
+  const desbloqueado = podeAcessarLeituraIntegral(conteudo, statusEstudo, listaCapitulos.length)
+  const leitorAtivo = showBlock && desbloqueado && Boolean(integralStatus)
+
+  const {
+    data: capitulosComTexto = [],
+    isLoading: loadingTextos,
+    isError: erroTextos,
+    error: erroTextosMsg,
+    refetch: recarregarTextos,
+  } = useCapitulosIntegralLeitura(conteudoId, leitorAtivo)
+
   const atualizarIntegral = useAtualizarLeituraIntegral(conteudoId, usuarioId)
 
   if (!showBlock) return null
 
-  const desbloqueado = podeAcessarLeituraIntegral(conteudo, statusEstudo, capitulos.length)
-  const mensagemBloqueio = mensagemLeituraIntegralBloqueada(conteudo, statusEstudo, capitulos.length)
+  const mensagemBloqueio = mensagemLeituraIntegralBloqueada(conteudo, statusEstudo, listaCapitulos.length)
   const coverUrl = resolveConteudoCoverUrl(conteudo)
-  const pages = buildIntegralBookPages(
-    {
-      titulo: conteudo.titulo,
-      autor: conteudo.autor,
+  const credito = conteudo.integral_traducao_credito?.trim() || 'idioma original'
+  const labelTrecho =
+    listaCapitulos.length > 0 &&
+    listaCapitulos.every((c) => /^Página\s+\d+$/i.test(c.titulo.trim()))
+      ? 'páginas'
+      : 'trechos'
+
+  const obraEmPortugues =
+    capitulosComTexto.length > 0 && obraIntegralJaEmPortugues(capitulosComTexto)
+
+  const pages = useMemo(
+    () =>
+      buildIntegralBookPages(
+        {
+          titulo: conteudo.titulo,
+          autor: conteudo.autor,
+          coverUrl,
+          creditoTraducao: conteudo.integral_traducao_credito,
+        },
+        capitulosComTexto.map((c) => ({
+          id: c.id,
+          ordem: c.ordem,
+          titulo: c.titulo,
+          texto: c.texto_pt,
+        })),
+      ),
+    [
+      capitulosComTexto,
+      conteudo.autor,
+      conteudo.integral_traducao_credito,
+      conteudo.titulo,
       coverUrl,
-      creditoTraducao: conteudo.integral_traducao_credito,
-    },
-    capitulos.map((c) => ({
-      id: c.id,
-      ordem: c.ordem,
-      titulo: c.titulo,
-      texto: c.texto_pt,
-    })),
+    ],
   )
-  const credito = conteudo.integral_traducao_credito?.trim() || 'EntreLinhas'
 
   const handleIniciarIntegral = async () => {
     if (integralStatus) return
@@ -72,6 +104,8 @@ export function LivroLeituraIntegralSection({
     }
   }
 
+  const loadingLeitura = loadingLista || (leitorAtivo && loadingTextos)
+
   return (
     <section id="leitura-integral" className="scroll-mt-24 space-y-5" aria-labelledby="leitura-integral-title">
       <div className="book-info-card">
@@ -89,21 +123,21 @@ export function LivroLeituraIntegralSection({
               Leitura integral
             </h2>
             <p className="mt-0.5 text-xs text-text-muted">
-              Obra completa · tradução {credito}
-              {capitulos.length > 0 ? ` · ${capitulos.length} capítulos` : ''}
+              Obra completa · {credito}
+              {listaCapitulos.length > 0 ? ` · ${listaCapitulos.length} ${labelTrecho}` : ''}
             </p>
           </div>
         </div>
       </div>
 
-      {isLoading && (
+      {loadingLeitura && (
         <p className="text-sm text-text-muted">
           <Loader2 className="mr-2 inline h-4 w-4 animate-spin" aria-hidden />
-          Carregando capítulos…
+          {loadingTextos ? 'Carregando o texto da obra…' : 'Carregando trechos…'}
         </p>
       )}
 
-      {!isLoading && mensagemBloqueio && (
+      {!loadingLista && mensagemBloqueio && (
         <Speakable label={mensagemBloqueio}>
           <p className="rounded-2xl border border-primary/15 bg-primary-light/30 px-4 py-3 text-sm text-text">
             {mensagemBloqueio}
@@ -111,7 +145,7 @@ export function LivroLeituraIntegralSection({
         </Speakable>
       )}
 
-      {!isLoading && desbloqueado && (
+      {!loadingLeitura && desbloqueado && (
         <div className="space-y-4">
           {!integralStatus && (
             <Button
@@ -129,11 +163,35 @@ export function LivroLeituraIntegralSection({
             </Button>
           )}
 
-          {integralStatus && pages.length > 0 && (
+          {integralStatus && listaCapitulos.length > 0 && erroTextos && (
+            <div className="rounded-2xl border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-950">
+              <p>{erroTextosMsg instanceof Error ? erroTextosMsg.message : 'Não foi possível carregar o texto.'}</p>
+              <Button
+                type="button"
+                variant="outline"
+                size="sm"
+                className="mt-3 rounded-full"
+                onClick={() => void recarregarTextos()}
+              >
+                Tentar de novo
+              </Button>
+            </div>
+          )}
+
+          {integralStatus && !erroTextos && pages.length > 0 && (
             <>
               <p className="text-xs text-text-muted">
-                Use <strong className="text-text">Modo leitura</strong> para abrir a página branca em tela cheia,
-                estilo e-reader.
+                {listaCapitulos.length} {labelTrecho} · {pages.length} páginas no leitor (capa inclusa).{' '}
+                {obraEmPortugues ? (
+                  <>
+                    Use <strong className="text-text">Anterior / Próxima</strong> ou modo leitura.
+                  </>
+                ) : (
+                  <>
+                    O texto ainda não está em português — peça ao professor para importar com «Traduzir para
+                    português».
+                  </>
+                )}
               </p>
               <BookPaginatedReader
                 pages={pages}
