@@ -12,7 +12,8 @@ import {
   invalidateCapitulosIntegralCache,
 } from '@/features/app/useLeituraIntegral'
 import { inferIntegralDivisaoModo } from '@tcc-sistema/integral-import'
-import { extractTextFromIntegralPdf } from '@/lib/integralPdfText'
+import { extractTextFromIntegralPdf, INTEGRAL_PDF_MAX_BYTES } from '@/lib/integralPdfText'
+import { INTEGRAL_TEXTO_MAX_CHARS } from '@/lib/integralImportClient'
 import {
   IntegralImportSuccessDialog,
   type IntegralImportSuccessState,
@@ -22,6 +23,10 @@ import { Label } from '@/components/ui/Label'
 import { Input } from '@/components/ui/Input'
 
 const LINK_DOMINIO_PUBLICO = 'https://dominiopublico.mec.gov.br/pesquisa/pesquisa.php'
+const INTEGRAL_PDF_MAX_MB = INTEGRAL_PDF_MAX_BYTES / (1024 * 1024)
+const INTEGRAL_TEXTO_MAX_LABEL = (INTEGRAL_TEXTO_MAX_CHARS / 1_000_000).toLocaleString('pt-BR', {
+  maximumFractionDigits: 1,
+})
 
 interface LeituraIntegralFormSectionProps {
   conteudoId: string | undefined
@@ -251,6 +256,26 @@ export function LeituraIntegralFormSection({
                 , abra a obra e use o botão de download em PDF. O arquivo precisa ter texto selecionável (não só
                 imagem escaneada).
               </p>
+              <div
+                className="rounded-lg border border-amber-200/80 bg-amber-50/90 px-3 py-2.5 text-[11px] leading-relaxed text-amber-950"
+                role="note"
+              >
+                <p className="font-semibold text-amber-900">Tamanho do arquivo e do que fica na plataforma</p>
+                <ul className="mt-1.5 list-inside list-disc space-y-1 text-amber-950/95">
+                  <li>
+                    O PDF enviado pode ter até <strong>{INTEGRAL_PDF_MAX_MB} MB</strong>. A extração roda no
+                    navegador; o PDF <strong>não</strong> é armazenado no servidor.
+                  </li>
+                  <li>
+                    No banco fica só o <strong>texto</strong> (capítulos/páginas). Ex.: um PDF de ~6 MB costuma
+                    virar cerca de <strong>100–150 KB</strong> de texto — muito menor que o arquivo original.
+                  </li>
+                  <li>
+                    Limite do texto extraído: até <strong>{INTEGRAL_TEXTO_MAX_LABEL} milhão</strong> de caracteres por
+                    obra (livros do Domínio Público ficam bem abaixo disso).
+                  </li>
+                </ul>
+              </div>
               <div className="space-y-2">
                 <Label htmlFor="integral_fonte_url_mec">Link da ficha no MEC (opcional)</Label>
                 <Input

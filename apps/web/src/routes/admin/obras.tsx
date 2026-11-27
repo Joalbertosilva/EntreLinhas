@@ -1,7 +1,9 @@
-import { createFileRoute } from '@tanstack/react-router'
+import { createFileRoute, Link } from '@tanstack/react-router'
+import { ExternalLink } from 'lucide-react'
 import { useQuery } from '@tanstack/react-query'
 import { ScrollReveal } from '@/features/app'
 import { PageHeader } from '@/components/layout/PageHeader'
+import { Button } from '@/components/ui/Button'
 import { Card } from '@/components/ui/Card'
 import { supabase } from '@/lib/supabase'
 
@@ -25,6 +27,7 @@ function AdminObrasPage() {
         .from('obras')
         .select('id, titulo, descricao, updated_at, profiles(nome, nome_usuario)')
         .eq('status', true)
+        .eq('publicado', true)
         .order('updated_at', { ascending: false })
 
       if (error) throw error
@@ -39,7 +42,7 @@ function AdminObrasPage() {
     <div className="space-y-6">
       <PageHeader
         title="Obras dos alunos"
-        description="Acompanhe as produções autorais iniciadas na plataforma."
+        description="Acompanhe as produções da comunidade. Abra a obra para ler e baixar em PDF ou Word."
       />
 
       <ScrollReveal>
@@ -65,16 +68,21 @@ function AdminObrasPage() {
                         <p className="mt-2 line-clamp-2 text-sm text-text-muted">{obra.descricao}</p>
                       )}
                     </div>
-                    <time
-                      className="shrink-0 text-xs text-text-muted"
-                      dateTime={obra.updated_at}
-                    >
-                      {new Date(obra.updated_at).toLocaleDateString('pt-BR', {
-                        day: '2-digit',
-                        month: 'short',
-                        year: 'numeric',
-                      })}
-                    </time>
+                    <div className="flex shrink-0 flex-col items-end gap-2">
+                      <time className="text-xs text-text-muted" dateTime={obra.updated_at}>
+                        {new Date(obra.updated_at).toLocaleDateString('pt-BR', {
+                          day: '2-digit',
+                          month: 'short',
+                          year: 'numeric',
+                        })}
+                      </time>
+                      <Link to="/app/obras/$obraId" params={{ obraId: obra.id }}>
+                        <Button type="button" variant="outline" size="sm" className="gap-1.5">
+                          <ExternalLink className="h-3.5 w-3.5" aria-hidden />
+                          Ver e baixar
+                        </Button>
+                      </Link>
+                    </div>
                   </div>
                 </li>
               ))}

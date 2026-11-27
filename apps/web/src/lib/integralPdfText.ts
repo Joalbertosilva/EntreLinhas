@@ -2,7 +2,15 @@ import {
   cleanDominioPublicoPdfPageText,
   integralPageMarker,
 } from '@tcc-sistema/integral-import'
-import { getDocument, GlobalWorkerOptions, type TextItem } from 'pdfjs-dist'
+import { getDocument, GlobalWorkerOptions } from 'pdfjs-dist'
+
+/** Item de texto na API do pdfjs (tipos do pacote variam entre builds ESM). */
+type PdfTextItem = {
+  str: string
+  width: number
+  height: number
+  transform: number[]
+}
 
 /** Limite alinhado à Edge Function `import-leitura-integral-url`. */
 export const INTEGRAL_PDF_MAX_BYTES = 12 * 1024 * 1024
@@ -47,7 +55,7 @@ function fontSizeFromTransform(transform: number[] | undefined): number {
   return Math.max(a, d, 1)
 }
 
-function estimateItemWidth(item: TextItem, fontSize: number): number {
+function estimateItemWidth(item: PdfTextItem, fontSize: number): number {
   if (typeof item.width === 'number' && item.width > 0) return item.width
   const len = item.str?.length ?? 1
   return len * fontSize * 0.48
@@ -78,8 +86,8 @@ function spacerBetweenChunks(
 }
 
 function pageTextFromPdfItems(items: unknown[]): string {
-  const chunks: TextItem[] = items.filter(
-    (item): item is TextItem => typeof item === 'object' && item !== null && 'str' in item,
+  const chunks: PdfTextItem[] = items.filter(
+    (item): item is PdfTextItem => typeof item === 'object' && item !== null && 'str' in item,
   )
 
   const positioned: PositionedChunk[] = chunks

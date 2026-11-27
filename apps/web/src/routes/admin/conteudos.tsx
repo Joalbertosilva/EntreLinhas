@@ -81,21 +81,18 @@ function ConteudosPage() {
 
   const deleteContent = useMutation({
     mutationFn: async (item: Conteudo) => {
-      const { error } = await supabase
-        .from('conteudos')
-        .update({ status: false })
-        .eq('id', item.id)
+      const { error } = await supabase.from('conteudos').delete().eq('id', item.id)
       if (error) throw error
       return item
     },
     onSuccess: (item) => {
       void logAudit({
-        acao: 'conteudo.desativar',
+        acao: 'conteudo.excluir',
         entidade: 'conteudos',
         entidade_id: item.id,
         detalhes: { titulo: item.titulo },
       })
-      toast.success('Conteúdo desativado')
+      toast.success('Conteúdo excluído da plataforma')
       setDeleting(null)
       invalidateConteudoCaches(queryClient, item.id)
     },
@@ -331,7 +328,7 @@ function ConteudosPage() {
         title="Excluir conteúdo"
         description={
           deleting
-            ? `Tem certeza que deseja excluir "${deleting.titulo}"? Temas e materiais vinculados também serão removidos.`
+            ? `Excluir "${deleting.titulo}" permanentemente do banco? Temas, materiais, leitura integral, comentários e progresso dos alunos nesta obra serão apagados. Use “Desativar” se quiser só ocultar do catálogo.`
             : ''
         }
         confirmLabel="Excluir"

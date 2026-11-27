@@ -9,9 +9,9 @@ import {
   tituloJornada,
   rotuloFaixaNivel,
 } from '@/features/app/alunoProgress'
-import { BookProgressVisual } from '@/features/app/BookProgressVisual'
 import { ProgressFaixasNivel } from '@/features/app/ProgressFaixasNivel'
-import { ProgressLevelBar } from '@/features/app/ProgressLevelBar'
+import { JornadaXpBar } from '@/features/app/JornadaXpBar'
+import { ReaderProfileAvatar } from '@/features/app/ReaderProfileAvatar'
 import {
   mensagemAcolhedora,
   paletaLivroCinematico,
@@ -28,7 +28,8 @@ import { cn } from '@/lib/utils'
 export function ProgressoPage() {
   const { profile } = useAuth()
   const { data: progress, isLoading } = useAlunoProgress(profile?.id)
-  const { pageProgress, displayPct, justLeveledUp } = useBookProgressAnimation(progress)
+  const { displayPct, justLeveledUp } = useBookProgressAnimation(progress)
+  const displayName = profile?.nome ?? 'Leitor'
 
   if (isLoading) {
     return (
@@ -72,21 +73,18 @@ export function ProgressoPage() {
           )}
           style={heroStyle}
         >
-          <div className="flex flex-col items-center gap-6 sm:flex-row sm:items-start">
-            <div className="leitura-jornada__book-col leitura-jornada__book-col--solid">
-              <BookProgressVisual
-              pageProgress={pageProgress}
+          <div className="leitura-jornada__head jornada-card__head jornada-card__head--profile">
+            <ReaderProfileAvatar
+              name={displayName}
+              imageUrl={profile?.avatar_url}
               nivel={progress.nivel}
-              marcadorCor={paleta.marcador}
-              paleta={paleta}
-              justLeveledUp={justLeveledUp}
-              size="lg"
-              cinematic
+              editable
+              className="reader-profile-avatar--page"
             />
-            </div>
             <div className="min-w-0 flex-1 text-center sm:text-left">
-              <div className="flex flex-wrap items-baseline justify-center gap-x-3 gap-y-1 sm:justify-start">
-                <p className="text-lg font-medium text-white">{tituloJornada(progress.nivel)}</p>
+              <p className="jornada-card__name leitura-jornada__profile-name">{displayName}</p>
+              <div className="mt-1 flex flex-wrap items-baseline justify-center gap-x-3 gap-y-1 sm:justify-start">
+                <p className="text-base font-medium text-white/92">{tituloJornada(progress.nivel)}</p>
                 <span className="leitura-jornada__faixa-chip text-xs font-semibold uppercase tracking-wide">
                   {rotuloFaixaNivel(progress.nivel)}
                 </span>
@@ -97,16 +95,15 @@ export function ProgressoPage() {
             </div>
           </div>
 
-          <ProgressLevelBar
+          <JornadaXpBar
             className="mt-6"
-            pct={displayPct}
-            barra={paleta.barra}
-            barraTrack={paleta.barraTrack}
-            xpTotal={progress.xp}
+            onHero
+            barPct={displayPct}
+            xpNoNivel={progress.xpNoNivel}
+            xpNecessarioNivel={progress.xpNecessarioNivel}
+            xpParaProximoNivel={progress.xpParaProximoNivel}
             nivel={progress.nivel}
-            xpParaProximo={progress.xpParaProximoNivel}
             nivelMaximo={progress.nivelMaximo}
-            onSolidBg
           />
         </div>
       </ScrollReveal>
