@@ -3,7 +3,7 @@ import { BookOpen, Bookmark, CheckCircle2, Loader2, MoreHorizontal } from 'lucid
 import { useState } from 'react'
 import { Alert, Modal, Pressable, Text, View } from 'react-native'
 import { useAtualizarLeituraUsuario } from '@/features/leituras/useLeiturasMap'
-import { useAuth } from '@/providers/AuthProvider'
+import { useUsuarioId } from '@/lib/useUsuarioId'
 import { cn } from '@/lib/cn'
 
 interface ContentCardLeituraMenuProps {
@@ -30,11 +30,11 @@ export function ContentCardLeituraMenu({
   variant = 'cover',
   className,
 }: ContentCardLeituraMenuProps) {
-  const { profile } = useAuth()
+  const usuarioId = useUsuarioId()
   const [open, setOpen] = useState(false)
-  const atualizar = useAtualizarLeituraUsuario(profile?.id)
+  const atualizar = useAtualizarLeituraUsuario(usuarioId)
 
-  if (!profile) return null
+  if (!usuarioId) return null
 
   const handleAction = async (next: StatusLeitura) => {
     setOpen(false)

@@ -1,6 +1,7 @@
 import { Stack } from 'expo-router'
 import { LinearGradient } from 'expo-linear-gradient'
 import { BookOpen, Sparkles, Trophy } from 'lucide-react-native'
+import { ReaderProfileAvatar } from '@/features/app/ReaderProfileAvatar'
 import { ActivityIndicator, ScrollView, Text, View } from 'react-native'
 import { A11yScreen } from '@/components/layout/A11yScreen'
 import { ScreenBackHeader } from '@/components/layout/ScreenBackHeader'
@@ -23,6 +24,7 @@ export default function ProgressoScreen() {
   const { data: progress, isLoading } = useAlunoProgress(profile?.id)
 
   const paleta = progress ? paletaLivroCinematico(progress.nivel, progress.progressoNivelPct) : null
+  const displayName = profile?.nome ?? 'Leitor'
 
   return (
     <>
@@ -44,16 +46,23 @@ export default function ProgressoScreen() {
                   end={{ x: 1, y: 1 }}
                   style={{ borderRadius: 24, paddingHorizontal: 20, paddingVertical: 20 }}
                 >
-                  <View className="flex-row items-start gap-3">
-                    <View className="h-12 w-12 items-center justify-center rounded-xl bg-white/20">
-                      <BookOpen color="#fff" size={24} strokeWidth={1.5} />
-                    </View>
+                  <View className="flex-row items-center gap-3.5">
+                    <ReaderProfileAvatar
+                      name={displayName}
+                      imageUrl={profile?.avatar_url}
+                      nivel={progress.nivel}
+                      editable
+                      size="md"
+                    />
                     <View className="min-w-0 flex-1">
-                      <Text className="font-sans-bold text-xl leading-snug text-white">
-                        {rotuloNivel(progress.nivel, progress.nivelMaximo)}
+                      <Text className="font-sans-bold text-[17px] leading-snug text-white" numberOfLines={2}>
+                        {displayName}
                       </Text>
                       <Text className="mt-1 font-sans-medium text-sm text-white/90">
                         {tituloJornada(progress.nivel)}
+                      </Text>
+                      <Text className="mt-0.5 font-sans-semibold text-xs text-white/80">
+                        {rotuloNivel(progress.nivel, progress.nivelMaximo)}
                       </Text>
                     </View>
                   </View>
@@ -64,15 +73,28 @@ export default function ProgressoScreen() {
                   </Text>
                   <Text className="mt-1 font-sans text-xs text-white/75">{resumoLeituras(progress)}</Text>
 
-                  <View className="mt-4 h-2 overflow-hidden rounded-full bg-white/25">
-                    <View
-                      className="h-full rounded-full bg-white"
-                      style={{ width: `${progress.progressoNivelPct}%` }}
-                    />
+                  <View className="mt-4 flex-row items-center gap-3">
+                    <View className="h-[11px] min-w-0 flex-1 overflow-hidden rounded-full border border-primary/15 bg-[#e8eef0]">
+                      <LinearGradient
+                        colors={['#2a9d8f', '#3db8cf', '#5b6fd6', '#7c5fd4']}
+                        start={{ x: 0, y: 0.5 }}
+                        end={{ x: 1, y: 0.5 }}
+                        style={{
+                          width: `${progress.nivelMaximo ? 100 : progress.progressoNivelPct}%`,
+                          height: '100%',
+                          borderRadius: 999,
+                        }}
+                      />
+                    </View>
+                    <Text className="shrink-0 font-sans-semibold text-[13px] text-white/90">
+                      {progress.xpNoNivel} / {progress.xpNecessarioNivel} xp
+                    </Text>
                   </View>
-                  {!progress.nivelMaximo ? (
-                    <Text className="mt-2 font-sans text-xs leading-relaxed text-white/75">
-                      Faltam {progress.xpParaProximoNivel} XP para o próximo nível
+                  {progress.nivelMaximo ? (
+                    <Text className="mt-2.5 font-sans text-[13px] text-white/78">Nível máximo alcançado</Text>
+                  ) : progress.xpParaProximoNivel > 0 ? (
+                    <Text className="mt-2.5 font-sans text-[13px] leading-relaxed text-white/78">
+                      Faltam {progress.xpParaProximoNivel} XP para o nível {progress.nivel + 1}
                     </Text>
                   ) : null}
                 </LinearGradient>

@@ -1,5 +1,6 @@
 import { useRouter } from 'expo-router'
-import { FlatList, Pressable, Text, View } from 'react-native'
+import { Pressable, Text, View } from 'react-native'
+import { HorizontalSectionScroll } from '@/components/layout/HorizontalSectionScroll'
 import { ChevronRight } from 'lucide-react-native'
 import type { HomeSectionConfig } from '@/features/conteudos/homeSections'
 import { ContentCard } from '@/features/conteudos/ContentCard'
@@ -8,7 +9,6 @@ import { ScreenSectionHeader } from '@/components/layout/ScreenPageHeader'
 import {
   CONTENT_CARD_WIDTH,
   CONTENT_COVER_HEIGHT,
-  RAIL_ITEM_GAP,
   SCREEN_HORIZONTAL_PADDING,
   SECTION_GAP,
 } from '@/lib/layout'
@@ -32,7 +32,8 @@ function SectionSkeleton() {
 
 export function ContentSectionRail({ section }: ContentSectionRailProps) {
   const router = useRouter()
-  const { data, isLoading, isError } = useSectionConteudos(section)
+  const { data, isLoading, isError, isFetched } = useSectionConteudos(section)
+  const showSkeleton = isLoading && !isFetched
   const showVerTudo = section.id !== 'destaques'
 
   return (
@@ -60,7 +61,7 @@ export function ContentSectionRail({ section }: ContentSectionRailProps) {
         }
       />
 
-      {isLoading ? (
+      {showSkeleton ? (
         <SectionSkeleton />
       ) : isError ? (
         <Text style={{ paddingHorizontal: SCREEN_HORIZONTAL_PADDING }} className="font-sans text-sm text-error">
@@ -71,14 +72,11 @@ export function ContentSectionRail({ section }: ContentSectionRailProps) {
           Nenhum conteúdo disponível por enquanto.
         </Text>
       ) : (
-        <FlatList
-          horizontal
-          data={data}
-          keyExtractor={(item) => item.id}
-          showsHorizontalScrollIndicator={false}
-          contentContainerStyle={{ paddingHorizontal: SCREEN_HORIZONTAL_PADDING, gap: RAIL_ITEM_GAP }}
-          renderItem={({ item }) => <ContentCard conteudo={item} />}
-        />
+        <HorizontalSectionScroll minHeight={CONTENT_COVER_HEIGHT + 44}>
+          {data.map((item) => (
+            <ContentCard key={item.id} conteudo={item} />
+          ))}
+        </HorizontalSectionScroll>
       )}
     </View>
   )

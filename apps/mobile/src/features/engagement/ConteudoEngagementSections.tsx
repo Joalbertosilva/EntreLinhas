@@ -77,7 +77,6 @@ export function ConteudoReflexoesSection({
   scrollFieldIntoView?: (inputRef: NativeViewRef | null) => void
 }) {
   const temasComFrase = temas.filter((t) => t.questionamento?.trim())
-  if (!temasComFrase.length) return null
 
   return (
     <View style={{ marginHorizontal: SCREEN_HORIZONTAL_PADDING }} className="mt-8">
@@ -94,15 +93,23 @@ export function ConteudoReflexoesSection({
           </A11yText>
         </View>
       </View>
-      {temasComFrase.map((tema) => (
-        <ReflexaoCard
-          key={tema.id}
-          conteudoId={conteudoId}
-          usuarioId={usuarioId}
-          tema={tema}
-          scrollFieldIntoView={scrollFieldIntoView}
-        />
-      ))}
+      {temasComFrase.length === 0 ? (
+        <View className="rounded-2xl border border-dashed border-primary/25 bg-primary-light/20 px-4 py-5">
+          <A11yText size={14} className="text-center font-sans text-text-muted">
+            Este conteúdo ainda não tem perguntas de reflexão. Você pode comentar com a turma abaixo.
+          </A11yText>
+        </View>
+      ) : (
+        temasComFrase.map((tema) => (
+          <ReflexaoCard
+            key={tema.id}
+            conteudoId={conteudoId}
+            usuarioId={usuarioId}
+            tema={tema}
+            scrollFieldIntoView={scrollFieldIntoView}
+          />
+        ))
+      )}
     </View>
   )
 }
@@ -131,17 +138,13 @@ function ReflexaoCard({
 
   const { frase, reflexao, pergunta, rotulo } = getReflexaoDisplay(tema)
   const { audioEnabled } = useAccessibility()
-  const { speak, stop, isSpeaking } = useSpeechContext()
+  const { toggleSpeak, isSpeaking } = useSpeechContext()
   const inputFontSize = useA11yFontSize(16)
 
   const textoParaOuvir = [frase, reflexao, pergunta].filter(Boolean).join('. ')
 
   const handleOuvir = () => {
-    if (isSpeaking) {
-      void stop()
-      return
-    }
-    void speak(textoParaOuvir)
+    void toggleSpeak(textoParaOuvir)
   }
 
   const handleSave = async () => {

@@ -72,6 +72,68 @@ export function buildObraBookPages(capitulos: ObraCapituloPage[]): BookPage[] {
     }))
 }
 
+export interface ObraPublicaBookMeta {
+  titulo: string
+  autorNome?: string | null
+  coverUrl?: string | null
+  tipoLabel: string
+  categoriaLabel?: string | null
+  descricao?: string | null
+}
+
+function buildObraCreditosBody(meta: ObraPublicaBookMeta, autorDisplay: string): string {
+  const lines = [
+    `Tipo: ${meta.tipoLabel}`,
+    meta.categoriaLabel ? `Categoria: ${meta.categoriaLabel}` : null,
+    '',
+    'Comunidade EntreLinhas',
+    'Espaço onde alunos publicam livros, crônicas, poemas e outros textos para a turma.',
+    '',
+    `Obra criada por ${autorDisplay}.`,
+    meta.descricao?.trim() ? '' : null,
+    meta.descricao?.trim() ?? null,
+  ].filter((line) => line !== null) as string[]
+  return lines.join('\n')
+}
+
+/** Obra de aluno: capa → créditos EntreLinhas → capítulos. */
+export function buildObraPublicaBookPages(
+  meta: ObraPublicaBookMeta,
+  capitulos: ObraCapituloPage[],
+): BookPage[] {
+  const autorDisplay = meta.autorNome?.trim() || 'um aluno da comunidade'
+  const capaSpeak = [meta.titulo, `por ${autorDisplay}`, 'Capa da obra do aluno'].filter(Boolean).join('. ')
+  const creditosBody = buildObraCreditosBody(meta, autorDisplay)
+  const creditosSpeak = [
+    'Comunidade EntreLinhas',
+    `Obra ${meta.tipoLabel}`,
+    meta.categoriaLabel ? `Categoria ${meta.categoriaLabel}` : null,
+    `Criada por ${autorDisplay}`,
+    meta.descricao?.trim() ?? null,
+  ]
+    .filter(Boolean)
+    .join('. ')
+
+  const prefix: BookPage[] = [
+    {
+      id: 'obra-aluno-capa',
+      kind: 'cover',
+      title: meta.titulo,
+      body: autorDisplay,
+      coverUrl: meta.coverUrl ?? null,
+      speakLabel: capaSpeak,
+    },
+    {
+      id: 'obra-aluno-creditos',
+      title: 'Comunidade EntreLinhas',
+      body: creditosBody,
+      speakLabel: creditosSpeak,
+    },
+  ]
+
+  return [...prefix, ...buildObraBookPages(capitulos)]
+}
+
 export interface IntegralBookMeta {
   titulo: string
   autor?: string | null

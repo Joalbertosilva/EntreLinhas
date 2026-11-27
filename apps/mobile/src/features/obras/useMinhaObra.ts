@@ -164,6 +164,7 @@ export function useMinhaObra(userId: string | undefined) {
   return useQuery({
     queryKey: ['minha-obra', userId],
     enabled: Boolean(userId),
+    placeholderData: (previous) => previous,
     queryFn: async (): Promise<MinhaObraResumo | null> => {
       const { data: obra, error } = await supabase
         .from('obras')

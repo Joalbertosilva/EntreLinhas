@@ -44,7 +44,7 @@ export function GlobalAccessibilityLayer() {
             </Text>
             <Pressable
               onPress={() => void reader.speakScreen()}
-              accessibilityLabel="Ouvir tudo desta tela"
+              accessibilityLabel={reader.isSpeaking ? 'Parar leitura em voz alta' : 'Ouvir tudo desta tela'}
               className="h-8 w-8 items-center justify-center rounded-full bg-primary-light active:opacity-80"
             >
               <Volume2 color="#1c756a" size={16} strokeWidth={2} />

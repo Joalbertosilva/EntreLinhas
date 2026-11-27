@@ -6,6 +6,8 @@ import {
   BookMarked,
   BookOpen,
   FileText,
+  Download,
+  FileDown,
   Globe,
   ImagePlus,
   Loader2,
@@ -63,6 +65,9 @@ import { uploadObraCapaFotoFromUri, uploadObraCoverFromBase64 } from '@/lib/stor
 import { cn } from '@/lib/cn'
 import type { NativeViewRef } from '@/lib/nativeRefs'
 import { stackScrollPaddingBottom } from '@/lib/layout'
+import { resolveCapaImagemParaExport } from '@/lib/obraExportCapa'
+import { shareObraComoDocx, shareObraComoPdf, snapshotFromEditorState } from '@/lib/obraExportDownload'
+import { resolvePublicImageUri } from '@/lib/imageUrl'
 import { useAuth } from '@/providers/AuthProvider'
 
 const TIPOS: Array<{ id: TipoObra; icon: typeof BookOpen }> = [
@@ -96,6 +101,7 @@ export default function MinhaObraScreen() {
   const [capaUrl, setCapaUrl] = useState<string | null>(null)
   const [capaFotoUri, setCapaFotoUri] = useState<string | null>(null)
   const [capaPreviewUri, setCapaPreviewUri] = useState<string | null>(null)
+  const [exportando, setExportando] = useState<'pdf' | 'docx' | null>(null)
   const [capaPreviewMeta, setCapaPreviewMeta] = useState<{
     mimeType: string
     fileSize?: number
@@ -347,6 +353,57 @@ export default function MinhaObraScreen() {
   )
   const tituloCapa = tituloObra.trim() || defaultTitle
 
+  const capitulosAtualizados =
+    obra?.capitulos.map((c) =>
+      c.id === capituloAtivoId ? { ...c, titulo: tituloCapitulo, texto } : c,
+    ) ?? []
+
+  const capaUriParaExport =
+    capaPreviewUri ?? capaSalvaUri ?? resolvePublicImageUri('/images/minha-obra-default-cover.png') ?? null
+
+  const buildExportSnapshot = (capa: Awaited<ReturnType<typeof resolveCapaImagemParaExport>>) =>
+    snapshotFromEditorState({
+      titulo: tituloObra,
+      descricao,
+      tipo: tipoObra,
+      categoria: categoriaObra,
+      autorNome: profile?.nome ?? 'Autor',
+      capitulos: capitulosAtualizados,
+      capituloAtivoId,
+      tituloCapitulo,
+      textoAtivo: texto,
+      capa,
+    })
+
+  const handleExportar = async (formato: 'pdf' | 'docx') => {
+    if (!obra) return
+    if (!obraTemConteudo(capitulosAtualizados)) {
+      Alert.alert('Sem texto', 'Escreva algo antes de exportar.')
+      return
+    }
+    setExportando(formato)
+    try {
+      const capa = await resolveCapaImagemParaExport(capaUriParaExport)
+      const snapshot = buildExportSnapshot(capa)
+      if (formato === 'pdf') await shareObraComoPdf(snapshot)
+      else await shareObraComoDocx(snapshot)
+      Alert.alert(
+        formato === 'pdf' ? 'PDF pronto' : 'Word pronto',
+        'O arquivo foi gerado. Use o menu para salvar no celular ou enviar para outro app.',
+      )
+    } catch (e) {
+      const detalhe = e instanceof Error ? e.message : null
+      Alert.alert(
+        'Erro',
+        detalhe
+          ? `Não foi possível gerar o arquivo: ${detalhe}`
+          : 'Não foi possível gerar o arquivo. Atualize o app Expo Go e tente de novo.',
+      )
+    } finally {
+      setExportando(null)
+    }
+  }
+
   const handlePublicar = async () => {
     if (!obra) return
     const temTexto = obraTemConteudo(
@@ -435,6 +492,36 @@ export default function MinhaObraScreen() {
             contentContainerStyle={{ paddingBottom: stackScrollPaddingBottom(insets) }}
           >
             <View className="mx-5 mt-4">
+              <View className="mb-3 flex-row flex-wrap gap-2">
+                <Pressable
+                  onPress={() => void handleExportar('pdf')}
+                  disabled={exportando !== null}
+                  className="flex-row items-center gap-2 rounded-full border border-border bg-white px-4 py-2.5 active:bg-primary-light/15 disabled:opacity-50"
+                  accessibilityRole="button"
+                  accessibilityLabel="Exportar obra em PDF"
+                >
+                  {exportando === 'pdf' ? (
+                    <Loader2 color="#1c756a" size={16} />
+                  ) : (
+                    <Download color="#1c756a" size={16} strokeWidth={1.75} />
+                  )}
+                  <Text className="font-sans-semibold text-sm text-brand-navy">PDF</Text>
+                </Pressable>
+                <Pressable
+                  onPress={() => void handleExportar('docx')}
+                  disabled={exportando !== null}
+                  className="flex-row items-center gap-2 rounded-full border border-border bg-white px-4 py-2.5 active:bg-primary-light/15 disabled:opacity-50"
+                  accessibilityRole="button"
+                  accessibilityLabel="Exportar obra em Word"
+                >
+                  {exportando === 'docx' ? (
+                    <Loader2 color="#1c756a" size={16} />
+                  ) : (
+                    <FileDown color="#1c756a" size={16} strokeWidth={1.75} />
+                  )}
+                  <Text className="font-sans-semibold text-sm text-brand-navy">Word</Text>
+                </Pressable>
+              </View>
               <View className="flex-row flex-wrap items-center gap-2">
                 {isPublicada ? (
                   <View className="flex-row items-center gap-1.5 rounded-full border border-success/25 bg-success/10 px-3 py-1.5">

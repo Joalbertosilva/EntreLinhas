@@ -7,5 +7,8 @@ export function useAlunoProgress(userId: string | undefined) {
     enabled: Boolean(userId),
     queryFn: () => fetchAlunoProgress(userId!),
     staleTime: 60_000,
+    placeholderData: (previous) => previous,
+    refetchOnWindowFocus: false,
+    refetchOnMount: false,
   })
 }

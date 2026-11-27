@@ -7,33 +7,40 @@ import {
 } from '@/features/accessibility/screenAudioRegistry'
 
 export function useScreenReader() {
-  const { speak, stop, isSpeaking } = useSpeechContext()
+  const { toggleSpeak, stop, isSpeaking, isAudioPlaying } = useSpeechContext()
 
   const speakScreen = useCallback(async () => {
+    if (await isAudioPlaying()) {
+      await stop()
+      return false
+    }
+
     const fullText = getScreenAudioFullText()
     if (fullText) {
-      return speak(fullText)
+      return toggleSpeak(fullText)
     }
 
     if (getScreenAudioRegionCount() === 0) {
-      await speak(
+      return toggleSpeak(
         'Ative o modo leitura da tela para ver botões de som em cada card e seção, ou abra um livro para ouvir o texto.',
       )
-      return false
     }
 
-    await speak('Não há conteúdo para ler nesta tela agora.')
-    return false
-  }, [speak])
+    return toggleSpeak('Não há conteúdo para ler nesta tela agora.')
+  }, [isAudioPlaying, stop, toggleSpeak])
 
   const speakSelection = useCallback(async () => {
-    const selected = getSpeakSelectionText()
-    if (!selected) {
-      await speak('Selecione um trecho na leitura do livro. Toque e arraste sobre o texto.')
+    if (await isAudioPlaying()) {
+      await stop()
       return false
     }
-    return speak(selected)
-  }, [speak])
+
+    const selected = getSpeakSelectionText()
+    if (!selected) {
+      return toggleSpeak('Selecione um trecho na leitura do livro. Toque e arraste sobre o texto.')
+    }
+    return toggleSpeak(selected)
+  }, [isAudioPlaying, stop, toggleSpeak])
 
   return {
     isSpeaking,

@@ -5,9 +5,10 @@ import { ActivityIndicator, Pressable, ScrollView, Text, View } from 'react-nati
 import { BookOpen, Heart, PenLine } from 'lucide-react-native'
 import { ObraEngagementSection } from '@/features/engagement/ObraEngagementSection'
 import { useObraPublica } from '@/features/obras/useObraPublica'
-import { useAuth } from '@/providers/AuthProvider'
+import { useUsuarioId } from '@/lib/useUsuarioId'
 import { BookPaginatedReader } from '@/features/reader/BookPaginatedReader'
-import { buildObraBookPages, getObraPageStorageKey } from '@/features/reader/bookPagination'
+import { buildObraPublicaBookPages, getObraPageStorageKey } from '@/features/reader/bookPagination'
+import { CATEGORIA_OBRA_LABEL } from '@/lib/obraCategoriaLabels'
 import { A11yScreen } from '@/components/layout/A11yScreen'
 import { ScreenBackHeader } from '@/components/layout/ScreenBackHeader'
 import { capaImageUri } from '@/lib/imageUrl'
@@ -21,7 +22,7 @@ import { TIPO_OBRA_LABEL } from '@/lib/obraLabels'
 export default function ObraDetailScreen() {
   const { id } = useLocalSearchParams<{ id: string }>()
   const { insets, scrollPaddingBottom: stackScrollPadding } = useStackScreenInsets()
-  const { profile } = useAuth()
+  const usuarioId = useUsuarioId()
   const { data, isLoading, isError } = useObraPublica(id)
   const scrollRef = useRef<NativeScrollViewRef>(null)
   const scrollViewportRef = useRef<NativeViewRef>(null)
@@ -31,7 +32,15 @@ export default function ObraDetailScreen() {
 
   const bookPages =
     data?.capitulos
-      ? buildObraBookPages(
+      ? buildObraPublicaBookPages(
+          {
+            titulo: data.titulo,
+            autorNome: data.autorNome,
+            coverUrl: data.capa_url ? capaImageUri(data.capa_url, data.updated_at) : null,
+            tipoLabel: TIPO_OBRA_LABEL[data.tipo],
+            categoriaLabel: CATEGORIA_OBRA_LABEL[data.categoria],
+            descricao: data.descricao,
+          },
           data.capitulos.map((c) => ({
             id: c.id,
             ordem: c.ordem,
@@ -142,6 +151,7 @@ export default function ObraDetailScreen() {
                       conteudoId={id}
                       titulo={data.titulo}
                       storageKey={getObraPageStorageKey(id)}
+                      allowImmersive
                     />
                   </View>
                 ) : (
@@ -158,7 +168,7 @@ export default function ObraDetailScreen() {
                 {id ? (
                   <ObraEngagementSection
                     obraId={id}
-                    usuarioId={profile?.id}
+                    usuarioId={usuarioId}
                     curtidasCount={data.curtidas_count}
                     scrollToEnd={scrollToEnd}
                   />
