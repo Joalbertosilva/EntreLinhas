@@ -6,6 +6,7 @@
     "version": "1.0.6",
     "orientation": "portrait",
     "icon": "./assets/images/app-icon-manifest.png",
+    "platforms": ["ios", "android"],
     "scheme": "entrelinhas",
     "userInterfaceStyle": "light",
     "newArchEnabled": true,

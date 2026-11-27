@@ -5,6 +5,7 @@ import { useAuth } from '@/features/auth/AuthProvider'
 import { useAlunoProgress } from '@/features/app/useAlunoProgress'
 import { useHomeLevelUpNotice } from '@/features/app/useHomeLevelUpNotice'
 import { BookOpen, LineChart } from 'lucide-react'
+import { JornadaXpBar } from '@/features/app/JornadaXpBar'
 import { cn } from '@/lib/utils'
 
 interface HomeProgressCardProps {
@@ -44,8 +45,6 @@ export function HomeProgressCard({ userId, displayName }: HomeProgressCardProps)
 
   if (!progress) return null
 
-  const barPct = progress.nivelMaximo ? 100 : Math.max(0, Math.min(100, progress.progressoNivelPct))
-
   const journeyLabel = [
     displayName,
     `Nível ${progress.nivel}`,
@@ -81,29 +80,14 @@ export function HomeProgressCard({ userId, displayName }: HomeProgressCardProps)
             <p className="jornada-card__name">{displayName}</p>
           </div>
 
-          <div className="jornada-card__xp-bar-row">
-            <div
-              className="jornada-card__xp-track"
-              role="progressbar"
-              aria-valuenow={barPct}
-              aria-valuemin={0}
-              aria-valuemax={100}
-              aria-label={`Progresso do nível ${progress.nivel}`}
-            >
-              <div className="jornada-card__xp-fill" style={{ width: `${barPct}%` }} />
-            </div>
-            <span className="jornada-card__xp-inline">
-              {progress.xpNoNivel} / {progress.xpNecessarioNivel} xp
-            </span>
-          </div>
-
-          {progress.nivelMaximo ? (
-            <p className="jornada-card__hint">Nível máximo alcançado</p>
-          ) : progress.xpParaProximoNivel > 0 ? (
-            <p className="jornada-card__hint">
-              Faltam {progress.xpParaProximoNivel} XP para o nível {progress.nivel + 1}
-            </p>
-          ) : null}
+          <JornadaXpBar
+            barPct={progress.progressoNivelPct}
+            xpNoNivel={progress.xpNoNivel}
+            xpNecessarioNivel={progress.xpNecessarioNivel}
+            xpParaProximoNivel={progress.xpParaProximoNivel}
+            nivel={progress.nivel}
+            nivelMaximo={progress.nivelMaximo}
+          />
 
           <div className="jornada-card__actions">
             <Link to="/app/progresso" className="jornada-card__action jornada-card__action--jornada">

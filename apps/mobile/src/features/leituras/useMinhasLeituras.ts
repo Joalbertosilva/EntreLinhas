@@ -38,6 +38,9 @@ export function useMinhasLeituras(userId: string | undefined) {
   return useQuery({
     queryKey: ['minhas-leituras', userId],
     enabled: Boolean(userId),
+    placeholderData: (previous) => previous,
+    refetchOnWindowFocus: false,
+    staleTime: 60_000,
     queryFn: async (): Promise<MinhasLeiturasAgrupadas> => {
       const { data, error } = await supabase
         .from('leituras')

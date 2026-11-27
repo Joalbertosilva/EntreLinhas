@@ -1,6 +1,7 @@
 import AsyncStorage from '@react-native-async-storage/async-storage'
 import * as SecureStore from 'expo-secure-store'
 import { createClient } from '@supabase/supabase-js'
+import { Platform } from 'react-native'
 
 const supabaseUrl = process.env.EXPO_PUBLIC_SUPABASE_URL
 const supabaseAnonKey = process.env.EXPO_PUBLIC_SUPABASE_ANON_KEY
@@ -11,11 +12,12 @@ if (!supabaseUrl || !supabaseAnonKey) {
   )
 }
 
+/** Na develop: RN nativo precisa persistir; web/SSR do Metro só com `window`. */
 function canPersistAuth(): boolean {
+  if (Platform.OS === 'ios' || Platform.OS === 'android') return true
   return typeof window !== 'undefined'
 }
 
-/** Permite refresh de token em background (evita KeychainException no iOS). */
 const secureStoreOptions: SecureStore.SecureStoreOptions = {
   keychainAccessible: SecureStore.AFTER_FIRST_UNLOCK,
 }

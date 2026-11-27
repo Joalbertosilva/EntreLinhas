@@ -6,6 +6,8 @@ import {
   BookOpen,
   FileText,
   Globe,
+  Download,
+  FileDown,
   Loader2,
   PenLine,
   Plus,
@@ -54,6 +56,8 @@ import { ConfirmDialog } from '@/components/ui/ConfirmDialog'
 import { Input } from '@/components/ui/Input'
 import { Label } from '@/components/ui/Label'
 import { Textarea } from '@/components/ui/Textarea'
+import { resolveCapaImagemParaExport } from '@/lib/obraExportCapa'
+import { downloadObraComoDocx, downloadObraComoPdf, snapshotFromEditorState } from '@/lib/obraExportDownload'
 import { cn } from '@/lib/utils'
 
 const TIPOS: Array<{ id: TipoObra; icon: typeof BookOpen }> = [
@@ -76,6 +80,7 @@ export function MinhaObraEditorPage() {
   const excluirObra = useExcluirObra(profile?.id)
 
   const [confirmDelete, setConfirmDelete] = useState(false)
+  const [exportando, setExportando] = useState<'pdf' | 'docx' | null>(null)
   const [tituloObra, setTituloObra] = useState('')
   const [descricao, setDescricao] = useState('')
   const [capaUrl, setCapaUrl] = useState<string | null>(null)
@@ -302,6 +307,49 @@ export function MinhaObraEditorPage() {
     }
   }
 
+  const capitulosAtualizados =
+    obra?.capitulos.map((c) =>
+      c.id === capituloAtivoId ? { ...c, titulo: tituloCapitulo, texto } : c,
+    ) ?? []
+
+  const buildExportSnapshot = (capa: Awaited<ReturnType<typeof resolveCapaImagemParaExport>>) =>
+    snapshotFromEditorState({
+      titulo: tituloObra,
+      descricao,
+      tipo: tipoObra,
+      categoria: categoriaObra,
+      autorNome: profile?.nome ?? 'Autor',
+      capitulos: capitulosAtualizados,
+      capituloAtivoId,
+      tituloCapitulo,
+      textoAtivo: texto,
+      capa,
+    })
+
+  const handleExportar = async (formato: 'pdf' | 'docx') => {
+    if (!obra) return
+    if (!obraTemConteudo(capitulosAtualizados)) {
+      toast.error('Escreva algo antes de exportar')
+      return
+    }
+    setExportando(formato)
+    try {
+      const capa = await resolveCapaImagemParaExport({
+        capaPreview,
+        capaUrl,
+        obraUpdatedAt: obra.updated_at,
+      })
+      const snapshot = buildExportSnapshot(capa)
+      if (formato === 'pdf') await downloadObraComoPdf(snapshot)
+      else await downloadObraComoDocx(snapshot)
+      toast.success(formato === 'pdf' ? 'PDF gerado com sucesso' : 'Documento Word gerado com sucesso')
+    } catch {
+      toast.error('Não foi possível gerar o arquivo')
+    } finally {
+      setExportando(null)
+    }
+  }
+
   const handlePublicar = async () => {
     if (!obra) return
     const temTexto = obraTemConteudo(
@@ -360,6 +408,34 @@ export function MinhaObraEditorPage() {
               </div>
             </div>
             <div className="flex flex-wrap items-center gap-2">
+              <Button
+                variant="outline"
+                size="sm"
+                disabled={!obra || exportando !== null}
+                onClick={() => void handleExportar('pdf')}
+                title="Baixar obra em PDF"
+              >
+                {exportando === 'pdf' ? (
+                  <Loader2 className="h-4 w-4 animate-spin" aria-hidden />
+                ) : (
+                  <Download className="h-4 w-4" aria-hidden />
+                )}
+                PDF
+              </Button>
+              <Button
+                variant="outline"
+                size="sm"
+                disabled={!obra || exportando !== null}
+                onClick={() => void handleExportar('docx')}
+                title="Baixar obra em Word"
+              >
+                {exportando === 'docx' ? (
+                  <Loader2 className="h-4 w-4 animate-spin" aria-hidden />
+                ) : (
+                  <FileDown className="h-4 w-4" aria-hidden />
+                )}
+                Word
+              </Button>
               {isPublicada && (
                 <Badge variant="success" className="gap-1 px-2.5 py-1">
                   <Globe className="h-3.5 w-3.5" aria-hidden />

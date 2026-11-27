@@ -27,6 +27,23 @@ const AUTO_ADVANCE_MS = 5000
 const NAV_BUTTON_SIZE = 44
 /** Respiro entre a área do vídeo e a faixa de navegação. */
 const CONTROLS_TOP_GAP = 18
+const DOT_SIZE = 8
+/** Faixa de dots em uma linha só — não aumenta o card se houver muitos vídeos. */
+const DOTS_ROW_HEIGHT = 24
+/** Altura fixa do bloco de título (categoria + título 2 linhas + autor). */
+const VIDEO_TITLE_BLOCK_HEIGHT = 88
+/** Contador “1 de N” abaixo dos dots. */
+const VIDEO_COUNTER_HEIGHT = 20
+/** Cabeçalho “Assistir agora” acima do card (altura reservada na home). */
+export const CATALOG_VIDEO_SECTION_HEADER_HEIGHT = 52
+
+function catalogVideoCardLayout(carouselWidth: number) {
+  const mediaHeight = Math.round((carouselWidth * 9) / 16)
+  const controlsHeight =
+    CONTROLS_TOP_GAP + NAV_BUTTON_SIZE + DOTS_ROW_HEIGHT + VIDEO_COUNTER_HEIGHT + 14
+  const cardHeight = mediaHeight + controlsHeight + VIDEO_TITLE_BLOCK_HEIGHT
+  return { mediaHeight, controlsHeight, titleHeight: VIDEO_TITLE_BLOCK_HEIGHT, cardHeight }
+}
 
 const CARD_SHADOW = {
   shadowColor: '#1a3342',
@@ -64,12 +81,17 @@ const ANCHOR_COPY: Record<
 
 interface CatalogVideoStripProps {
   section: HomeSectionConfig
+  /** Último bloco da home — menos margem inferior antes da tab bar. */
+  isLastOnHome?: boolean
+  /** Auto-play do carrossel — desliga quando a aba Home perde o foco (evita tremer o scroll). */
+  motionEnabled?: boolean
 }
 
 interface CatalogVideoCarouselProps {
   videos: ConteudoCardData[]
   featuredLabel: string
   carouselWidth: number
+  autoAdvanceEnabled: boolean
 }
 
 function CarouselNavButton({
@@ -106,14 +128,20 @@ function CarouselNavButton({
   )
 }
 
-function CatalogVideoCarousel({ videos, featuredLabel, carouselWidth }: CatalogVideoCarouselProps) {
+function CatalogVideoCarousel({
+  videos,
+  featuredLabel,
+  carouselWidth,
+  autoAdvanceEnabled,
+}: CatalogVideoCarouselProps) {
   const listRef = useRef<FlatList<ConteudoCardData>>(null)
   const [activeIndex, setActiveIndex] = useState(0)
   const autoPausedRef = useRef(false)
   const resumeAutoTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null)
 
-  const mediaHeight = Math.round((carouselWidth * 9) / 16)
+  const { mediaHeight, controlsHeight, titleHeight, cardHeight } = catalogVideoCardLayout(carouselWidth)
   const activeVideo = videos[activeIndex]
+  const multi = videos.length > 1
 
   const pauseAutoBriefly = useCallback(() => {
     autoPausedRef.current = true
@@ -149,7 +177,7 @@ function CatalogVideoCarousel({ videos, featuredLabel, carouselWidth }: CatalogV
   }, [videos.length, videos[0]?.id])
 
   useEffect(() => {
-    if (videos.length <= 1) return
+    if (!autoAdvanceEnabled || videos.length <= 1) return
 
     const timer = setInterval(() => {
       if (autoPausedRef.current) return
@@ -161,7 +189,7 @@ function CatalogVideoCarousel({ videos, featuredLabel, carouselWidth }: CatalogV
     }, AUTO_ADVANCE_MS)
 
     return () => clearInterval(timer)
-  }, [carouselWidth, videos.length])
+  }, [autoAdvanceEnabled, carouselWidth, videos.length])
 
   useEffect(
     () => () => {
@@ -240,15 +268,15 @@ function CatalogVideoCarousel({ videos, featuredLabel, carouselWidth }: CatalogV
     [carouselWidth, mediaHeight],
   )
 
-  const showControls = videos.length > 1
   const activeCategory = activeVideo?.video_categoria ?? featuredLabel
 
   return (
     <View
       className="overflow-hidden rounded-3xl border border-primary/10 bg-white"
-      style={{ width: carouselWidth, ...CARD_SHADOW }}
+      style={{ width: carouselWidth, height: cardHeight, ...CARD_SHADOW }}
+      collapsable={false}
     >
-      <View className="overflow-hidden rounded-t-3xl">
+      <View className="overflow-hidden rounded-t-3xl" style={{ height: mediaHeight }}>
         <FlatList
           ref={listRef}
           data={videos}
@@ -256,6 +284,7 @@ function CatalogVideoCarousel({ videos, featuredLabel, carouselWidth }: CatalogV
           horizontal
           pagingEnabled
           bounces={false}
+          nestedScrollEnabled
           showsHorizontalScrollIndicator={false}
           decelerationRate="fast"
           snapToInterval={carouselWidth}
@@ -273,89 +302,140 @@ function CatalogVideoCarousel({ videos, featuredLabel, carouselWidth }: CatalogV
         />
       </View>
 
-      {showControls ? (
-        <LinearGradient
-          colors={['#f4fbf9', '#ffffff']}
-          start={{ x: 0, y: 0 }}
-          end={{ x: 0, y: 1 }}
-          style={{ paddingTop: CONTROLS_TOP_GAP }}
-          className="px-4 pb-3.5"
+      <LinearGradient
+        colors={['#f4fbf9', '#ffffff']}
+        start={{ x: 0, y: 0 }}
+        end={{ x: 0, y: 1 }}
+        style={{ height: controlsHeight, paddingTop: CONTROLS_TOP_GAP }}
+        className="px-4"
+      >
+        <View
+          className="flex-row items-center justify-between"
+          style={{ columnGap: 12, height: NAV_BUTTON_SIZE }}
         >
-          <View
-            className="flex-row items-center justify-between"
-            style={{ columnGap: 12, minHeight: NAV_BUTTON_SIZE }}
-          >
+          {multi ? (
             <CarouselNavButton direction="prev" onPress={goPrev} label="Vídeo anterior" />
-            <View
-              className="min-w-0 flex-1 flex-row flex-wrap items-center justify-center gap-1.5"
-              accessibilityRole="tablist"
-              accessibilityLabel="Indicador do carrossel de vídeos"
-            >
-              {videos.map((video, index) => {
-                const active = index === activeIndex
-                return (
-                  <Pressable
-                    key={video.id}
-                    onPress={() => {
-                      pauseAutoBriefly()
-                      scrollToIndex(index)
-                    }}
-                    accessibilityRole="tab"
-                    accessibilityState={{ selected: active }}
-                    accessibilityLabel={`Vídeo ${index + 1} de ${videos.length}`}
-                    className={`rounded-full ${active ? 'h-2 bg-primary' : 'h-2 bg-primary/22'}`}
-                    style={{ width: active ? 22 : 8 }}
-                  />
-                )
-              })}
-            </View>
-            <CarouselNavButton direction="next" onPress={goNext} label="Próximo vídeo" />
+          ) : (
+            <View style={{ width: NAV_BUTTON_SIZE, height: NAV_BUTTON_SIZE }} />
+          )}
+          <View
+            className="min-w-0 flex-1 flex-row items-center justify-center gap-1.5 overflow-hidden"
+            style={{ height: DOTS_ROW_HEIGHT }}
+            accessibilityRole="tablist"
+            accessibilityLabel="Indicador do carrossel de vídeos"
+          >
+            {multi
+              ? videos.map((video, index) => {
+                  const active = index === activeIndex
+                  return (
+                    <Pressable
+                      key={video.id}
+                      onPress={() => {
+                        pauseAutoBriefly()
+                        scrollToIndex(index)
+                      }}
+                      accessibilityRole="tab"
+                      accessibilityState={{ selected: active }}
+                      accessibilityLabel={`Vídeo ${index + 1} de ${videos.length}`}
+                      className={`rounded-full ${active ? 'bg-primary' : 'bg-primary/22'}`}
+                      style={{ width: DOT_SIZE, height: DOT_SIZE, opacity: active ? 1 : 0.55 }}
+                    />
+                  )
+                })
+              : null}
           </View>
+          {multi ? (
+            <CarouselNavButton direction="next" onPress={goNext} label="Próximo vídeo" />
+          ) : (
+            <View style={{ width: NAV_BUTTON_SIZE, height: NAV_BUTTON_SIZE }} />
+          )}
+        </View>
+        <View style={{ height: VIDEO_COUNTER_HEIGHT }} className="items-center justify-center">
           <Text
-            className="mt-2.5 text-center font-sans-medium text-[11px] tracking-wide text-text-muted"
+            className="font-sans-medium text-[11px] tracking-wide text-text-muted"
             accessibilityElementsHidden
             importantForAccessibility="no"
           >
             {activeIndex + 1} de {videos.length}
           </Text>
-        </LinearGradient>
-      ) : null}
-
-      {activeVideo ? (
-        <View className="border-t border-primary/6 px-4 pb-4 pt-3">
-          <Text className="font-sans-semibold text-[10px] uppercase tracking-[0.14em] text-primary">
-            {activeCategory}
-          </Text>
-          <Text className="mt-1 font-sans-bold text-[17px] leading-snug text-brand-navy" numberOfLines={2}>
-            {activeVideo.titulo}
-          </Text>
-          {activeVideo.autor ? (
-            <Text className="mt-1 font-sans text-sm text-text-muted" numberOfLines={1}>
-              {activeVideo.autor}
-            </Text>
-          ) : null}
         </View>
-      ) : null}
+      </LinearGradient>
+
+      <View
+        className="overflow-hidden border-t border-primary/6 px-4 pb-3 pt-3"
+        style={{ height: titleHeight }}
+      >
+        <Text
+          className="font-sans-semibold text-[10px] uppercase tracking-[0.14em] text-primary"
+          numberOfLines={1}
+        >
+          {activeCategory}
+        </Text>
+        <Text
+          className="mt-1 font-sans-bold text-[17px] leading-snug text-brand-navy"
+          numberOfLines={2}
+          style={{ minHeight: 44 }}
+        >
+          {activeVideo?.titulo ?? ' '}
+        </Text>
+        <Text className="mt-0.5 font-sans text-sm text-text-muted" numberOfLines={1} style={{ minHeight: 20 }}>
+          {activeVideo?.autor?.trim() ? activeVideo.autor : ' '}
+        </Text>
+      </View>
     </View>
   )
 }
 
 /** Carrossel único de vídeos vinculados ao catálogo (paridade com a web). */
-export function CatalogVideoStrip({ section }: CatalogVideoStripProps) {
+export function CatalogVideoStrip({
+  section,
+  isLastOnHome = false,
+  motionEnabled = true,
+}: CatalogVideoStripProps) {
   const router = useRouter()
   const { width: screenWidth } = useWindowDimensions()
   const anchor = section.catalogAnchor
-  const { data: videos = [], isLoading } = useVideosByCatalogAnchor(anchor)
+  const { data: videos = [], isLoading, isFetched } = useVideosByCatalogAnchor(anchor)
 
   const playable = useMemo(
     () => videos.filter((video) => hasExternalVideoUrl(video.video_url)),
     [videos],
   )
 
-  if (!anchor || isLoading || playable.length === 0) return null
+  if (!anchor) return null
 
   const copy = ANCHOR_COPY[anchor]
   const carouselWidth = screenWidth - SCREEN_HORIZONTAL_PADDING * 2
+  const { cardHeight } = catalogVideoCardLayout(carouselWidth)
+  const bottomMargin = isLastOnHome ? 0 : SECTION_GAP
+  const sectionSlotHeight = CATALOG_VIDEO_SECTION_HEADER_HEIGHT + 14 + cardHeight
+
+  if (isLoading && !isFetched) {
+    return (
+      <View
+        style={{
+          marginBottom: bottomMargin,
+          marginTop: -4,
+          height: sectionSlotHeight,
+          maxHeight: sectionSlotHeight,
+          overflow: 'hidden',
+        }}
+        collapsable={false}
+      >
+        <View style={{ paddingHorizontal: SCREEN_HORIZONTAL_PADDING, height: CATALOG_VIDEO_SECTION_HEADER_HEIGHT }}>
+          <View className="h-10 rounded-lg bg-primary/10" />
+        </View>
+        <View style={{ paddingHorizontal: SCREEN_HORIZONTAL_PADDING, paddingTop: 14 }}>
+          <View
+            className="overflow-hidden rounded-3xl border border-primary/10 bg-primary/5"
+            style={{ width: carouselWidth, height: cardHeight }}
+          />
+        </View>
+      </View>
+    )
+  }
+
+  if (playable.length === 0) return null
   const speakLabel = [
     copy.eyebrow,
     copy.title,
@@ -363,17 +443,34 @@ export function CatalogVideoStrip({ section }: CatalogVideoStripProps) {
   ].join('. ')
 
   return (
-    <View style={{ marginBottom: SECTION_GAP, marginTop: -4 }}>
-      <View style={{ paddingHorizontal: SCREEN_HORIZONTAL_PADDING }} className="mb-3.5">
+    <View
+      style={{
+        marginBottom: bottomMargin,
+        marginTop: -4,
+        height: sectionSlotHeight,
+        maxHeight: sectionSlotHeight,
+        overflow: 'hidden',
+      }}
+      collapsable={false}
+    >
+      <View
+        style={{
+          paddingHorizontal: SCREEN_HORIZONTAL_PADDING,
+          height: CATALOG_VIDEO_SECTION_HEADER_HEIGHT,
+          justifyContent: 'flex-end',
+        }}
+      >
         <Speakable label={speakLabel}>
-          <Text className="font-sans-semibold text-[11px] uppercase tracking-wider text-text-muted">
+          <Text className="font-sans-semibold text-[11px] uppercase tracking-wider text-text-muted" numberOfLines={1}>
             {copy.eyebrow}
           </Text>
-          <View className="mt-0.5 flex-row flex-wrap items-center gap-x-2.5 gap-y-1">
-            <Text className="font-sans-bold text-lg text-brand-navy">{copy.title}</Text>
+          <View className="mt-0.5 flex-row items-center gap-x-2.5">
+            <Text className="min-w-0 flex-1 font-sans-bold text-lg text-brand-navy" numberOfLines={1}>
+              {copy.title}
+            </Text>
             <Pressable
               onPress={() => router.push('/(aluno)/(tabs)/explorar?tipo=video')}
-              className="flex-row items-center gap-0.5 active:opacity-70"
+              className="shrink-0 flex-row items-center gap-0.5 active:opacity-70"
               accessibilityRole="button"
               accessibilityLabel="Ver todos os vídeos"
             >
@@ -384,11 +481,12 @@ export function CatalogVideoStrip({ section }: CatalogVideoStripProps) {
         </Speakable>
       </View>
 
-      <View style={{ paddingHorizontal: SCREEN_HORIZONTAL_PADDING }}>
+      <View style={{ paddingHorizontal: SCREEN_HORIZONTAL_PADDING, paddingTop: 14 }}>
         <CatalogVideoCarousel
           videos={playable}
           featuredLabel={copy.featuredLabel}
           carouselWidth={carouselWidth}
+          autoAdvanceEnabled={motionEnabled}
         />
       </View>
     </View>

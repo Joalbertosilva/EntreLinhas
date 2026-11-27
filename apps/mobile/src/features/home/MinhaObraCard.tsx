@@ -26,7 +26,7 @@ export function MinhaObraCard({ userId, autorNome, obra, isLoading, embedded = f
 
   const mostraBadgePadrao = !obra || isDefaultObraCoverUrl(obra.capa_url)
 
-  if (isLoading) {
+  if (isLoading && !obra) {
     return (
       <View style={{ marginHorizontal: embedded ? 0 : SCREEN_HORIZONTAL_PADDING }}>
         <Text className="mb-2.5 font-sans-bold text-[11px] uppercase tracking-wider text-primary/80">

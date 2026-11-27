@@ -16,6 +16,9 @@ export interface ObraPublicaCard {
 export function useObrasPublicas(limit = 8) {
   return useQuery({
     queryKey: ['obras-publicas', limit],
+    staleTime: 60_000,
+    placeholderData: (previous) => previous,
+    refetchOnWindowFocus: false,
     queryFn: async (): Promise<ObraPublicaCard[]> => {
       const { data, error } = await supabase
         .from('obras')
@@ -41,6 +44,5 @@ export function useObrasPublicas(limit = 8) {
         }
       })
     },
-    staleTime: 60_000,
   })
 }

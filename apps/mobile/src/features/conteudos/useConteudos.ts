@@ -29,9 +29,17 @@ function isMissingOptionalColumn(error: { message?: string; code?: string } | nu
     msg.includes('video_url') ||
     msg.includes('catalog_anchor') ||
     msg.includes('video_categoria') ||
-    msg.includes('curtidas_count')
+    msg.includes('curtidas_count') ||
+    msg.includes('integral_ativa') ||
+    msg.includes('integral_licenca') ||
+    msg.includes('integral_traducao')
   )
 }
+
+const CONTEUDO_DETAIL_BASE =
+  'id, titulo, tipo, autor, capa_url, video_url, conteudo_textual, resumo, descricao, personagens, contexto, pontos_importantes, curiosidades, curtidas_count, status'
+
+const CONTEUDO_DETAIL_EXTENDED = `${CONTEUDO_DETAIL_BASE}, integral_ativa, integral_licenca, integral_traducao_credito, integral_traducao_metodo`
 
 async function runConteudoQuery(fields: string, options: ConteudoQueryOptions): Promise<ConteudoCardData[]> {
   let query = supabase.from('conteudos').select(fields).eq('status', true)
@@ -135,8 +143,9 @@ export function useSectionConteudos(
         ? fetchDestaques(section.placeholderCount)
         : fetchActiveConteudos({ tipo: section.tipo, limit: section.placeholderCount }),
     enabled: options?.enabled ?? true,
-    staleTime: 0,
-    refetchOnMount: 'always',
+    staleTime: 60_000,
+    placeholderData: (previous) => previous,
+    refetchOnWindowFocus: false,
   })
 }
 
@@ -144,8 +153,8 @@ export function useConteudosByTipo(tipo: TipoConteudo) {
   return useQuery({
     queryKey: ['app-conteudos', { tipo }],
     queryFn: () => fetchActiveConteudos({ tipo }),
-    staleTime: 0,
-    refetchOnMount: 'always',
+    staleTime: 60_000,
+    placeholderData: (previous) => previous,
   })
 }
 
@@ -154,8 +163,9 @@ export function useVideosByCatalogAnchor(anchor: CatalogAnchor | undefined) {
     queryKey: ['app-videos-anchor', anchor],
     queryFn: () => fetchVideosByCatalogAnchor(anchor!),
     enabled: Boolean(anchor),
-    staleTime: 0,
-    refetchOnMount: 'always',
+    staleTime: 60_000,
+    placeholderData: (previous) => previous,
+    refetchOnWindowFocus: false,
   })
 }
 
@@ -171,17 +181,32 @@ export function useConteudoDetail(conteudoId: string | undefined) {
   return useQuery({
     queryKey: ['app-conteudo', conteudoId],
     queryFn: async () => {
-      const { data, error } = await supabase
+      const extended = await supabase
         .from('conteudos')
-        .select(
-          'id, titulo, tipo, autor, capa_url, video_url, conteudo_textual, resumo, descricao, personagens, contexto, pontos_importantes, curiosidades, curtidas_count, status',
-        )
+        .select(CONTEUDO_DETAIL_EXTENDED)
         .eq('id', conteudoId!)
         .eq('status', true)
         .single()
 
-      if (error) throw error
-      return data
+      if (!extended.error) return extended.data
+
+      if (!isMissingOptionalColumn(extended.error)) throw extended.error
+
+      const base = await supabase
+        .from('conteudos')
+        .select(CONTEUDO_DETAIL_BASE)
+        .eq('id', conteudoId!)
+        .eq('status', true)
+        .single()
+
+      if (base.error) throw base.error
+      return {
+        ...base.data,
+        integral_ativa: false,
+        integral_licenca: null,
+        integral_traducao_credito: null,
+        integral_traducao_metodo: null,
+      }
     },
     enabled: Boolean(conteudoId),
   })

@@ -2018,6 +2018,14 @@
     color: var(--color-text-muted);
   }
 
+  .jornada-xp-bar--on-hero .jornada-card__xp-inline {
+    color: rgb(255 255 255 / 0.88);
+  }
+
+  .jornada-xp-bar--on-hero .jornada-card__hint {
+    color: rgb(255 255 255 / 0.78);
+  }
+
   .jornada-card--gamified .jornada-card__hint {
     margin-top: 0.5rem;
     margin-bottom: 0;
@@ -3545,6 +3553,16 @@
   .leitura-jornada__book-col--solid {
     border-color: rgb(255 255 255 / 0.28);
     background: rgb(255 255 255 / 0.14);
+  }
+
+  .leitura-jornada-hero--solid .leitura-jornada__head {
+    margin-bottom: 0;
+    align-items: flex-start;
+  }
+
+  .leitura-jornada-hero--solid .leitura-jornada__profile-name {
+    color: #ffffff;
+    text-shadow: 0 1px 12px rgb(0 51 102 / 0.25);
   }
 
   .leitura-jornada__faixa-chip {

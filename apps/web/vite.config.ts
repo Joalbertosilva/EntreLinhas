@@ -87,6 +87,7 @@ export default defineConfig({
         __dirname,
         '../../packages/integral-import/src/index.ts',
       ),
+      '@tcc-sistema/obra-export': path.resolve(__dirname, '../../packages/obra-export/src/index.ts'),
     },
     // Monorepo (web + mobile): evita duas cópias do React no dev server.
     dedupe: ['react', 'react-dom'],

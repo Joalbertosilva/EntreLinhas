@@ -89,13 +89,10 @@ function ConteudoDetailPage() {
       if (!deleteTarget || !conteudo) return null
 
       if (deleteTarget.type === 'conteudo') {
-        const { error } = await supabase
-          .from('conteudos')
-          .update({ status: false })
-          .eq('id', conteudo.id)
+        const { error } = await supabase.from('conteudos').delete().eq('id', conteudo.id)
         if (error) throw error
         return {
-          acao: 'conteudo.desativar',
+          acao: 'conteudo.excluir',
           entidade: 'conteudos',
           entidade_id: conteudo.id,
           detalhes: { titulo: conteudo.titulo },
@@ -104,13 +101,10 @@ function ConteudoDetailPage() {
       }
 
       if (deleteTarget.type === 'tema') {
-        const { error } = await supabase
-          .from('temas')
-          .update({ status: false })
-          .eq('id', deleteTarget.item.id)
+        const { error } = await supabase.from('temas').delete().eq('id', deleteTarget.item.id)
         if (error) throw error
         return {
-          acao: 'tema.desativar',
+          acao: 'tema.excluir',
           entidade: 'temas',
           entidade_id: deleteTarget.item.id,
           detalhes: { conteudo_id: conteudoId, tema: deleteTarget.item.tema },
@@ -120,11 +114,11 @@ function ConteudoDetailPage() {
 
       const { error } = await supabase
         .from('materiais_complementares')
-        .update({ status: false })
+        .delete()
         .eq('id', deleteTarget.item.id)
       if (error) throw error
       return {
-        acao: 'material.desativar',
+        acao: 'material.excluir',
         entidade: 'materiais_complementares',
         entidade_id: deleteTarget.item.id,
         detalhes: { conteudo_id: conteudoId, titulo: deleteTarget.item.titulo },
@@ -511,11 +505,11 @@ function ConteudoDetailPage() {
         }
         description={
           deleteTarget?.type === 'conteudo'
-            ? `Excluir "${conteudo.titulo}" permanentemente? Temas e materiais também serão removidos.`
+            ? `Excluir "${conteudo.titulo}" permanentemente do banco? Temas, materiais, leitura integral e dados dos alunos nesta obra serão apagados. Para só ocultar do catálogo, use Ativar/Desativar.`
             : deleteTarget?.type === 'tema'
-              ? `Excluir o tema "${deleteTarget.item.tema}"?`
+              ? `Excluir o tema "${deleteTarget.item.tema}" permanentemente? Reflexões dos alunos ligadas a este tema também serão removidas.`
               : deleteTarget?.type === 'material'
-                ? `Excluir "${deleteTarget.item.titulo}"?`
+                ? `Excluir o material "${deleteTarget.item.titulo}" permanentemente?`
                 : ''
         }
         confirmLabel="Excluir"

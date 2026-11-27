@@ -34,17 +34,25 @@ export function PageTurnCelebrationModal({ detail, onClose }: PageTurnCelebratio
 
   const jornadaTitulo = tituloJornada(detail.nivel)
 
+  const integral = detail.integral
+
   const title = detail.leveledUp
     ? `Nível ${detail.nivel}`
-    : detail.status === 'concluido'
-      ? 'Leitura concluída'
-      : 'Leitura iniciada'
+    : integral === 'concluido'
+      ? 'Leitura integral concluída'
+      : integral === 'em_andamento'
+        ? 'Leitura integral iniciada'
+        : detail.status === 'concluido'
+          ? 'Leitura concluída'
+          : 'Leitura iniciada'
 
   const subtitle = detail.leveledUp
     ? jornadaTitulo
-    : detail.status === 'concluido'
-      ? 'Mais uma obra na sua jornada'
-      : 'Bom começo de leitura'
+    : integral
+      ? 'Você avançou na obra completa'
+      : detail.status === 'concluido'
+        ? 'Mais uma obra na sua jornada'
+        : 'Bom começo de leitura'
 
   const kicker = detail.leveledUp ? 'Parabéns!' : null
 

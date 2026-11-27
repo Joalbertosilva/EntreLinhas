@@ -1,7 +1,7 @@
 import { Stack, useLocalSearchParams } from 'expo-router'
 import { Image } from 'expo-image'
 import { LinearGradient } from 'expo-linear-gradient'
-import { useRef } from 'react'
+import { useCallback, useMemo, useRef, useState } from 'react'
 import { ActivityIndicator, Linking, Pressable, ScrollView, Text, View } from 'react-native'
 import { Speakable } from '@/features/accessibility/Speakable'
 import { ExternalLink, FileText, Play } from 'lucide-react-native'
@@ -17,6 +17,13 @@ import {
   ConteudoCurtidasButton,
   ConteudoReflexoesSection,
 } from '@/features/engagement/ConteudoEngagementSections'
+import { LivroLeituraIntegralSection } from '@/features/app/LivroLeituraIntegralSection'
+import { useMinhaLeituraIntegral } from '@/features/app/useLeituraIntegralAluno'
+import {
+  buildConteudoJourneySteps,
+  ConteudoJourneyNav,
+  type ConteudoJourneySection,
+} from '@/features/conteudos/ConteudoJourneyNav'
 import { LeituraActionsBar } from '@/features/leituras/LeituraActionsBar'
 import { useLeiturasMap } from '@/features/leituras/useLeiturasMap'
 import { BookPaginatedReader } from '@/features/reader/BookPaginatedReader'
@@ -30,16 +37,17 @@ import type { NativeScrollViewRef, NativeViewRef } from '@/lib/nativeRefs'
 import { useKeyboardAwareScroll } from '@/lib/useKeyboardAwareScroll'
 import { useStackScreenInsets } from '@/lib/useStackScreenInsets'
 import { READER_PARAGRAPH_TEXT_PROPS } from '@/lib/readerTypography'
-import { useAuth } from '@/providers/AuthProvider'
+import { useUsuarioId } from '@/lib/useUsuarioId'
 
 export default function ConteudoDetailScreen() {
   const { id } = useLocalSearchParams<{ id: string }>()
   const { insets, scrollPaddingBottom: stackScrollPadding } = useStackScreenInsets()
-  const { profile } = useAuth()
+  const usuarioId = useUsuarioId()
   const { data, isLoading, isError } = useConteudoDetail(id)
   const { data: temas = [] } = useConteudoTemas(id)
   const { data: materiais = [] } = useConteudoMateriais(id)
-  const { data: leiturasMap, isLoading: loadingLeitura } = useLeiturasMap(profile?.id)
+  const { data: leiturasMap, isLoading: loadingLeitura } = useLeiturasMap(usuarioId)
+  const { data: leituraRow } = useMinhaLeituraIntegral(id, usuarioId)
 
   const isVideo = data?.tipo === 'video'
   const usePaginatedReader =
@@ -68,8 +76,38 @@ export default function ConteudoDetailScreen() {
     ? [tipoLabel, data.titulo, data.autor ? `de ${data.autor}` : null].filter(Boolean).join('. ')
     : ''
 
+  const temTexto = Boolean(
+    data?.conteudo_textual?.trim() ||
+      data?.resumo?.trim() ||
+      metaSections.some((s) => s.value?.trim()) ||
+      bookPages.length > 0,
+  )
+  const temasComFrase = temas.filter((t) => t.questionamento?.trim())
+  const journeySteps = useMemo(
+    () =>
+      buildConteudoJourneySteps({
+        hasTexto: temTexto,
+        hasReflexao: temasComFrase.length > 0,
+      }),
+    [temTexto, temasComFrase.length],
+  )
+
   const scrollRef = useRef<NativeScrollViewRef>(null)
   const scrollViewportRef = useRef<NativeViewRef>(null)
+  const [sectionOffsets, setSectionOffsets] = useState<Partial<Record<ConteudoJourneySection, number>>>({})
+
+  const rememberSectionOffset = useCallback((section: ConteudoJourneySection, y: number) => {
+    setSectionOffsets((prev) => (prev[section] === y ? prev : { ...prev, [section]: y }))
+  }, [])
+
+  const scrollToSection = useCallback(
+    (section: ConteudoJourneySection) => {
+      const y = sectionOffsets[section]
+      if (y == null) return
+      scrollRef.current?.scrollTo({ y: Math.max(0, y - 8), animated: true })
+    },
+    [sectionOffsets],
+  )
   const { scrollPaddingBottom, scrollToEnd, scrollFieldIntoView, onScroll, updateScrollViewPosition } =
     useKeyboardAwareScroll(scrollRef, scrollViewportRef, { basePaddingBottom: stackScrollPadding })
 
@@ -153,7 +191,7 @@ export default function ConteudoDetailScreen() {
                     <View className="mt-4">
                       <ConteudoCurtidasButton
                         conteudoId={id!}
-                        usuarioId={profile?.id}
+                        usuarioId={usuarioId}
                         curtidasCount={(data as { curtidas_count?: number }).curtidas_count ?? 0}
                       />
                     </View>
@@ -161,11 +199,23 @@ export default function ConteudoDetailScreen() {
                 </LinearGradient>
 
                 {id ? (
-                  <LeituraActionsBar conteudoId={id} status={leituraStatus} loading={loadingLeitura} />
+                  <LeituraActionsBar
+                    conteudoId={id}
+                    tipo={data.tipo}
+                    status={leituraStatus}
+                    loading={loadingLeitura}
+                    temTexto={temTexto}
+                    onContinuarLendo={() => scrollToSection('texto')}
+                  />
                 ) : null}
 
+                <ConteudoJourneyNav steps={journeySteps} onGo={scrollToSection} />
+
                 {bookPages.length > 0 && id ? (
-                  <View className="mt-6">
+                  <View
+                    className="mt-6"
+                    onLayout={(e) => rememberSectionOffset('texto', e.nativeEvent.layout.y)}
+                  >
                     <Speakable
                       label={textoPrincipalTitulo}
                       style={{ paddingHorizontal: SCREEN_HORIZONTAL_PADDING }}
@@ -178,6 +228,7 @@ export default function ConteudoDetailScreen() {
                 ) : data.conteudo_textual ? (
                   <Speakable
                     label={`${textoPrincipalTitulo}. ${data.conteudo_textual}`}
+                    onLayout={(e) => rememberSectionOffset('texto', e.nativeEvent.layout.y)}
                     style={{ paddingHorizontal: SCREEN_HORIZONTAL_PADDING }}
                     className="mt-5"
                   >
@@ -192,6 +243,15 @@ export default function ConteudoDetailScreen() {
                   >
                     <Text {...READER_PARAGRAPH_TEXT_PROPS}>{data.resumo ?? data.descricao}</Text>
                   </Speakable>
+                ) : null}
+
+                {data?.tipo === 'livro' ? (
+                  <LivroLeituraIntegralSection
+                    conteudo={data}
+                    usuarioId={usuarioId}
+                    statusEstudo={leituraStatus}
+                    integralStatus={leituraRow?.integral_status ?? null}
+                  />
                 ) : null}
 
                 {materiais.length > 0 ? (
@@ -223,17 +283,21 @@ export default function ConteudoDetailScreen() {
                   </View>
                 ) : null}
 
-                <ConteudoReflexoesSection
-                  conteudoId={id!}
-                  usuarioId={profile?.id}
-                  temas={temas}
-                  scrollFieldIntoView={scrollFieldIntoView}
-                />
-                <ConteudoComentariosSection
-                  conteudoId={id!}
-                  usuarioId={profile?.id}
-                  scrollToEnd={scrollToEnd}
-                />
+                <View onLayout={(e) => rememberSectionOffset('reflexao', e.nativeEvent.layout.y)}>
+                  <ConteudoReflexoesSection
+                    conteudoId={id!}
+                    usuarioId={usuarioId}
+                    temas={temas}
+                    scrollFieldIntoView={scrollFieldIntoView}
+                  />
+                </View>
+                <View onLayout={(e) => rememberSectionOffset('comentarios', e.nativeEvent.layout.y)}>
+                  <ConteudoComentariosSection
+                    conteudoId={id!}
+                    usuarioId={usuarioId}
+                    scrollToEnd={scrollToEnd}
+                  />
+                </View>
               </ScrollView>
               </View>
           )}

@@ -9,13 +9,9 @@ import {
 import {
   hasIntegralPageMarkers,
   inferIntegralDivisaoModo,
-  INTEGRAL_PAGE_MARKER_RE,
-  integralPageMarker,
   spacingIntegralPageMarkers,
   stripIntegralPageMarkers,
-  type IntegralDivisaoModo,
 } from './pageMarkers'
-import { expandCapitulosParaFolhasLeitura } from './readingPages'
 import { isChapterLikeTitle } from './chapterTitles'
 import {
   isPdfTableOfContentsLine,
@@ -29,7 +25,6 @@ import {
   isGutenbergMaintenanceHtml,
   parseGutenbergOrgHtml,
   parseGutenbergStyleHtml,
-  resolveGutenbergOrgReadingUrls,
 } from './gutenbergHtml'
 import { stripHtml } from './stripHtml'
 import type { CapituloParsed } from './types'
@@ -130,40 +125,6 @@ export function guessIdiomaIntegralCapitulos(capitulos: CapituloParsed[]): strin
   }
   if (/\b(the|and|chapter|was|were)\b/i.test(amostra)) return 'en'
   return 'auto'
-}
-
-function splitHtmlByHeadingRe(
-  html: string,
-  headingRe: RegExp,
-  textoOrigem: string,
-  minLen = 12,
-): CapituloParsed[] {
-  const matches = [...html.matchAll(headingRe)]
-  if (matches.length === 0) return []
-
-  const capitulos: CapituloParsed[] = []
-  for (let i = 0; i < matches.length; i++) {
-    const match = matches[i]!
-    const titulo = stripHtml(match[1] ?? match[0] ?? '').trim() || `Seção ${i + 1}`
-    const start = match.index ?? 0
-    const end = i + 1 < matches.length ? (matches[i + 1]!.index ?? html.length) : html.length
-    const texto = stripHtml(html.slice(start, end))
-    if (texto.length < minLen) continue
-    capitulos.push({
-      ordem: capitulos.length + 1,
-      titulo,
-      texto_pt: texto,
-      texto_origem: textoOrigem,
-    })
-  }
-  return capitulos
-}
-
-const GUTENBERG_AU_H2 = /<h2[^>]*>\s*([^<]+?)\s*<\/h2>/gi
-
-function isGutenbergAuSectionTitle(titulo: string): boolean {
-  const t = titulo.trim()
-  return /^(?:PREMIER\s+)?CHAPITRE\b|^CHAPTER\b|^Capítulo\b|^DEDICACE\b|^DEDICAT/i.test(t)
 }
 
 /** Obras HTML no Project Gutenberg Australia (/ebooks/*.html, âncoras ppchap). */
@@ -379,7 +340,7 @@ function parseMecCapitulos(body: string, textoOrigem: string): CapituloParsed[] 
   return parts.map((part, idx) => ({
     ordem: idx + 1,
     titulo: tituloFromMecCapituloPart(part),
-    texto_pt: stripNeadFromChunk(part),
+    texto_pt: normalizePdfExtractedPageText(stripNeadFromChunk(part)),
     texto_origem: textoOrigem,
   }));
 }
@@ -400,6 +361,11 @@ export function parsePlainTextCapitulos(text: string, textoOrigem: string): Capi
   }
 
   const capHeadingCount = countMecCapituloHeadings(body)
+  if (!hasIntegralPageMarkers(rawWithMarkers)) {
+    const ptCaps = parsePortugueseCapitulosPdf(body, textoOrigem)
+    if (capitulosPortuguesReais(ptCaps)) return ptCaps
+  }
+
   if (mecStyle || capHeadingCount >= 2) {
     const mecCaps = parseMecCapitulos(body, textoOrigem)
     if (capitulosMecReais(mecCaps)) return mecCaps

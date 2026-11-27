@@ -12,7 +12,7 @@ import { toast } from 'sonner'
 import { BookPaginatedReader } from '@/features/app/BookPaginatedReader'
 import { BookReadingShell } from '@/features/app/BookReadingShell'
 import { ScrollReveal } from '@/features/app/ScrollReveal'
-import { buildObraBookPages, getObraPageStorageKey } from '@/features/app/bookPagination'
+import { buildObraPublicaBookPages, getObraPageStorageKey } from '@/features/app/bookPagination'
 import type { ObraPublica } from '@/features/app/useMinhaObra'
 import {
   useMinhaObraCurtida,
@@ -27,6 +27,8 @@ import { Textarea } from '@/components/ui/Textarea'
 import { CATEGORIA_OBRA_LABEL } from '@/lib/obraCategoriaLabels'
 import { TIPO_OBRA_LABEL } from '@/lib/obraLabels'
 import { formatRelativeTime } from '@/lib/formatRelativeTime'
+import { ObraExportToolbar } from '@/features/app/ObraExportToolbar'
+import { useAuth } from '@/features/auth/AuthProvider'
 import { cn } from '@/lib/utils'
 
 interface ObraPublicaDetailPageProps {
@@ -35,7 +37,18 @@ interface ObraPublicaDetailPageProps {
 }
 
 export function ObraPublicaDetailPage({ obra, usuarioId }: ObraPublicaDetailPageProps) {
-  const pages = buildObraBookPages(obra.capitulos)
+  const pages = buildObraPublicaBookPages(
+    {
+      titulo: obra.titulo,
+      autorNome: obra.autor?.nome,
+      coverUrl: obra.capa_url,
+      tipoLabel: TIPO_OBRA_LABEL[obra.tipo],
+      categoriaLabel: CATEGORIA_OBRA_LABEL[obra.categoria],
+      descricao: obra.descricao,
+    },
+    obra.capitulos,
+  )
+  const { isStaff } = useAuth()
   const isLivro = obra.tipo === 'livro'
 
   const journeySteps = [
@@ -55,6 +68,12 @@ export function ObraPublicaDetailPage({ obra, usuarioId }: ObraPublicaDetailPage
         </Link>
 
         <ObraHero obra={obra} usuarioId={usuarioId} />
+
+        {isStaff && (
+          <ScrollReveal delayMs={40}>
+            <ObraExportToolbar obra={obra} className="rounded-xl border border-primary/20 bg-primary-light/15 p-4" />
+          </ScrollReveal>
+        )}
 
         {journeySteps.length > 1 && (
           <ScrollReveal>

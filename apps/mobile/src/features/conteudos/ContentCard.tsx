@@ -13,7 +13,7 @@ import { CONTENT_CARD_WIDTH, CONTENT_COVER_HEIGHT } from '@/lib/layout'
 import { resolveConteudoCoverUrl } from '@/lib/conteudoCover'
 import { openVideoExternal } from '@/lib/openVideoUrl'
 import { cn } from '@/lib/cn'
-import { useAuth } from '@/providers/AuthProvider'
+import { useUsuarioId } from '@/lib/useUsuarioId'
 
 const TIPO_META: Record<TipoConteudo, { icon: typeof BookMarked; bgClass: string }> = {
   livro: { icon: BookMarked, bgClass: 'bg-primary-light' },
@@ -33,8 +33,8 @@ interface ContentCardProps {
 
 export function ContentCard({ conteudo, showTipo = false, width }: ContentCardProps) {
   const router = useRouter()
-  const { profile } = useAuth()
-  const { data: leiturasMap } = useLeiturasMap(profile?.id)
+  const usuarioId = useUsuarioId()
+  const { data: leiturasMap } = useLeiturasMap(usuarioId)
   const meta = TIPO_META[conteudo.tipo]
   const Icon = meta.icon
   const cardWidth = width ?? CONTENT_CARD_WIDTH
@@ -42,7 +42,7 @@ export function ContentCard({ conteudo, showTipo = false, width }: ContentCardPr
   const coverHeight = isVideo
     ? Math.round(cardWidth * (9 / 16))
     : Math.round(cardWidth * (CONTENT_COVER_HEIGHT / CONTENT_CARD_WIDTH))
-  const showMenu = Boolean(profile)
+  const showMenu = Boolean(usuarioId)
   const leituraStatus = leiturasMap?.[conteudo.id] ?? null
   const coverUrl = resolveConteudoCoverUrl(conteudo)
 

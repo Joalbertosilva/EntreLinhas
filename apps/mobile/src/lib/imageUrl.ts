@@ -1,4 +1,4 @@
-import { Image } from 'react-native'
+import { Image } from 'react-native-original'
 import { getWebAppUrl } from '@/lib/webAppUrl'
 
 /** Mesmos paths que `apps/web/public/images` — empacotados no app (sem depender do Metro `/images`). */
@@ -10,6 +10,7 @@ const BUNDLED_PUBLIC_IMAGES: Record<string, number> = {
 }
 
 function bundledAssetUri(moduleId: number): string | undefined {
+  if (typeof Image.resolveAssetSource !== 'function') return undefined
   return Image.resolveAssetSource(moduleId)?.uri
 }
 

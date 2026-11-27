@@ -3,7 +3,7 @@
  * Sobe o Metro para Expo Go.
  * Padrão (CLI logado): LAN com manifesto assinado pela sua conta Expo.
  * --offline: manifesto anônimo — só use com Expo Go *sem* login no celular.
- * Tunnel: pnpm mobile:dev:tunnel (outra rede / firewall).
+ * Tunnel: pnpm mobile:dev:tunnel (ngrok no SDK 58).
  */
 import { spawnSync, spawn, execSync } from 'node:child_process'
 import { cpSync, existsSync, lstatSync, mkdirSync, symlinkSync } from 'node:fs'
@@ -97,13 +97,11 @@ function ensureMetroImagesDir() {
 
 let hostArgs
 if (useTunnel) {
-  hostArgs = ['--tunnel']
+  hostArgs = ['--tunnel', 'ngrok']
 } else if (forceOffline) {
   hostArgs = ['--offline']
-} else if (loggedIn) {
-  hostArgs = ['--lan']
 } else {
-  hostArgs = ['--offline']
+  hostArgs = ['--lan']
 }
 
 console.log(`\n📱 EntreLinhas mobile — Expo SDK 58${loggedIn ? ` — conta: ${username}` : ''}`)
@@ -132,7 +130,6 @@ const child = spawn(process.execPath, [expoCli, ...args], {
   env: {
     ...process.env,
     EXPO_NO_TELEMETRY: '1',
-    // Menos workers = menos pico de RAM ao empacotar para iOS (evita 500/OOM no Metro).
     METRO_MAX_WORKERS: process.env.METRO_MAX_WORKERS ?? '2',
   },
 })

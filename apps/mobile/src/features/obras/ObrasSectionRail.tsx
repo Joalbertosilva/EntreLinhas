@@ -2,12 +2,12 @@ import { ScrollView, Text, View } from 'react-native'
 import { ScreenSectionHeader } from '@/components/layout/ScreenPageHeader'
 import { ObraCard } from '@/features/obras/ObraCard'
 import { useObrasPublicas } from '@/features/obras/useObrasPublicas'
-import { OBRA_CARD_WIDTH, RAIL_ITEM_GAP, SCREEN_HORIZONTAL_PADDING, SECTION_GAP } from '@/lib/layout'
+import { OBRA_CARD_WIDTH, OBRA_COVER_HEIGHT, RAIL_ITEM_GAP, SCREEN_HORIZONTAL_PADDING, SECTION_GAP } from '@/lib/layout'
 
 export function ObrasSectionRail() {
-  const { data, isLoading, isError } = useObrasPublicas(8)
+  const { data, isLoading, isError, isFetched } = useObrasPublicas(8)
 
-  if (isLoading) {
+  if (isLoading && !isFetched) {
     return (
       <View style={{ paddingHorizontal: SCREEN_HORIZONTAL_PADDING, marginBottom: SECTION_GAP }}>
         <Text className="font-sans-bold text-lg text-brand-navy">Obras da comunidade</Text>
@@ -23,7 +23,7 @@ export function ObrasSectionRail() {
   if (isError || !data?.length) return null
 
   return (
-    <View style={{ marginBottom: SECTION_GAP }}>
+    <View style={{ marginBottom: SECTION_GAP }} collapsable={false}>
       <ScreenSectionHeader
         title="Obras da comunidade"
         subtitle="Textos publicados por outros alunos"
@@ -31,7 +31,10 @@ export function ObrasSectionRail() {
       <ScrollView
         horizontal
         nestedScrollEnabled
+        removeClippedSubviews={false}
+        collapsable={false}
         showsHorizontalScrollIndicator={false}
+        style={{ minHeight: OBRA_COVER_HEIGHT + 44 }}
         contentContainerStyle={{ paddingHorizontal: SCREEN_HORIZONTAL_PADDING, gap: RAIL_ITEM_GAP }}
       >
         {data.map((item) => (

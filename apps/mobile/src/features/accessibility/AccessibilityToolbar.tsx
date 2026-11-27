@@ -126,7 +126,7 @@ export function AccessibilityToolbar() {
                   label={reader.isSpeaking ? 'Parar leitura' : 'Ouvir tudo desta tela'}
                   onPress={() => {
                     if (reader.isSpeaking) {
-                      void reader.stopSpeech()
+                      void reader.speakScreen()
                       return
                     }
                     setScreenExplorerMode(true)
@@ -136,7 +136,11 @@ export function AccessibilityToolbar() {
                     })
                   }}
                 />
-                <Button variant="outline" label="Ouvir seleção" onPress={() => void reader.speakSelection()} />
+                <Button
+                  variant="outline"
+                  label={reader.isSpeaking ? 'Parar áudio' : 'Ouvir seleção'}
+                  onPress={() => void reader.speakSelection()}
+                />
                 {screenExplorerMode ? (
                   <Button
                     variant="ghost"

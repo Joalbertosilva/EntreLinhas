@@ -1,0 +1,26 @@
+{
+  "name": "@tcc-sistema/obra-export",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "main": "./src/index.ts",
+  "types": "./src/index.ts",
+  "exports": {
+    ".": {
+      "react-native": "./src/index.native.ts",
+      "default": "./src/index.ts"
+    }
+  },
+  "dependencies": {
+    "@tcc-sistema/types": "workspace:*",
+    "docx": "^9.5.1",
+    "pdfmake": "^0.2.20"
+  },
+  "devDependencies": {
+    "@types/pdfmake": "^0.2.11",
+    "vitest": "^3.2.4"
+  },
+  "scripts": {
+    "test": "vitest run"
+  }
+}
