@@ -15,7 +15,9 @@ Backend ✅  →  Web ✅  →  Mobile ✅  →  Apresentação 🔄  →  Deplo
 
 **Entregue em `develop` (2026-11-26):** **leitura integral** — professor importa **somente PDF** do Domínio Público (MEC); extração no navegador (1:1 páginas); gravação via RLS; aluno lê por página/capítulo detectado. **Sem** fluxo link/tradução na UI.
 
-**Foco imediato:** merge em `main`; validar PDF real na apresentação; **paridade mobile** do leitor integral.
+**Foco imediato:** release integrada em `main` (2026-11-26) — mobile paridade leitura integral, exportação de obras (PDF/DOCX), scripts Expo LAN; validar cold start no dispositivo na apresentação.
+
+**2026-11-26 — Expo Go não abre / carrega para sempre:** auth com timeout (splash + `AuthProvider`); layout aluno mostra spinner em vez de `null`; `mobile-start` aquece bundle + imprime IP LAN; persistência Supabase no SecureStore (`canPersistAuth`); leitura integral no mobile alinhada à web (branch `feat/mobile-paridade-leitura-integral-pdf`, local).
 
 **Foco geral:** [`docs/roteiro-apresentacao.md`](../docs/roteiro-apresentacao.md); [`docs/validacao-requisitos.md`](../docs/validacao-requisitos.md).
 
