@@ -17,6 +17,7 @@
     "@tanstack/react-router": "^1.170.32",
     "@tcc-sistema/cover-motifs": "workspace:*",
     "@tcc-sistema/integral-import": "workspace:*",
+    "@tcc-sistema/obra-export": "workspace:*",
     "@tcc-sistema/schemas": "workspace:*",
     "@tcc-sistema/types": "workspace:*",
     "clsx": "^2.1.1",
