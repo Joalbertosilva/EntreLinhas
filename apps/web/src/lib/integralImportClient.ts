@@ -5,7 +5,6 @@ import {
 import {
   inferIntegralDivisaoModo,
   integralImportPareceDegradado,
-  hasIntegralPageMarkers,
   isMislabeledPdfAsText,
   parseIntegralTextoBruto,
   type IntegralDivisaoModo,
@@ -26,7 +25,7 @@ export type IntegralUploadOrigem = 'arquivo' | 'link'
 export function parseIntegralUploadText(
   texto: string,
   fonteUrl: string | null | undefined,
-  origem: IntegralUploadOrigem = 'link',
+  _origem: IntegralUploadOrigem = 'link',
 ): IntegralUploadParseResult {
   if (texto.length > INTEGRAL_TEXTO_MAX_CHARS) {
     throw new Error('Arquivo de texto grande demais para importar.')

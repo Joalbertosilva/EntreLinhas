@@ -104,7 +104,7 @@ export function expandCapitulosParaFolhasLeitura<T extends CapituloParsedLike>(
         titulo: tituloFolha(cap.titulo, i, folhas.length),
         texto_pt: folhas[i]!,
         texto_origem: cap.texto_origem,
-      })
+      } as T)
     }
   }
 

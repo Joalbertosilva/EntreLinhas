@@ -56,7 +56,7 @@ export function ObraEngagementSection({
   }
 
   return (
-    <View style={{ marginHorizontal: SCREEN_HORIZONTAL_PADDING }} className="pb-2">
+    <View style={{ marginHorizontal: SCREEN_HORIZONTAL_PADDING }} className="mt-6 pb-2">
       <View className="mb-5 flex-row flex-wrap items-center gap-3">
         {usuarioId ? (
           <Pressable

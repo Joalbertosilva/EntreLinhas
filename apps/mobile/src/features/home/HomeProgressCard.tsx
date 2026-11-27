@@ -4,37 +4,51 @@ import { BookOpen, LineChart } from 'lucide-react-native'
 import { Pressable, Text, View } from 'react-native'
 import { ReaderProfileAvatar } from '@/features/app/ReaderProfileAvatar'
 import { Speakable } from '@/features/accessibility/Speakable'
-import { useAlunoProgress } from '@/features/progress/useAlunoProgress'
 import {
   JOURNEY_BTN_JORNADA,
   JOURNEY_BTN_OBRAS,
   JOURNEY_XP_GRADIENT,
 } from '@/lib/brandTheme'
+import type { AlunoProgressStats } from '@/lib/alunoProgress'
 import { HOME_HERO_PANEL_MIN_HEIGHT, SCREEN_HORIZONTAL_PADDING } from '@/lib/layout'
 import { useAuth } from '@/providers/AuthProvider'
 
 interface HomeProgressCardProps {
-  userId: string | undefined
+  progress: AlunoProgressStats | null | undefined
+  showProgressPlaceholder?: boolean
   embedded?: boolean
 }
 
-export function HomeProgressCard({ userId, embedded = false }: HomeProgressCardProps) {
+export function HomeProgressCard({
+  progress,
+  showProgressPlaceholder = false,
+  embedded = false,
+}: HomeProgressCardProps) {
   const router = useRouter()
   const { profile } = useAuth()
-  const { data: progress, isLoading } = useAlunoProgress(userId)
 
-  if (isLoading) {
+  if (showProgressPlaceholder || !profile) {
     return (
       <View style={{ marginHorizontal: embedded ? 0 : SCREEN_HORIZONTAL_PADDING }}>
         <View
-          className="animate-pulse rounded-[20px] border border-primary/15 bg-white"
+          className="rounded-[20px] border border-primary/15 bg-primary-light/25"
           style={{ minHeight: HOME_HERO_PANEL_MIN_HEIGHT }}
         />
       </View>
     )
   }
 
-  if (!progress || !profile) return null
+  if (!progress) {
+    if (!embedded) return null
+    return (
+      <View style={{ marginHorizontal: 0 }}>
+        <View
+          className="rounded-[20px] border border-primary/15 bg-primary-light/20"
+          style={{ minHeight: HOME_HERO_PANEL_MIN_HEIGHT }}
+        />
+      </View>
+    )
+  }
 
   const displayName = profile.nome
   const barPct = progress.nivelMaximo ? 100 : Math.max(0, Math.min(100, progress.progressoNivelPct))

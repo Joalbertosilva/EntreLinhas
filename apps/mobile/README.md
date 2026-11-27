@@ -31,7 +31,19 @@ Ou dentro de `apps/mobile`:
 pnpm start
 ```
 
-Use **Expo Go 58.x** (Settings → Supported SDK **58**) no celular/emulador.
+Use **Expo Go 58.x** (Settings → Supported SDK **58**) no celular/emulador. Se o projeto foi atualizado da semana passada e o app “não entra”, a causa mais comum é **Expo Go antigo (SDK 57)** — atualize na loja.
+
+### “Falha” ou barra de progresso infinita no Expo Go
+
+1. Pare o Metro e rode: `pnpm mobile:dev` (ou `pnpm mobile:dev -- --clear` se mudou dependência)
+2. **Expo Go SDK 58** na loja — SDK 50/57 não abre este projeto
+3. Mesma conta no **CLI** (`pnpm mobile:login` + `pnpm mobile:whoami`) e no **Expo Go**
+4. **«The request timed out»** no Expo Go: o celular abriu **antes** do Metro terminar o bundle. Rode `pnpm mobile:dev:fresh` e espere no terminal **`AGORA pode abrir no Expo Go`**.
+5. **Lista vazia no Expo Go (Linux):** Home → **Enter URL** → `exp://SEU_IP:8081` (o IP sai no terminal). Ignore atalho antigo com timeout
+6. **Request timed out:** isolamento Wi‑Fi no roteador → `pnpm mobile:dev:tunnel`
+7. **UFW:** `sudo ufw allow 8081/tcp` e `sudo ufw allow 19000:19002/tcp`
+8. Sessão Supabase: `apps/mobile/.env` = mesmos valores do web
+9. Metro pesado: `METRO_MAX_WORKERS=1 pnpm mobile:dev`
 
 ### Ícone / splash corretos em qualquer celular (iOS e Android)
 
@@ -51,7 +63,7 @@ Detalhes: [`docs/mobile-dev-build.md`](../../docs/mobile-dev-build.md).
 
 - **`AnimatedSplash`:** fica visível **no mínimo 3 s** após montar `/` (`MIN_ANIMATED_SPLASH_VISIBLE_MS` em `app/index.tsx`). A **marca + textos** somem rápido na transição; o livro segue um instante.
 
-- **`icon` / `ios.icon`:** `./assets/images/app-icon-manifest.png` — **ícone do app** (mesmo desenho do `favicon.png`), em **1024×1024** com fundo **`#f8fbfe`** para não “sumir” em tela branca (o PNG puro tem muita transparência). O nome no `app.json` muda na hora porque é texto; o **ícone** vem de **URL no manifest** — o cliente pode **cachear** por nome de arquivo. Ao trocar o gráfico, use **nome de arquivo novo** + subir `version` e `pnpm mobile:dev -- --clear`.
+- **`icon` / `ios.icon`:** `./assets/icon.png` (cópia do manifest 1024×1024, fundo **`#f8fbfe`**). O **ícone** vem de URL no manifest — o cliente cacheia. Ao trocar o gráfico: suba `version` no `app.json` e `pnpm mobile:dev -- --clear`.
 
 **Se no iOS o ícone não mudar:** feche o Expo Go (app switcher), reabra o projeto; em último caso reinstale o Expo Go. Para garantia total do ícone/splash: **`npx expo run:ios`** (dev build).
 - **`splash` + plugin `expo-splash-screen`:** logo horizontal + fundo **`#f8fbfe`** — usado em **build nativo** (dev/production). O Expo Go **não** aplica essa splash completa.
@@ -74,6 +86,8 @@ pnpm mobile:dev              # LAN + conta (recomendado com Expo Go logado)
 pnpm mobile:dev -- --clear   # limpa cache do Metro
 pnpm mobile:dev:tunnel       # outra Wi‑Fi
 ```
+
+**Dependências:** na raiz use `pnpm exec expo install --check` (não `npx expo` solto na raiz — avisos de npmrc são inofensivos). O aviso «expo 58.0.19 → 58.1.0» é opcional; não é a causa do erro de conexão.
 
 Só se quiser abrir **sem conta no Expo Go** no iPhone:
 

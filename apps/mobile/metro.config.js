@@ -5,6 +5,13 @@ const { resolve: resolveRequest } = require('metro-resolver')
 
 const config = getDefaultConfig(__dirname)
 const projectRoot = __dirname
+const obraExportNative = path.resolve(projectRoot, '../../packages/obra-export/src/index.native.ts')
+
+config.server = {
+  ...config.server,
+  port: 8081,
+  host: '0.0.0.0',
+}
 const scaledRnEntry = path.resolve(projectRoot, 'src/lib/react-native-scaled.ts')
 
 config.resolver.extraNodeModules = {
@@ -18,6 +25,20 @@ const defaultResolveRequest = config.resolver.resolveRequest
 config.resolver.resolveRequest = (context, moduleName, platform) => {
   if (moduleName === 'react-native-original') {
     return resolveRequest(context, 'react-native', platform)
+  }
+
+  if (moduleName === '@tcc-sistema/obra-export') {
+    return {
+      filePath: obraExportNative,
+      type: 'sourceFile',
+    }
+  }
+
+  if (moduleName === 'pdfmake' || moduleName.startsWith('pdfmake/')) {
+    return {
+      filePath: path.resolve(projectRoot, 'src/lib/obraExportPdfStub.ts'),
+      type: 'sourceFile',
+    }
   }
 
   if (

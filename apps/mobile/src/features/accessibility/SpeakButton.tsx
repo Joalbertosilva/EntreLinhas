@@ -1,4 +1,4 @@
-import { Volume2 } from 'lucide-react-native'
+import { Volume2, VolumeX } from 'lucide-react-native'
 import { Pressable } from 'react-native'
 import { useSpeechContext } from '@/features/accessibility/SpeechProvider'
 import { cn } from '@/lib/cn'
@@ -9,13 +9,13 @@ interface SpeakButtonProps {
 }
 
 export function SpeakButton({ label, className }: SpeakButtonProps) {
-  const { speak, isSpeaking } = useSpeechContext()
+  const { toggleSpeak, isSpeaking } = useSpeechContext()
 
   return (
     <Pressable
-      onPress={() => void speak(label)}
+      onPress={() => void toggleSpeak(label)}
       accessibilityRole="button"
-      accessibilityLabel={`Ouvir: ${label}`}
+      accessibilityLabel={isSpeaking ? 'Parar áudio' : `Ouvir: ${label}`}
       hitSlop={6}
       className={cn(
         'h-8 w-8 items-center justify-center rounded-full border border-primary/30 bg-white shadow-sm active:bg-primary-light',
@@ -23,7 +23,11 @@ export function SpeakButton({ label, className }: SpeakButtonProps) {
         className,
       )}
     >
-      <Volume2 color="#1c756a" size={14} strokeWidth={2} />
+      {isSpeaking ? (
+        <VolumeX color="#1c756a" size={14} strokeWidth={2} />
+      ) : (
+        <Volume2 color="#1c756a" size={14} strokeWidth={2} />
+      )}
     </Pressable>
   )
 }

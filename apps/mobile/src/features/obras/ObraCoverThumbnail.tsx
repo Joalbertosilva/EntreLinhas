@@ -6,7 +6,11 @@ import { ObraCoverArtView } from '@/features/obras/ObraCoverArtView'
 import { useObraCapaFoto } from '@/features/obras/useObraCapaFoto'
 import { capaImageUri, resolvePublicImageUri } from '@/lib/imageUrl'
 
-const DEFAULT_OBRA_COVER = resolvePublicImageUri('/images/minha-obra-default-cover.png')
+let defaultObraCoverCache: string | undefined
+function defaultObraCoverUri(): string | undefined {
+  defaultObraCoverCache ??= resolvePublicImageUri('/images/minha-obra-default-cover.png')
+  return defaultObraCoverCache
+}
 
 /** Largura interna de render — escala visualmente para thumbs pequenos (home, rails). */
 const LIVE_COVER_RENDER_WIDTH = 240
@@ -135,7 +139,7 @@ export function ObraCoverThumbnail({
   const uri =
     capaUrl && !isDefaultObraCoverUrl(capaUrl)
       ? capaImageUri(capaUrl, updatedAt)
-      : DEFAULT_OBRA_COVER
+      : defaultObraCoverUri()
 
   return (
     <View style={[frameBase, style]}>

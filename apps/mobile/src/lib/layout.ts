@@ -24,7 +24,8 @@ export const DETAIL_COVER_HEIGHT = 168
 export const TAB_BAR_CONTENT_HEIGHT = 52
 export const TAB_BAR_PADDING_TOP = 8
 export const TAB_BAR_MIN_BOTTOM = { ios: 16, android: 12 } as const
-export const TAB_SCROLL_EXTRA = 12
+/** Espaço extra abaixo do último bloco (rolagem até a tab bar, sem vão grande). */
+export const TAB_SCROLL_EXTRA = 4
 
 /** Botão flutuante de acessibilidade. */
 export const ACCESSIBILITY_FAB_SIZE = 44
@@ -55,9 +56,8 @@ export function accessibilityFabBottomOnStack(insets: Pick<EdgeInsets, 'bottom'>
 
 export function tabScrollPaddingBottom(insets: Pick<EdgeInsets, 'bottom'>, fontMultiplier = 1) {
   const tabBar = tabBarTotalHeight(insets, fontMultiplier)
-  const fabClearance =
-    accessibilityFabBottomOnTabs(insets, fontMultiplier) + ACCESSIBILITY_FAB_SIZE + TAB_SCROLL_EXTRA
-  return Math.max(tabBar + TAB_SCROLL_EXTRA, fabClearance)
+  // Padding só para a tab bar (+ respiro). FAB fica à direita e não precisa dobrar a altura útil.
+  return tabBar + TAB_SCROLL_EXTRA
 }
 
 export function stackScrollPaddingBottom(insets: Pick<EdgeInsets, 'bottom'>) {
